@@ -46,7 +46,7 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
 }
 
 export function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <aside
@@ -58,9 +58,9 @@ export function Sidebar() {
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-              Q
+              W
             </div>
-            <span className="font-semibold">quick-silver-499...</span>
+            <span className="font-semibold">workspace</span>
           </div>
         )}
         <Button
@@ -88,16 +88,6 @@ export function Sidebar() {
           label={isCollapsed ? "" : "Home"}
           isActive
           href="/"
-          isCollapsed={isCollapsed}
-        />
-        <SidebarItem
-          icon={<FileIcon />}
-          label={isCollapsed ? "" : "My Spreadsheets"}
-          isCollapsed={isCollapsed}
-        />
-        <SidebarItem
-          icon={<FolderPlusIcon />}
-          label={isCollapsed ? "" : "Add Folder"}
           isCollapsed={isCollapsed}
         />
       </nav>

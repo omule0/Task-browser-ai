@@ -29,19 +29,16 @@ export default function RootLayout({ children }) {
         <div className="bg-gray-100 min-h-screen flex flex-col">
           <header className="bg-purple-900 text-white">
             <div className="container mx-auto px-4">
-              <nav className="flex items-center justify-between h-16">
+              <nav className="flex items-center justify-between h-12">
                 <div className="flex items-center space-x-4">
-                  <h1 className="text-2xl font-bold">Digest.ai</h1>
+                  <h1 className="text-lg font-bold">Digest.ai</h1>
                 </div>
                 <div className="flex items-center space-x-6">
-                  <a href="#" className="hover:text-purple-200">
+                  <a href="#" className="hover:text-purple-200 text-sm">
                     Integrations
                   </a>
-                  <a href="#" className="hover:text-purple-200">
+                  <a href="#" className="hover:text-purple-200 text-sm">
                     Templates
-                  </a>
-                  <a href="#" className="hover:text-purple-200">
-                    Community
                   </a>
                   <GiftIcon className="w-6 h-6" />
                   <HelpCircleIcon className="w-6 h-6" />
