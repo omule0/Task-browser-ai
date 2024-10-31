@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { logout } from "@/app/logout/actions";
 
 export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }) {
   const ButtonContent = () => (
@@ -91,6 +92,10 @@ export function Sidebar() {
           isCollapsed={isCollapsed}
         />
       </nav>
+      {/* logout button */}
+      <form action={logout}>
+        <Button type="submit">Logout</Button>
+      </form>
       <div className="mt-auto">
         <SidebarItem
           icon={<SettingsIcon className="w-4 h-4 text-gray-500 hover:text-purple-600" />}

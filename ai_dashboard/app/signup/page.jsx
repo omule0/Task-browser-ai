@@ -1,0 +1,99 @@
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { FcGoogle } from 'react-icons/fc'
+import { signup } from "./actions"
+
+export default function SignUpPage() {
+  return (
+    <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-8">
+        <div className="flex flex-col items-center space-y-6">
+          <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
+            <UserPlusIcon className="h-6 w-6 text-[#663399]" />
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight">Create an account</h1>
+        </div>
+        <form className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
+              Email
+            </label>
+            <Input
+              id="email"
+              name="email"
+              placeholder="you@company.com"
+              type="email"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              className="border-gray-200"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
+              Password
+            </label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoCapitalize="none"
+              autoComplete="new-password"
+              className="border-gray-200"
+              required
+            />
+          </div>
+          <Button formAction={signup} className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
+            Sign Up
+          </Button>
+        </form>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-[#F8F8F9] px-2 text-gray-500">
+              OR
+            </span>
+          </div>
+        </div>
+        <Button variant="outline" className="w-full border-gray-200" type="button">
+          <FcGoogle className="mr-2 h-4 w-4" />
+          Sign up with Google
+        </Button>
+        <div className="text-center text-sm">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-[#663399] hover:text-[#552288]"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UserPlusIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" x2="19" y1="8" y2="14" />
+      <line x1="22" x2="16" y1="11" y2="11" />
+    </svg>
+  )
+}
