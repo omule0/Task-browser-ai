@@ -2,29 +2,39 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/utils/supabase/server'
 
 export async function signup(formData) {
     const supabase = await createClient()
-  
-    const data = {
-      email: formData.get('email'),
-      password: formData.get('password'),
+    
+    const email = formData.get('email')
+    const password = formData.get('password')
+    const name = formData.get('name')
+
+    // Validate form data
+    if (!email || !password || !name) {
+      console.error('Missing required fields')
+      redirect('/signup?error=Missing required fields')
     }
   
-    const { error } = await supabase.auth.signUp(data)
+    console.log('Attempting signup with email:', email)
+
+    const { error: signUpError, data: { user } } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+        data: {
+          full_name: name,
+        }
+      },
+    })
   
-    if (error) {
-      redirect('/error')
+    if (signUpError) {
+      console.error('Signup error:', signUpError.message)
+      redirect('/signup?error=' + encodeURIComponent(signUpError.message))
     }
   
-    // // redirect to login page
-    // if (error) {
-    //   redirect('/login?message=Failed to signup')
-    // }
-  
-    revalidatePath('/', 'layout')
-    // redirect('/login')
-    redirect('/')
-  }
+    console.log('Signup successful, redirecting to confirmation page')
+    return redirect('/confirm-email')
+}

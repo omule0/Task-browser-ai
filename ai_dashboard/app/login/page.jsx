@@ -15,19 +15,21 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-semibold tracking-tight">Welcome back!</h1>
           </div>
-          <form className="space-y-6">
+          <form action={login} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
                 Email
               </label>
               <Input
                 id="email"
+                name="email"
                 placeholder="you@company.com"
                 type="email"
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect="off"
                 className="border-gray-200"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -36,13 +38,15 @@ export default function LoginPage() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 autoCapitalize="none"
                 autoComplete="current-password"
                 className="border-gray-200"
+                required
               />
             </div>
-            <Button formAction={login} className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
+            <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
               Sign In
             </Button>
           </form>

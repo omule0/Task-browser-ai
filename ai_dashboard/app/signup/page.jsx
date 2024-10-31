@@ -14,7 +14,22 @@ export default function SignUpPage() {
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">Create an account</h1>
         </div>
-        <form className="space-y-6">
+        <form action={signup} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="name">
+              Full Name
+            </label>
+            <Input
+              id="name"
+              name="name"
+              placeholder="John Doe"
+              type="text"
+              autoCapitalize="words"
+              autoComplete="name"
+              className="border-gray-200"
+              required
+            />
+          </div>
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
               Email
@@ -45,7 +60,7 @@ export default function SignUpPage() {
               required
             />
           </div>
-          <Button formAction={signup} className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
+          <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
             Sign Up
           </Button>
         </form>
