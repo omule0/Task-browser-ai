@@ -1,27 +1,9 @@
-import localFont from "next/font/local";
-import "./globals.css";
 import { GiftIcon, HelpCircleIcon } from "lucide-react";
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
-import { logout } from './logout/actions';
+import { logout } from '../app/logout/actions';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata = {
-  title: "Dashboard",
-  description: "Dashboard",
-};
-
-async function Header() {
+export async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -50,8 +32,7 @@ async function Header() {
                       {user.user_metadata.full_name?.[0] || user.email[0].toUpperCase()}
                     </span>
                   </div>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible
-                    before:absolute before:h-2 before:w-full before:-top-2 before:right-0">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
                     <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       Profile
                     </Link>
@@ -82,17 +63,4 @@ async function Header() {
       </div>
     </header>
   );
-}
-
-export default async function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="bg-gray-100 min-h-screen flex flex-col">
-          <Header />
-          {children}
-        </div>
-      </body>
-    </html>
-  );
-}
+} 
