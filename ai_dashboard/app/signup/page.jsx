@@ -5,6 +5,25 @@ import Link from "next/link"
 import { signup } from "./actions"
 import { useSearchParams } from 'next/navigation'
 import SignUpWithGoogleButton from './googlesignup'
+import { Loader2 } from "lucide-react"
+import { useFormStatus } from "react-dom"
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  
+  return (
+    <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Signing up...
+        </>
+      ) : (
+        "Sign Up"
+      )}
+    </Button>
+  )
+}
 
 export default function SignUpPage() {
   const searchParams = useSearchParams()
@@ -76,9 +95,7 @@ export default function SignUpPage() {
               required
             />
           </div>
-          <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
-            Sign Up
-          </Button>
+          <SubmitButton />
         </form>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

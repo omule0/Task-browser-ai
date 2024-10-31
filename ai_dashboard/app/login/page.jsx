@@ -1,9 +1,29 @@
+'use client'
 import { login } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { HiArrowLeft, HiArrowRight } from 'react-icons/hi'
 import SignInWithGoogleButton from './googlesignin'
+import { Loader2 } from "lucide-react"
+import { useFormStatus } from 'react-dom'
+
+function LoginButton() {
+  const { pending } = useFormStatus()
+  
+  return (
+    <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit" disabled={pending}>
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Signing In...
+        </>
+      ) : (
+        'Sign In'
+      )}
+    </Button>
+  )
+}
 
 export default function LoginPage() {
   return (
@@ -46,9 +66,7 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit">
-              Sign In
-            </Button>
+            <LoginButton />
           </form>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
