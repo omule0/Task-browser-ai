@@ -39,7 +39,7 @@ export async function signupWithGoogle() {
         access_type: 'offline',
         prompt: 'consent',
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/`,
     },
   })
 
