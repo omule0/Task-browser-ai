@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { GiftIcon, HelpCircleIcon } from "lucide-react";
+import { GiftIcon, HelpCircleIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 import { logout } from './logout/actions';
@@ -53,14 +53,23 @@ async function Header() {
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible
                     before:absolute before:h-2 before:w-full before:-top-2 before:right-0">
                     <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Profile
+                      <div>
+                        <div className="font-medium">{user.user_metadata.full_name || 'Profile'}</div>
+                        <div className="text-gray-500 text-xs">{user.email}</div>
+                      </div>
                     </Link>
                     <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Settings
+                      <div className="flex items-center gap-2">
+                        <SettingsIcon className="w-4 h-4" />
+                        Workspace Settings
+                      </div>
                     </Link>
                     <form action={logout}>
                       <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Sign out
+                        <div className="flex items-center gap-2">
+                          <LogOutIcon className="w-4 h-4" />
+                          Sign out
+                        </div>
                       </button>
                     </form>
                   </div>

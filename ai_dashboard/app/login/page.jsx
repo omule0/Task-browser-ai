@@ -2,8 +2,8 @@ import { login } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { FcGoogle } from 'react-icons/fc'
 import { HiArrowLeft, HiArrowRight } from 'react-icons/hi'
+import SignInWithGoogleButton from './googlesignin'
 
 export default function LoginPage() {
   return (
@@ -60,13 +60,10 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
-          <Button variant="outline" className="w-full border-gray-200" type="button">
-            <FcGoogle className="mr-2 h-4 w-4" />
-            Sign in with Google
-          </Button>
+          <SignInWithGoogleButton/>
           <div className="flex items-center justify-between">
             <Link
-              href="#"
+              href="https://digestai-p5wpa.ondigitalocean.app"
               className="text-sm text-[#663399] hover:text-[#552288] flex items-center gap-1"
             >
               <HiArrowLeft className="h-4 w-4" />

@@ -33,3 +33,25 @@ export async function login(formData) {
   revalidatePath('/', 'layout')
   redirect('/')
 }
+
+
+export async function signInWithGoogle() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/`,
+    },
+  });
+
+  if (error) {
+    console.error('Google sign-in error:', error);
+    redirect("/login?error=Could not sign in with Google");
+  }
+
+  redirect(data.url);
+}

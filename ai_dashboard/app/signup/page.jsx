@@ -1,13 +1,29 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { FcGoogle } from 'react-icons/fc'
 import { signup } from "./actions"
+import { useSearchParams } from 'next/navigation'
+import SignUpWithGoogleButton from './googlesignup'
 
 export default function SignUpPage() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+  const message = searchParams.get('message')
+
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-8">
+        {error && (
+          <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
+            {error}
+          </div>
+        )}
+        {message && (
+          <div className="p-4 text-sm text-green-500 bg-green-50 rounded-md">
+            {message}
+          </div>
+        )}
         <div className="flex flex-col items-center space-y-6">
           <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
             <UserPlusIcon className="h-6 w-6 text-[#663399]" />
@@ -74,10 +90,7 @@ export default function SignUpPage() {
             </span>
           </div>
         </div>
-        <Button variant="outline" className="w-full border-gray-200" type="button">
-          <FcGoogle className="mr-2 h-4 w-4" />
-          Sign up with Google
-        </Button>
+        <SignUpWithGoogleButton />
         <div className="text-center text-sm">
           Already have an account?{" "}
           <Link
