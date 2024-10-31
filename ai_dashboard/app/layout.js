@@ -16,11 +16,6 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export const metadata = {
-  title: "Dashboard",
-  description: "Dashboard",
-};
-
 async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

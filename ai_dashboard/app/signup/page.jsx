@@ -1,18 +1,22 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { signup } from "./actions"
-import { useSearchParams } from 'next/navigation'
-import SignUpWithGoogleButton from './googlesignup'
-import { Loader2 } from "lucide-react"
-import { useFormStatus } from "react-dom"
+"use client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { signup } from "./actions";
+import { useSearchParams } from "next/navigation";
+import SignUpWithGoogleButton from "./googlesignup";
+import { Loader2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 function SubmitButton() {
-  const { pending } = useFormStatus()
-  
+  const { pending } = useFormStatus();
+
   return (
-    <Button className="w-full bg-[#663399] hover:bg-[#552288]" type="submit" disabled={pending}>
+    <Button
+      className="w-full bg-[#663399] hover:bg-[#552288]"
+      type="submit"
+      disabled={pending}
+    >
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -22,104 +26,113 @@ function SubmitButton() {
         "Sign Up"
       )}
     </Button>
-  )
+  );
 }
 
 export default function SignUpPage() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
-  const message = searchParams.get('message')
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const message = searchParams.get("message");
 
   return (
-    <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-8">
-        {error && (
-          <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
-            {error}
+    <>
+      <title>Sign Up</title>
+      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm space-y-8">
+          {error && (
+            <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
+              {error}
+            </div>
+          )}
+          {message && (
+            <div className="p-4 text-sm text-green-500 bg-green-50 rounded-md">
+              {message}
+            </div>
+          )}
+          <div className="flex flex-col items-center space-y-6">
+            <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
+              <UserPlusIcon className="h-6 w-6 text-[#663399]" />
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Create an account
+            </h1>
           </div>
-        )}
-        {message && (
-          <div className="p-4 text-sm text-green-500 bg-green-50 rounded-md">
-            {message}
+          <form action={signup} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="name"
+              >
+                Full Name
+              </label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="John Doe"
+                type="text"
+                autoCapitalize="words"
+                autoComplete="name"
+                className="border-gray-200"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="email"
+              >
+                Email
+              </label>
+              <Input
+                id="email"
+                name="email"
+                placeholder="you@company.com"
+                type="email"
+                autoCapitalize="none"
+                autoComplete="email"
+                autoCorrect="off"
+                className="border-gray-200"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="password"
+              >
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoCapitalize="none"
+                autoComplete="new-password"
+                className="border-gray-200"
+                required
+              />
+            </div>
+            <SubmitButton />
+          </form>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#F8F8F9] px-2 text-gray-500">OR</span>
+            </div>
           </div>
-        )}
-        <div className="flex flex-col items-center space-y-6">
-          <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
-            <UserPlusIcon className="h-6 w-6 text-[#663399]" />
+          <SignUpWithGoogleButton />
+          <div className="text-center text-sm">
+            Already have an account?{" "}
+            <Link href="/login" className="text-[#663399] hover:text-[#552288]">
+              Sign In
+            </Link>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Create an account</h1>
-        </div>
-        <form action={signup} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="name">
-              Full Name
-            </label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="John Doe"
-              type="text"
-              autoCapitalize="words"
-              autoComplete="name"
-              className="border-gray-200"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
-              Email
-            </label>
-            <Input
-              id="email"
-              name="email"
-              placeholder="you@company.com"
-              type="email"
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              className="border-gray-200"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
-              Password
-            </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoCapitalize="none"
-              autoComplete="new-password"
-              className="border-gray-200"
-              required
-            />
-          </div>
-          <SubmitButton />
-        </form>
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#F8F8F9] px-2 text-gray-500">
-              OR
-            </span>
-          </div>
-        </div>
-        <SignUpWithGoogleButton />
-        <div className="text-center text-sm">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-[#663399] hover:text-[#552288]"
-          >
-            Sign In
-          </Link>
         </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }
 
 function UserPlusIcon() {
@@ -140,5 +153,5 @@ function UserPlusIcon() {
       <line x1="19" x2="19" y1="8" y2="14" />
       <line x1="22" x2="16" y1="11" y2="11" />
     </svg>
-  )
+  );
 }

@@ -10,6 +10,8 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
+    <>
+    <title>Dashboard</title>
     <div className="flex flex-1">
       <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
       <main className="flex-1 p-6">
@@ -21,7 +23,8 @@ export default function Dashboard() {
         </div> */}
         {/* <InsightsCard />
         <RecentActivity /> */}
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }

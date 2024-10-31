@@ -17,7 +17,7 @@ export async function login(formData) {
     redirect('/login?error=Missing credentials')
   }
 
-  console.log('Attempting login with email:', email)
+  // console.log('Attempting login with email:', email)
 
   const { error } = await supabase.auth.signInWithPassword({
     email,

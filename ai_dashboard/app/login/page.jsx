@@ -27,7 +27,9 @@ function LoginButton() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
+    <>
+      <title>Sign In</title>
+      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-8">
           <div className="flex flex-col items-center space-y-6">
             <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
@@ -100,6 +102,8 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+    </>
+    
   )
 }
 
