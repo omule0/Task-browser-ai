@@ -1,11 +1,11 @@
+"use client";
+
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   HomeIcon,
-  FileIcon,
-  FolderPlusIcon,
   SettingsIcon,
-  ZapIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   FolderIcon,
@@ -48,6 +48,7 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const pathname = usePathname();
 
   return (
     <aside
@@ -87,13 +88,14 @@ export function Sidebar() {
         <SidebarItem
           icon={<HomeIcon />}
           label={isCollapsed ? "" : "Home"}
-          isActive
+          isActive={pathname === "/"}
           href="/"
           isCollapsed={isCollapsed}
         />
         <SidebarItem
           icon={<FolderIcon />}
           label={isCollapsed ? "" : "Files"}
+          isActive={pathname === "/files"}
           isCollapsed={isCollapsed}
           href="/files"
         />
@@ -102,7 +104,9 @@ export function Sidebar() {
         <SidebarItem
           icon={<SettingsIcon className="w-4 h-4 text-gray-500 hover:text-purple-600" />}
           label={isCollapsed ? "" : "Settings"}
+          isActive={pathname === "/settings"}
           isCollapsed={isCollapsed}
+          href="/settings"
         />
         {!isCollapsed && (
           <>

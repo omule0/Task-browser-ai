@@ -1,6 +1,8 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
+import { createClient } from '@/utils/supabase/server';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -13,14 +15,21 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-
 export default async function RootLayout({ children }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="bg-gray-100 min-h-screen flex flex-col">
           <Header/>
-          {children}
+          <div className="flex flex-1">
+            {user && <Sidebar />}
+            <main className={`flex-1 ${!user ? 'w-full' : ''}`}>
+              {children}
+            </main>
+          </div>
         </div>
       </body>
     </html>

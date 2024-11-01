@@ -108,6 +108,8 @@ export default function FilesPage() {
   }
 
   return (
+    <>
+    <title>Files</title>
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-2">Files</h1>
@@ -198,5 +200,7 @@ export default function FilesPage() {
         </div>
       </div>
     </div>
+    </>
+    
   );
 } 
