@@ -19,13 +19,23 @@ export function FilePreview({ refresh }) {
       const supabase = createClient();
       const user = (await supabase.auth.getUser()).data.user;
       
-      const { data, error } = await supabase.storage
+      const { data: files, error } = await supabase.storage
         .from('documents')
         .list(user.id);
 
       if (error) throw error;
 
-      const sortedFiles = (data || []).sort((a, b) => 
+      const processedFiles = (files || []).map(file => {
+        const parts = file.name.split('-');
+        const originalName = parts.slice(2).join('-');
+
+        return {
+          ...file,
+          originalName
+        };
+      });
+
+      const sortedFiles = processedFiles.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
       );
 
@@ -60,7 +70,7 @@ export function FilePreview({ refresh }) {
     }
   };
 
-  const downloadFile = async (fileName) => {
+  const downloadFile = async (fileName, originalName) => {
     try {
       const supabase = createClient();
       const user = (await supabase.auth.getUser()).data.user;
@@ -71,11 +81,10 @@ export function FilePreview({ refresh }) {
 
       if (error) throw error;
 
-      // Create download link
       const url = window.URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName;
+      link.download = originalName || fileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -116,16 +125,17 @@ export function FilePreview({ refresh }) {
             <div className="flex items-center space-x-3">
               <FileText className="w-5 h-5 text-gray-500" />
               <div>
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {file.originalName || file.name}
+                </p>
                 <p className="text-xs text-gray-500">
-                  {new Date(file.created_at).toLocaleDateString()} • 
-                  {(file.metadata?.size / 1024 / 1024).toFixed(2)} MB
+                  {new Date(file.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => downloadFile(file.name)}
+                onClick={() => downloadFile(file.name, file.originalName)}
                 className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
                 title="Download"
               >

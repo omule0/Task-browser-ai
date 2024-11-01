@@ -34,8 +34,11 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       const user = (await supabase.auth.getUser()).data.user;
 
       for (const file of files) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const originalName = file.name;
+        const fileExt = originalName.split('.').pop();
+        const timestamp = new Date().getTime();
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const fileName = `${timestamp}-${randomId}-${originalName}`;
         const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
