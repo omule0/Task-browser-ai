@@ -15,17 +15,21 @@ export function FilePreview({ refresh }) {
 
   const loadFiles = async () => {
     try {
+      setLoading(true);
       const supabase = createClient();
       const user = (await supabase.auth.getUser()).data.user;
       
-      // List all files in the user's folder
       const { data, error } = await supabase.storage
         .from('documents')
         .list(user.id);
 
       if (error) throw error;
 
-      setFiles(data || []);
+      const sortedFiles = (data || []).sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      setFiles(sortedFiles);
     } catch (error) {
       console.error('Error loading files:', error);
       toast.error('Error loading your files');

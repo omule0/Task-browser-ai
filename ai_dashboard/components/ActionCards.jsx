@@ -20,7 +20,7 @@ function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, 
   );
 }
 
-export function ActionCards() {
+export function ActionCards({ onUploadSuccess }) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   return (
@@ -66,7 +66,8 @@ export function ActionCards() {
 
       <UploadModal 
         isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)} 
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={onUploadSuccess}
       />
     </>
   );

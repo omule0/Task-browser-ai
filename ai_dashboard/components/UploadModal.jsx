@@ -1,9 +1,9 @@
 "use client";
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { X, Upload, Loader2, FileText, File } from 'lucide-react';
+import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { toast } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
@@ -47,11 +47,10 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
       toast.success('Files uploaded successfully');
       setFiles([]);
-      onClose();
-
       if (onUploadSuccess) {
         onUploadSuccess();
       }
+      onClose();
     } catch (error) {
       console.error('Error uploading files:', error);
       toast.error('Error uploading files');

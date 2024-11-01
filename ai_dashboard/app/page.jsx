@@ -28,6 +28,10 @@ export default function Dashboard() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const handleUploadSuccess = () => {
+    setRefreshFiles(prev => prev + 1);
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -42,9 +46,9 @@ export default function Dashboard() {
           <h2 className="text-2xl font-semibold mb-6">
             Welcome back, {user.user_metadata.full_name || user.email}
           </h2>
-          <ActionCards onUploadSuccess={() => setRefreshFiles(prev => prev + 1)} />
+          <ActionCards onUploadSuccess={handleUploadSuccess} />
           <div className="mt-8">
-            <FilePreview />
+            <FilePreview refresh={refreshFiles} />
           </div>
         </main>
       </div>
