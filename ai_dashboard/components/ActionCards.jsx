@@ -1,4 +1,7 @@
+"use client";
+import { useState } from "react";
 import { SearchIcon, BarChartIcon, DatabaseIcon, UploadIcon } from "lucide-react";
+import { UploadModal } from "./UploadModal";
 
 function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled }) {
   return (
@@ -18,42 +21,53 @@ function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, 
 }
 
 export function ActionCards() {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <ActionCard
-        icon={<SearchIcon className="w-6 h-6" />}
-        title="New Search Query"
-        description="Start with a blank file"
-        bgColor="bg-white"
-        hoverColor="hover:bg-indigo-50"
-        iconColor="text-indigo-500"
-        disabled={true}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <ActionCard
+          icon={<SearchIcon className="w-6 h-6" />}
+          title="New Search Query"
+          description="Start with a blank file"
+          bgColor="bg-white"
+          hoverColor="hover:bg-indigo-50"
+          iconColor="text-indigo-500"
+          disabled={true}
+        />
+        <div onClick={() => setIsUploadModalOpen(true)}>
+          <ActionCard
+            icon={<UploadIcon className="w-6 h-6" />}
+            title="Upload Data"
+            description="Upload your data"
+            bgColor="bg-white"
+            hoverColor="hover:bg-pink-50"
+            iconColor="text-pink-500"
+          />
+        </div>
+        <ActionCard
+          icon={<BarChartIcon className="w-6 h-6" />}
+          title="Data Visualization"
+          description="View your data"
+          bgColor="bg-white"
+          hoverColor="hover:bg-emerald-50"
+          iconColor="text-emerald-500"
+          disabled={true}
+        />
+        <ActionCard
+          icon={<DatabaseIcon className="w-6 h-6" />}
+          title="Connect Data"
+          description="Connect your data source"
+          bgColor="bg-white"
+          hoverColor="hover:bg-orange-50"
+          iconColor="text-orange-500"
+        />
+      </div>
+
+      <UploadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)} 
       />
-      <ActionCard
-        icon={<UploadIcon className="w-6 h-6" />}
-        title="Upload Data"
-        description="Upload your data"
-        bgColor="bg-white"
-        hoverColor="hover:bg-pink-50"
-        iconColor="text-pink-500"
-      />
-      <ActionCard
-        icon={<BarChartIcon className="w-6 h-6" />}
-        title="Data Visualization"
-        description="View your data"
-        bgColor="bg-white"
-        hoverColor="hover:bg-emerald-50"
-        iconColor="text-emerald-500"
-        disabled={true}
-      />
-      <ActionCard
-        icon={<DatabaseIcon className="w-6 h-6" />}
-        title="Connect Data"
-        description="Connect your data source"
-        bgColor="bg-white"
-        hoverColor="hover:bg-orange-50"
-        iconColor="text-orange-500"
-      />
-    </div>
+    </>
   );
 }
