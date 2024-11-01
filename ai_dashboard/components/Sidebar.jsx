@@ -8,6 +8,7 @@ import {
   ZapIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  FolderIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,6 +90,12 @@ export function Sidebar() {
           isActive
           href="/"
           isCollapsed={isCollapsed}
+        />
+        <SidebarItem
+          icon={<FolderIcon />}
+          label={isCollapsed ? "" : "Files"}
+          isCollapsed={isCollapsed}
+          href="/files"
         />
       </nav>
       <div className="mt-auto">
