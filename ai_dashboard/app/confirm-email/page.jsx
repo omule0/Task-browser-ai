@@ -8,9 +8,14 @@ export default function ConfirmEmailPage() {
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">Check your email</h1>
         </div>
-        <p className="text-gray-600">
-          We've sent you a confirmation link. Please check your email and click the link to verify your account.
-        </p>
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            We've sent you a confirmation link. Please check your email and click the link to verify your account.
+          </p>
+          <p className="text-sm text-gray-500">
+            You can close this tab. A new tab will open automatically when you click the confirmation link.
+          </p>
+        </div>
       </div>
     </div>
   )
