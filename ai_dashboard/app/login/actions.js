@@ -14,7 +14,7 @@ export async function login(formData) {
   // Validate form data
   if (!email || !password) {
     console.error('Missing email or password')
-    redirect('/login?error=Missing credentials')
+    redirect('/login?message=Missing credentials')
   }
 
   // console.log('Attempting login with email:', email)
@@ -26,7 +26,7 @@ export async function login(formData) {
 
   if (error) {
     console.error('Login error:', error.message)
-    redirect('/login?error=Invalid credentials')
+    redirect('/login?message=Invalid credentials or user not found')
   }
 
   console.log('Login successful, redirecting to dashboard')
@@ -50,7 +50,7 @@ export async function signInWithGoogle() {
 
   if (error) {
     console.error('Google sign-in error:', error);
-    redirect("/login?error=Could not sign in with Google");
+    redirect("/login?message=Could not sign in with Google");
   }
 
   redirect(data.url);

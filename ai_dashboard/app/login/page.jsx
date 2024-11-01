@@ -7,6 +7,7 @@ import { HiArrowLeft, HiArrowRight } from 'react-icons/hi'
 import SignInWithGoogleButton from './googlesignin'
 import { Loader2 } from "lucide-react"
 import { useFormStatus } from 'react-dom'
+import { useSearchParams } from "next/navigation"
 
 function LoginButton() {
   const { pending } = useFormStatus()
@@ -26,11 +27,19 @@ function LoginButton() {
 }
 
 export default function LoginPage() {
+  const searchParams = useSearchParams()
+  const message = searchParams.get("message")
+  
   return (
     <>
       <title>Sign In</title>
       <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-8">
+          {message && (
+            <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
+              {message}
+            </div>
+          )}
           <div className="flex flex-col items-center space-y-6">
             <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
               <LockIcon className="h-6 w-6 text-[#663399]" />
