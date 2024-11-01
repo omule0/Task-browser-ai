@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { FileText, Trash2, Download, Loader2 } from 'lucide-react';
+import { FileText, Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 export function FilePreview({ refresh }) {
   const [files, setFiles] = useState([]);
@@ -19,16 +20,15 @@ export function FilePreview({ refresh }) {
       const supabase = createClient();
       const user = (await supabase.auth.getUser()).data.user;
       
-      const { data: files, error } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from('documents')
         .list(user.id);
 
       if (error) throw error;
 
-      const processedFiles = (files || []).map(file => {
+      const processedFiles = (data || []).map(file => {
         const parts = file.name.split('-');
         const originalName = parts.slice(2).join('-');
-
         return {
           ...file,
           originalName
@@ -115,9 +115,18 @@ export function FilePreview({ refresh }) {
 
   return (
     <div className="bg-white rounded-lg p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Your Files</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-900">Recent Files</h3>
+        <Link 
+          href="/files" 
+          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+        >
+          View all files
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
       <div className="space-y-3">
-        {files.map((file) => (
+        {files.slice(0, 2).map((file) => (
           <div
             key={file.name}
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -156,6 +165,15 @@ export function FilePreview({ refresh }) {
             </div>
           </div>
         ))}
+        {files.length > 2 && (
+          <Link href="/files">
+            <div className="text-center p-3 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors cursor-pointer">
+              <p className="text-sm text-gray-500">
+                +{files.length - 2} more files
+              </p>
+            </div>
+          </Link>
+        )}
       </div>
     </div>
   );
