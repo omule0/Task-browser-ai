@@ -1,0 +1,189 @@
+"use client";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { Loader2, Trash2, PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { useWorkspace } from "@/context/workspace-context";
+import { Loading } from "@/components/ui/loading";
+
+export default function WorkspaceSettings() {
+  const [workspaces, setWorkspaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [editName, setEditName] = useState("");
+  const { currentWorkspace, loadWorkspaces: refreshWorkspaces } = useWorkspace();
+
+  useEffect(() => {
+    loadWorkspaces();
+  }, []);
+
+  const loadWorkspaces = async () => {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setWorkspaces(data || []);
+    } catch (error) {
+      console.error('Error loading workspaces:', error);
+      toast.error('Error loading workspaces');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteWorkspace = async (id) => {
+    try {
+      if (workspaces.length === 1) {
+        toast.error("You can't delete your last workspace");
+        return;
+      }
+
+      setDeleting(id);
+      const supabase = createClient();
+
+      // Delete all files in the workspace
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.storage
+        .from('documents')
+        .remove([`${id}/${user.id}`]);
+
+      // Delete the workspace
+      const { error } = await supabase
+        .from('workspaces')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Workspace deleted successfully');
+      loadWorkspaces();
+      refreshWorkspaces();
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+      toast.error('Error deleting workspace');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const updateWorkspaceName = async (id) => {
+    try {
+      if (!editName.trim()) {
+        toast.error('Workspace name cannot be empty');
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('workspaces')
+        .update({ name: editName.trim() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Workspace name updated');
+      loadWorkspaces();
+      refreshWorkspaces();
+      setEditing(null);
+    } catch (error) {
+      console.error('Error updating workspace:', error);
+      toast.error('Error updating workspace name');
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-2">Workspace Settings</h1>
+        <p className="text-gray-500">Manage your workspaces</p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6">
+          <div className="space-y-4">
+            {workspaces.map((workspace) => (
+              <div
+                key={workspace.id}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+              >
+                <div className="flex-1">
+                  {editing === workspace.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Workspace name"
+                      />
+                      <button
+                        onClick={() => updateWorkspaceName(workspace.id)}
+                        className="p-1 text-green-600 hover:text-green-700"
+                      >
+                        <CheckIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setEditing(null)}
+                        className="p-1 text-gray-600 hover:text-gray-700"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{workspace.name}</span>
+                      {workspace.is_default && (
+                        <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {!editing && (
+                    <button
+                      onClick={() => {
+                        setEditing(workspace.id);
+                        setEditName(workspace.name);
+                      }}
+                      className="p-1 text-gray-500 hover:text-gray-700"
+                      title="Edit workspace name"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteWorkspace(workspace.id)}
+                    disabled={deleting === workspace.id || workspaces.length === 1}
+                    className={`p-1 ${
+                      workspaces.length === 1
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-500 hover:text-red-600'
+                    }`}
+                    title={workspaces.length === 1 ? "Can't delete last workspace" : "Delete workspace"}
+                  >
+                    {deleting === workspace.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 

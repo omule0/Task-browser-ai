@@ -48,7 +48,7 @@ export async function Header() {
                         <div className="text-gray-500 text-xs">{user.email}</div>
                       </div>
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/workspacesettings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="w-4 h-4" />
                         Workspace Settings
