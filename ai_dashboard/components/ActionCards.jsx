@@ -3,11 +3,14 @@ import { useState } from "react";
 import { SearchIcon, BarChartIcon, DatabaseIcon, UploadIcon } from "lucide-react";
 import { UploadModal } from "./UploadModal";
 
-function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled }) {
+function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled, onClick }) {
   return (
-    <div className={`${bgColor} rounded-xl p-4 flex items-start space-x-3 border border-gray-200 transition-all duration-200 
+    <div 
+      className={`${bgColor} rounded-xl p-4 flex items-start space-x-3 border border-gray-200 transition-all duration-200 
       ${disabled ? 'opacity-50 cursor-not-allowed' : `${hoverColor} hover:shadow-lg hover:scale-[1.02] cursor-pointer`}
-      border border-gray-100`}>
+      border border-gray-100`}
+      onClick={disabled ? undefined : onClick}
+    >
         <div className={`p-2 ${iconColor} w-12 h-12 
           rounded-lg 
           flex items-center justify-center 
@@ -35,16 +38,15 @@ export function ActionCards({ onUploadSuccess }) {
           iconColor="text-indigo-500"
           disabled={true}
         />
-        <div onClick={() => setIsUploadModalOpen(true)}>
-          <ActionCard
-            icon={<UploadIcon className="w-6 h-6" />}
-            title="Upload Data"
-            description="Upload your data"
-            bgColor="bg-white"
-            hoverColor="hover:bg-pink-50"
-            iconColor="text-pink-500"
-          />
-        </div>
+        <ActionCard
+          icon={<UploadIcon className="w-6 h-6" />}
+          title="Upload Data"
+          description="Upload your data"
+          bgColor="bg-white"
+          hoverColor="hover:bg-pink-50"
+          iconColor="text-pink-500"
+          onClick={() => setIsUploadModalOpen(true)}
+        />
         <ActionCard
           icon={<BarChartIcon className="w-6 h-6" />}
           title="Data Visualization"
