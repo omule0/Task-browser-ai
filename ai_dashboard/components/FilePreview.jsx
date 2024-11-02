@@ -4,6 +4,39 @@ import { createClient } from '@/utils/supabase/client';
 import { FileText, Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function FilePreviewSkeleton() {
+  return (
+    <div className="bg-white rounded-lg p-6">
+      <div className="flex justify-between items-center mb-4">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+          >
+            <div className="flex items-center space-x-3">
+              <Skeleton className="w-5 h-5 rounded" />
+              <div>
+                <Skeleton className="h-4 w-48 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Skeleton className="w-8 h-8 rounded" />
+              <Skeleton className="w-8 h-8 rounded" />
+            </div>
+          </div>
+        ))}
+        <Skeleton className="h-12 w-full rounded-lg" />
+      </div>
+    </div>
+  );
+}
 
 export function FilePreview({ refresh }) {
   const [files, setFiles] = useState([]);
@@ -96,11 +129,7 @@ export function FilePreview({ refresh }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-      </div>
-    );
+    return <FilePreviewSkeleton />;
   }
 
   if (files.length === 0) {
