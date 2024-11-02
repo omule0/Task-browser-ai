@@ -12,7 +12,7 @@ export default function CreateWorkspace() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { loadWorkspaces } = useWorkspace();
+  const { loadWorkspaces, setCurrentWorkspace } = useWorkspace();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,9 +68,9 @@ export default function CreateWorkspace() {
         throw new Error(`Member creation error: ${memberError.message}`);
       }
 
-      toast.success('Workspace created successfully', {
-        duration: 3000,
-      });
+      toast.success('Workspace created successfully');
+
+      setCurrentWorkspace(workspace);
 
       await loadWorkspaces();
 

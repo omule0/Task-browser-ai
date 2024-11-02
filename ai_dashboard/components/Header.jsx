@@ -68,12 +68,7 @@ export async function Header() {
             ) : (
               // Logged out navigation
               <>
-                <Link href="/login" className="hover:text-purple-200 text-sm">
-                  Sign In
-                </Link>
-                <Link href="/signup" className="bg-white text-purple-900 px-4 py-1 rounded-md text-sm hover:bg-purple-50">
-                  Sign Up
-                </Link>
+                {/* todo: add something interactive */}
               </>
             )}
           </div>
