@@ -17,7 +17,6 @@ export async function login(formData) {
     redirect('/login?message=Missing credentials')
   }
 
-  // console.log('Attempting login with email:', email)
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -29,7 +28,6 @@ export async function login(formData) {
     redirect('/login?message=Invalid credentials or user not found')
   }
 
-  console.log('Login successful, redirecting to dashboard')
   revalidatePath('/', 'layout')
   redirect('/')
 }

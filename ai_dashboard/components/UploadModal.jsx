@@ -42,12 +42,23 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       
       if (userError) throw userError;
 
+      const workspacePath = `${currentWorkspace.id}/${user.id}`;
+      
       for (const file of files) {
         const originalName = file.name;
         const timestamp = new Date().getTime();
         const randomId = Math.random().toString(36).substring(2, 15);
         const fileName = `${timestamp}-${randomId}-${originalName}`;
-        const filePath = `${currentWorkspace.id}/${user.id}/${fileName}`;
+        const filePath = `${workspacePath}/${fileName}`;
+
+        const { data: existingFiles } = await supabase.storage
+          .from('documents')
+          .list(workspacePath);
+
+        const fileExists = existingFiles?.some(f => f.name === fileName);
+        if (fileExists) {
+          throw new Error(`File ${originalName} already exists`);
+        }
 
         const { error: uploadError } = await supabase.storage
           .from('documents')
@@ -57,7 +68,9 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           });
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
+          if (uploadError.message.includes('storage/object-exists')) {
+            throw new Error(`File ${originalName} already exists`);
+          }
           throw uploadError;
         }
       }
