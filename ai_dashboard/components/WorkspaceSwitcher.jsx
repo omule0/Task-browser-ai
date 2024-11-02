@@ -16,7 +16,6 @@ export function WorkspaceSwitcher() {
 
   const handleWorkspaceChange = (workspace) => {
     setCurrentWorkspace(workspace);
-    // Optionally refresh the current page or navigate to a specific route
     router.refresh();
   };
 
@@ -39,13 +38,15 @@ export function WorkspaceSwitcher() {
               {workspace.name}
             </DropdownMenuItem>
           ))}
-          <DropdownMenuItem
-            onClick={() => router.push('/create-workspace')}
-            className="text-purple-600"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Workspace
-          </DropdownMenuItem>
+          {workspaces.length < 3 && (
+            <DropdownMenuItem
+              onClick={() => router.push('/create-workspace')}
+              className="text-purple-600"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Workspace
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -12,7 +12,8 @@ export default function CreateWorkspace() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { loadWorkspaces, setCurrentWorkspace } = useWorkspace();
+  const { loadWorkspaces, setCurrentWorkspace, workspaces } = useWorkspace();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,14 +36,16 @@ export default function CreateWorkspace() {
         throw new Error("No user found");
       }
 
-      // Start a transaction by first checking if this is the first workspace
-      const { data: existingWorkspaces } = await supabase
+      // Check workspace count
+      const { data: existingWorkspaces, error: countError } = await supabase
         .from("workspaces")
-        .select("id")
-        .limit(1);
+        .select("id");
 
-      const isFirstWorkspace =
-        !existingWorkspaces || existingWorkspaces.length === 0;
+      if (countError) throw countError;
+
+      if (existingWorkspaces && existingWorkspaces.length >= 3) {
+        throw new Error("You can only create up to 3 workspaces");
+      }
 
       // Create new workspace
       const { data: workspace, error: workspaceError } = await supabase
@@ -50,7 +53,7 @@ export default function CreateWorkspace() {
         .insert({
           name: name.trim(),
           owner_id: user.id,
-          is_default: isFirstWorkspace,
+          is_default: existingWorkspaces.length === 0,
         })
         .select()
         .single();
