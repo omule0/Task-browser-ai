@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 export function Header() {
   const { workspaces } = useWorkspace();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
@@ -16,18 +17,32 @@ export function Header() {
     // Get initial user
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (!user) return null;
-  
+  if (loading || !user) {
+    return (
+      <header className="bg-purple-900 text-white">
+        <div className="container mx-auto px-4">
+          <nav className="flex items-center justify-between h-12">
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="text-lg font-bold">Digest.ai</Link>
+            </div>
+          </nav>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="bg-purple-900 text-white">
       <div className="container mx-auto px-4">
