@@ -30,13 +30,21 @@ export default function CreateWorkspace() {
         throw new Error('No user found');
       }
 
+      // Start a transaction by first checking if this is the first workspace
+      const { data: existingWorkspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1);
+
+      const isFirstWorkspace = !existingWorkspaces || existingWorkspaces.length === 0;
+
       // Create new workspace
       const { data: workspace, error: workspaceError } = await supabase
         .from('workspaces')
         .insert({
           name: name.trim(),
           owner_id: user.id,
-          is_default: true
+          is_default: isFirstWorkspace
         })
         .select()
         .single();
