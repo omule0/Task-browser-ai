@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,26 +15,19 @@ export default function CreateWorkspace() {
   const router = useRouter();
   const { loadWorkspaces, setCurrentWorkspace, workspaces } = useWorkspace();
 
-  if (workspaces.length >= 3) {
-    return (
-      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8 text-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600">Workspace Limit Reached</h1>
-            <p className="text-gray-600 mt-2">
-              You can only create up to 3 workspaces. Please delete an existing workspace to create a new one.
-            </p>
-          </div>
-          <Button
-            onClick={() => router.push('/workspacesettings')}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            Manage Workspaces
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (workspaces.length >= 3) {
+      customToast.info("Workspace Limit Reached", {
+        description: "You can only create up to 3 workspaces. Please delete an existing workspace to create a new one.",
+        duration: 5000,
+        action: {
+          label: "Manage Workspaces",
+          onClick: () => router.push('/workspacesettings')
+        }
+      });
+      router.push('/');
+    }
+  }, [workspaces.length, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,10 +75,6 @@ export default function CreateWorkspace() {
 
       if (countError) throw countError;
 
-      if (existingWorkspaces && existingWorkspaces.length >= 3) {
-        throw new Error("You can only create up to 3 workspaces");
-      }
-
       // Create new workspace
       const { data: workspace, error: workspaceError } = await supabase
         .from("workspaces")
@@ -100,16 +89,17 @@ export default function CreateWorkspace() {
       if (workspaceError) throw workspaceError;
 
       customToast.success("Workspace created successfully");
-
       setCurrentWorkspace(workspace);
-
       await loadWorkspaces();
-
       router.push("/");
+
     } catch (error) {
       console.error("Error details:", error);
       setError(error.message || "Error creating workspace");
-      customToast.error(error.message || "Error creating workspace");
+      customToast.error({
+        title: "Error creating workspace",
+        description: error.message
+      });
     } finally {
       setLoading(false);
     }

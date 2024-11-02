@@ -7,12 +7,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { logout } from "../app/logout/actions";
-// import { useWorkspace } from "@/context/workspace-context";
 import { createClient } from "@/utils/supabase/server";
 
 export async function Header() {
-  // const { workspaces } = useWorkspace();
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -44,22 +41,6 @@ export async function Header() {
                 </Link>
                 <GiftIcon className="w-6 h-6 cursor-pointer" />
                 <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
-                {/* {workspaces.length >= 3 && (
-              <Link 
-                href="/workspacesettings" 
-                className="relative group"
-                title="Workspace limit reached"
-              >
-                <div className="absolute -top-1 -right-1">
-                  <div className="flex items-center justify-center w-4 h-4 bg-red-500 rounded-full">
-                    <AlertCircle className="w-3 h-3" />
-                  </div>
-                </div>
-                <div className="invisible group-hover:visible absolute top-8 right-0 w-48 p-2 bg-white text-sm text-gray-700 rounded-md shadow-lg">
-                  You've reached the maximum workspace limit
-                </div>
-              </Link>
-            )} */}
                 <div className="relative group">
                   <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
                     {user.user_metadata.avatar_url ? (
@@ -99,11 +80,6 @@ export async function Header() {
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="w-4 h-4" />
                         Workspace Settings
-                        {/* {workspaces.length >= 3 && (
-                      <div className="flex items-center justify-center w-4 h-4 bg-red-500 rounded-full">
-                        <AlertCircle className="w-3 h-3 text-white" />
-                      </div>
-                    )} */}
                       </div>
                     </Link>
                     <form action={logout}>
@@ -118,9 +94,7 @@ export async function Header() {
                 </div>
               </>
             ) : (
-              <>
-              {/* todo: add something interactive */}
-              </>
+              <>{/* todo: add something interactive */}</>
             )}
           </div>
         </nav>
