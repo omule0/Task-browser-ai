@@ -5,6 +5,7 @@ import { FileText, Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useWorkspace } from '@/context/workspace-context';
 
 function FilePreviewSkeleton() {
   return (
@@ -42,20 +43,29 @@ export function FilePreview({ refresh }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const { currentWorkspace } = useWorkspace();
 
   useEffect(() => {
-    loadFiles();
-  }, [refresh]);
+    if (currentWorkspace) {
+      loadFiles();
+    }
+  }, [refresh, currentWorkspace]);
 
   const loadFiles = async () => {
     try {
       setLoading(true);
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
+      if (userError) throw userError;
+      if (!currentWorkspace) {
+        setFiles([]);
+        return;
+      }
+
       const { data, error } = await supabase.storage
         .from('documents')
-        .list(user.id);
+        .list(`${currentWorkspace.id}/${user.id}`);
 
       if (error) throw error;
 
@@ -83,13 +93,18 @@ export function FilePreview({ refresh }) {
 
   const deleteFile = async (fileName) => {
     try {
+      if (!currentWorkspace) {
+        toast.error('Please select a workspace first');
+        return;
+      }
+
       setDeleting(fileName);
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { error } = await supabase.storage
         .from('documents')
-        .remove([`${user.id}/${fileName}`]);
+        .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
       if (error) throw error;
 
@@ -105,12 +120,17 @@ export function FilePreview({ refresh }) {
 
   const downloadFile = async (fileName, originalName) => {
     try {
+      if (!currentWorkspace) {
+        toast.error('Please select a workspace first');
+        return;
+      }
+
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { data, error } = await supabase.storage
         .from('documents')
-        .download(`${user.id}/${fileName}`);
+        .download(`${currentWorkspace.id}/${user.id}/${fileName}`);
 
       if (error) throw error;
 
@@ -127,6 +147,16 @@ export function FilePreview({ refresh }) {
       toast.error('Error downloading file');
     }
   };
+
+  if (!currentWorkspace) {
+    return (
+      <div className="bg-white rounded-lg p-6 text-center">
+        <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-1">No workspace selected</h3>
+        <p className="text-gray-500">Please select or create a workspace to view files</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return <FilePreviewSkeleton />;

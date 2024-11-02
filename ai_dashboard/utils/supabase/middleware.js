@@ -37,6 +37,21 @@ export async function updateSession(request) {
 
     const { data: { session }, error } = await supabase.auth.getSession()
 
+    // Check if user has a workspace
+    if (session) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1);
+
+      // If authenticated but no workspace, redirect to create workspace
+      if ((!workspaces || workspaces.length === 0) && 
+          !request.nextUrl.pathname.startsWith('/create-workspace')) {
+        const redirectUrl = new URL('/create-workspace', request.url)
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+
     // If user is signed in and trying to access auth pages, redirect to dashboard
     if (session && (
       request.nextUrl.pathname.startsWith('/login') ||

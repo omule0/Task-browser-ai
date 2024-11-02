@@ -4,26 +4,35 @@ import { createClient } from "@/utils/supabase/client";
 import { FileText, Download, Trash2, Loader2, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Loading } from "@/components/ui/loading";
+import { useWorkspace } from "@/context/workspace-context";
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { currentWorkspace } = useWorkspace();
 
   useEffect(() => {
-    loadFiles();
-  }, []);
+    if (currentWorkspace) {
+      loadFiles();
+    }
+  }, [currentWorkspace]);
 
   const loadFiles = async () => {
     try {
+      if (!currentWorkspace) {
+        setFiles([]);
+        return;
+      }
+
       setLoading(true);
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { data, error } = await supabase.storage
         .from('documents')
-        .list(user.id);
+        .list(`${currentWorkspace.id}/${user.id}`);
 
       if (error) throw error;
 
@@ -51,13 +60,15 @@ export default function FilesPage() {
 
   const deleteFile = async (fileName) => {
     try {
+      if (!currentWorkspace) return;
+      
       setDeleting(fileName);
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { error } = await supabase.storage
         .from('documents')
-        .remove([`${user.id}/${fileName}`]);
+        .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
       if (error) throw error;
 
@@ -73,12 +84,14 @@ export default function FilesPage() {
 
   const downloadFile = async (fileName, originalName) => {
     try {
+      if (!currentWorkspace) return;
+
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       
       const { data, error } = await supabase.storage
         .from('documents')
-        .download(`${user.id}/${fileName}`);
+        .download(`${currentWorkspace.id}/${user.id}/${fileName}`);
 
       if (error) throw error;
 

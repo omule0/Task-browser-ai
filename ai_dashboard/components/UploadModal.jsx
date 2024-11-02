@@ -4,10 +4,12 @@ import { useDropzone } from 'react-dropzone';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Toaster, toast } from 'react-hot-toast';
+import { useWorkspace } from "@/context/workspace-context";
 
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState([]);
+  const { currentWorkspace } = useWorkspace();
 
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
@@ -29,23 +31,35 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
   const uploadFiles = async () => {
     try {
+      if (!currentWorkspace) {
+        toast.error('Please select a workspace first');
+        return;
+      }
+
       setUploading(true);
       const supabase = createClient();
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
 
       for (const file of files) {
         const originalName = file.name;
-        const fileExt = originalName.split('.').pop();
         const timestamp = new Date().getTime();
         const randomId = Math.random().toString(36).substring(2, 15);
         const fileName = `${timestamp}-${randomId}-${originalName}`;
-        const filePath = `${user.id}/${fileName}`;
+        const filePath = `${currentWorkspace.id}/${user.id}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('documents')
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
       }
 
       toast.success('Files uploaded successfully');
@@ -56,7 +70,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       onClose();
     } catch (error) {
       console.error('Error uploading files:', error);
-      toast.error('Error uploading files');
+      toast.error(error.message || 'Error uploading files');
     } finally {
       setUploading(false);
     }

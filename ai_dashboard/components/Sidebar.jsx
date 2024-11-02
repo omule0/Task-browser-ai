@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }) {
   const ButtonContent = () => (
@@ -47,28 +48,26 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
 }
 
 export function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
 
   return (
     <aside
-      className={`bg-white p-4 flex flex-col transition-all duration-300 ${
+      className={`bg-white p-4 flex flex-col transition-all duration-300 border-r ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
       <div className="flex items-center justify-between mb-4">
         {!isCollapsed && (
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-              W
-            </div>
-            <span className="font-semibold">workspace</span>
+          <div className="flex-1">
+            <WorkspaceSwitcher />
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
+          className="ml-2"
         >
           {isCollapsed ? (
             <ChevronRightIcon className="h-4 w-4" />
@@ -86,15 +85,15 @@ export function Sidebar() {
       )}
       <nav className="space-y-2">
         <SidebarItem
-          icon={<HomeIcon />}
-          label={isCollapsed ? "" : "Home"}
+          icon={<HomeIcon className="h-4 w-4" />}
+          label="Home"
           isActive={pathname === "/"}
           href="/"
           isCollapsed={isCollapsed}
         />
         <SidebarItem
-          icon={<FolderIcon />}
-          label={isCollapsed ? "" : "Files"}
+          icon={<FolderIcon className="h-4 w-4" />}
+          label="Files"
           isActive={pathname === "/files"}
           isCollapsed={isCollapsed}
           href="/files"
@@ -102,21 +101,12 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto">
         <SidebarItem
-          icon={<SettingsIcon className="w-4 h-4 text-gray-500 hover:text-purple-600" />}
-          label={isCollapsed ? "" : "Settings"}
+          icon={<SettingsIcon className="h-4 w-4 text-gray-500 hover:text-purple-600" />}
+          label="Settings"
           isActive={pathname === "/settings"}
           isCollapsed={isCollapsed}
           href="/settings"
         />
-        {!isCollapsed && (
-          <>
-            {/* <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
-              <span>Within plan limits.</span>
-              <ZapIcon className="w-4 h-4 text-gray-500" />
-            </div>
-            <p className="text-sm text-gray-500">Upgrade for more.</p> */}
-          </>
-        )}
       </div>
     </aside>
   );
