@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { ActionCards } from "@/components/ActionCards";
 import { FilePreview } from "@/components/FilePreview";
 import { createClient } from "@/utils/supabase/client";
-import { Toaster } from 'react-hot-toast';
 import { Loading } from "@/components/ui/loading";
 
 export default function Dashboard() {
@@ -44,7 +43,6 @@ export default function Dashboard() {
   return (
     <>
       <title>Dashboard</title>
-      <Toaster />
       <main className="flex-1 p-0">
         <h2 className="text-2xl font-semibold mb-6">
           Welcome back, {user.user_metadata.full_name || user.email}

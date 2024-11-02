@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Upload, Camera, Trash2 } from "lucide-react";
-import { Toaster, toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -162,7 +162,6 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-8">
-      <Toaster />
 
       <div>
         <h1 className="text-2xl font-semibold mb-2">Profile Settings</h1>

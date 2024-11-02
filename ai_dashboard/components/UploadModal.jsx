@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { Toaster, toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { useWorkspace } from "@/context/workspace-context";
 
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {

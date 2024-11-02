@@ -20,33 +20,37 @@ export default function CreateWorkspace() {
 
     try {
       const supabase = createClient();
-      
+
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
       if (userError) {
         throw new Error(`Auth error: ${userError.message}`);
       }
 
       if (!user) {
-        throw new Error('No user found');
+        throw new Error("No user found");
       }
 
       // Start a transaction by first checking if this is the first workspace
       const { data: existingWorkspaces } = await supabase
-        .from('workspaces')
-        .select('id')
+        .from("workspaces")
+        .select("id")
         .limit(1);
 
-      const isFirstWorkspace = !existingWorkspaces || existingWorkspaces.length === 0;
+      const isFirstWorkspace =
+        !existingWorkspaces || existingWorkspaces.length === 0;
 
       // Create new workspace
       const { data: workspace, error: workspaceError } = await supabase
-        .from('workspaces')
+        .from("workspaces")
         .insert({
           name: name.trim(),
           owner_id: user.id,
-          is_default: isFirstWorkspace
+          is_default: isFirstWorkspace,
         })
         .select()
         .single();
@@ -57,76 +61,79 @@ export default function CreateWorkspace() {
 
       // Add creator as workspace member
       const { error: memberError } = await supabase
-        .from('workspace_members')
+        .from("workspace_members")
         .insert({
           workspace_id: workspace.id,
           user_id: user.id,
-          role: 'owner'
+          role: "owner",
         });
 
       if (memberError) {
         throw new Error(`Member creation error: ${memberError.message}`);
       }
 
-      toast.success('Workspace created successfully');
+      toast.success("Workspace created successfully");
 
       setCurrentWorkspace(workspace);
 
       await loadWorkspaces();
 
-      router.push('/');
-      
+      router.push("/");
     } catch (error) {
-      console.error('Error details:', error);
-      toast.error(error.message || 'Error creating workspace');
+      console.error("Error details:", error);
+      toast.error(error.message || "Error creating workspace");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Create Your Workspace</h1>
-          <p className="text-gray-600 mt-2">
-            This will be your default workspace for managing files and collaborating with others.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="name">
-              Workspace Name
-            </label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="My Workspace"
-              required
-              minLength={3}
-              maxLength={50}
-              className="border-gray-200"
-            />
+    <>
+      <title>Create Workspace</title>
+      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Create Your Workspace</h1>
+            <p className="text-gray-600 mt-2">
+              This will be your default workspace for managing files and
+              collaborating with others.
+            </p>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700"
-            disabled={loading || name.length < 3}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              'Create Workspace'
-            )}
-          </Button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="name">
+                Workspace Name
+              </label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My Workspace"
+                required
+                minLength={3}
+                maxLength={50}
+                className="border-gray-200"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              disabled={loading || name.length < 3}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Workspace"
+              )}
+            </Button>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
-} 
+}

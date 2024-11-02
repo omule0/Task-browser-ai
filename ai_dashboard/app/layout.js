@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { createClient } from '@/utils/supabase/server';
 import { WorkspaceProvider } from "@/context/workspace-context";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Toaster/>
         <WorkspaceProvider>
           <div className="bg-gray-100 min-h-screen flex flex-col">
             <Header/>
