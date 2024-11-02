@@ -129,22 +129,15 @@ export default function FilesPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Desktop view */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date Uploaded
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Uploaded</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -187,19 +180,58 @@ export default function FilesPage() {
                   </td>
                 </tr>
               ))}
-              {filteredFiles.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                    No files found
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
+
+        {/* Mobile view */}
+        <div className="md:hidden">
+          {filteredFiles.map((file) => (
+            <div key={file.name} className="p-4 border-b last:border-b-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <FileText className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(file.created_at).toLocaleDateString()} • 
+                      {' ' + file.originalName.split('.').pop().toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => downloadFile(file.name, file.originalName)}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                    title="Download"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => deleteFile(file.name)}
+                    disabled={deleting === file.name}
+                    className="p-2 text-gray-400 hover:text-red-600"
+                    title="Delete"
+                  >
+                    {deleting === file.name ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredFiles.length === 0 && (
+          <div className="px-6 py-4 text-center text-gray-500">
+            No files found
+          </div>
+        )}
       </div>
     </div>
     </>
-    
   );
 } 
