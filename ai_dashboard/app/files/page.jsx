@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FileText, Download, Trash2, Loader2, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { Loading } from "@/components/ui/loading";
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
@@ -101,9 +102,7 @@ export default function FilesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-      </div>
+      <Loading/>
     );
   }
 
