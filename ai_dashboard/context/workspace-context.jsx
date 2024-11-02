@@ -7,13 +7,16 @@ const WorkspaceContext = createContext({
   setCurrentWorkspace: () => {},
   loadWorkspaces: () => {},
   workspaces: [],
+  loading: false,
 });
 
 export function WorkspaceProvider({ children }) {
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [workspaces, setWorkspaces] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const loadWorkspaces = async () => {
+    setLoading(true);
     const supabase = createClient();
     
     const { data, error } = await supabase
@@ -32,6 +35,7 @@ export function WorkspaceProvider({ children }) {
       const defaultWorkspace = data.find(w => w.is_default) || data[0];
       setCurrentWorkspace(defaultWorkspace);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -43,7 +47,8 @@ export function WorkspaceProvider({ children }) {
       currentWorkspace, 
       setCurrentWorkspace, 
       workspaces,
-      loadWorkspaces 
+      loadWorkspaces,
+      loading
     }}>
       {children}
     </WorkspaceContext.Provider>

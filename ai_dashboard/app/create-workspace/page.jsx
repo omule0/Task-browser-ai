@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { useWorkspace } from "@/context/workspace-context";
 
 export default function CreateWorkspace() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { loadWorkspaces } = useWorkspace();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,7 +68,12 @@ export default function CreateWorkspace() {
         throw new Error(`Member creation error: ${memberError.message}`);
       }
 
-      toast.success('Workspace created successfully');
+      toast.success('Workspace created successfully', {
+        duration: 3000,
+      });
+
+      await loadWorkspaces();
+
       router.push('/');
       
     } catch (error) {
