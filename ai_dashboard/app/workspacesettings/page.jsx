@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Trash2, PencilIcon, CheckIcon, XIcon } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 import { Loading } from "@/components/ui/loading";
 
@@ -32,7 +32,7 @@ export default function WorkspaceSettings() {
       setWorkspaces(data || []);
     } catch (error) {
       console.error('Error loading workspaces:', error);
-      toast.error('Error loading workspaces');
+      customToast.error('Error loading workspaces');
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function WorkspaceSettings() {
   const deleteWorkspace = async (id) => {
     try {
       if (workspaces.length === 1) {
-        toast.error("You can't delete your last workspace");
+        customToast.error("You can't delete your last workspace");
         return;
       }
 
@@ -62,12 +62,12 @@ export default function WorkspaceSettings() {
 
       if (error) throw error;
 
-      toast.success('Workspace deleted successfully');
+      customToast.success('Workspace deleted successfully');
       loadWorkspaces();
       refreshWorkspaces();
     } catch (error) {
       console.error('Error deleting workspace:', error);
-      toast.error('Error deleting workspace');
+      customToast.error('Error deleting workspace');
     } finally {
       setDeleting(null);
     }
@@ -76,7 +76,7 @@ export default function WorkspaceSettings() {
   const updateWorkspaceName = async (id) => {
     try {
       if (!editName.trim()) {
-        toast.error('Workspace name cannot be empty');
+        customToast.error('Workspace name cannot be empty');
         return;
       }
 
@@ -88,13 +88,13 @@ export default function WorkspaceSettings() {
 
       if (error) throw error;
 
-      toast.success('Workspace name updated');
+      customToast.success('Workspace name updated');
       loadWorkspaces();
       refreshWorkspaces();
       setEditing(null);
     } catch (error) {
       console.error('Error updating workspace:', error);
-      toast.error('Error updating workspace name');
+      customToast.error('Error updating workspace name');
     }
   };
 
@@ -116,12 +116,12 @@ export default function WorkspaceSettings() {
   
       if (error) throw error;
   
-      toast.success('Default workspace updated');
+      customToast.success('Default workspace updated');
       loadWorkspaces();
       refreshWorkspaces();
     } catch (error) {
       console.error('Error updating default workspace:', error);
-      toast.error('Error updating default workspace');
+      customToast.error('Error updating default workspace');
     }
   };
 

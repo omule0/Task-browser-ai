@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { FileText, Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/context/workspace-context';
+import { customToast } from "@/components/ui/toast-theme";
 
 function FilePreviewSkeleton() {
   return (
@@ -85,16 +85,16 @@ export function FilePreview({ refresh }) {
       setFiles(sortedFiles);
     } catch (error) {
       console.error('Error loading files:', error);
-      toast.error('Error loading your files');
+      customToast.error('Error loading your files');
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteFile = async (fileName) => {
+  const handleDelete = async (fileName) => {
     try {
       if (!currentWorkspace) {
-        toast.error('Please select a workspace first');
+        customToast.error('Please select a workspace first');
         return;
       }
 
@@ -109,10 +109,11 @@ export function FilePreview({ refresh }) {
       if (error) throw error;
 
       setFiles(files.filter(file => file.name !== fileName));
-      toast.success('File deleted successfully');
+      customToast.success('File deleted successfully');
+      loadFiles();
     } catch (error) {
       console.error('Error deleting file:', error);
-      toast.error('Error deleting file');
+      customToast.error('Error deleting file');
     } finally {
       setDeleting(null);
     }
@@ -121,7 +122,7 @@ export function FilePreview({ refresh }) {
   const downloadFile = async (fileName, originalName) => {
     try {
       if (!currentWorkspace) {
-        toast.error('Please select a workspace first');
+        customToast.error('Please select a workspace first');
         return;
       }
 
@@ -144,7 +145,7 @@ export function FilePreview({ refresh }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading file:', error);
-      toast.error('Error downloading file');
+      customToast.error('Error downloading file');
     }
   };
 
@@ -210,7 +211,7 @@ export function FilePreview({ refresh }) {
                 <Download className="w-4 h-4" />
               </button>
               <button
-                onClick={() => deleteFile(file.name)}
+                onClick={() => handleDelete(file.name)}
                 disabled={deleting === file.name}
                 className="p-1 text-gray-500 hover:text-red-600 transition-colors"
                 title="Delete"

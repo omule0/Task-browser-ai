@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 
 export default function CreateWorkspace() {
@@ -99,7 +99,7 @@ export default function CreateWorkspace() {
 
       if (workspaceError) throw workspaceError;
 
-      toast.success("Workspace created successfully");
+      customToast.success("Workspace created successfully");
 
       setCurrentWorkspace(workspace);
 
@@ -109,7 +109,7 @@ export default function CreateWorkspace() {
     } catch (error) {
       console.error("Error details:", error);
       setError(error.message || "Error creating workspace");
-      toast.error(error.message || "Error creating workspace");
+      customToast.error(error.message || "Error creating workspace");
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FileText, Download, Trash2, Loader2, Search } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { customToast } from "@/components/ui/toast-theme";
 import { Loading } from "@/components/ui/loading";
 import { useWorkspace } from "@/context/workspace-context";
 
@@ -52,7 +52,7 @@ export default function FilesPage() {
       setFiles(sortedFiles);
     } catch (error) {
       console.error('Error loading files:', error);
-      toast.error('Error loading your files');
+      customToast.error('Error loading your files');
     } finally {
       setLoading(false);
     }
@@ -73,10 +73,10 @@ export default function FilesPage() {
       if (error) throw error;
 
       setFiles(files.filter(file => file.name !== fileName));
-      toast.success('File deleted successfully');
+      customToast.success('File deleted successfully');
     } catch (error) {
       console.error('Error deleting file:', error);
-      toast.error('Error deleting file');
+      customToast.error('Error deleting file');
     } finally {
       setDeleting(null);
     }
@@ -105,7 +105,7 @@ export default function FilesPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading file:', error);
-      toast.error('Error downloading file');
+      customToast.error('Error downloading file');
     }
   };
 

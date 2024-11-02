@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Upload, Camera, Trash2 } from "lucide-react";
 import { toast } from 'react-hot-toast';
+import { customToast } from "@/components/ui/toast-theme";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -41,41 +42,41 @@ export default function ProfilePage() {
 
   const uploadAvatar = async (event) => {
     try {
-      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file) return;
+
       const supabase = createClient();
       
-      const file = event.target.files[0];
+      // Show loading toast
+      const loadingToast = customToast.loading('Uploading avatar...');
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
+      const filePath = `${fileName}`;
 
-      // Upload the file to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Update user metadata with new avatar URL
       const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
+        data: {
+          avatar_url: filePath,
+        },
       });
 
       if (updateError) throw updateError;
 
-      setAvatarUrl(publicUrl);
-      toast.success('Profile picture updated successfully');
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
+      customToast.success('Avatar updated successfully');
       
+      // Refresh avatar URL
+      setAvatarUrl(filePath);
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast.error('Error uploading profile picture');
-    } finally {
-      setUploading(false);
+      customToast.error('Error uploading avatar');
     }
   };
 
