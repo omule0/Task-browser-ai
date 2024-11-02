@@ -11,13 +11,35 @@ import { useWorkspace } from "@/context/workspace-context";
 export default function CreateWorkspace() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const { loadWorkspaces, setCurrentWorkspace, workspaces } = useWorkspace();
 
+  if (workspaces.length >= 3) {
+    return (
+      <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8 text-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Workspace Limit Reached</h1>
+            <p className="text-gray-600 mt-2">
+              You can only create up to 3 workspaces. Please delete an existing workspace to create a new one.
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push('/workspacesettings')}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Manage Workspaces
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const supabase = createClient();
@@ -34,6 +56,23 @@ export default function CreateWorkspace() {
 
       if (!user) {
         throw new Error("No user found");
+      }
+
+      // Check for duplicate workspace name
+      const { data: existingWorkspace, error: nameCheckError } = await supabase
+        .from("workspaces")
+        .select("id")
+        .eq("owner_id", user.id)
+        .ilike("name", name.trim())
+        .single();
+
+      if (nameCheckError && nameCheckError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        throw nameCheckError;
+      }
+
+      if (existingWorkspace) {
+        setError("A workspace with this name already exists");
+        return;
       }
 
       // Check workspace count
@@ -58,22 +97,7 @@ export default function CreateWorkspace() {
         .select()
         .single();
 
-      if (workspaceError) {
-        throw new Error(`Workspace creation error: ${workspaceError.message}`);
-      }
-
-      // Add creator as workspace member
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: "owner",
-        });
-
-      if (memberError) {
-        throw new Error(`Member creation error: ${memberError.message}`);
-      }
+      if (workspaceError) throw workspaceError;
 
       toast.success("Workspace created successfully");
 
@@ -84,6 +108,7 @@ export default function CreateWorkspace() {
       router.push("/");
     } catch (error) {
       console.error("Error details:", error);
+      setError(error.message || "Error creating workspace");
       toast.error(error.message || "Error creating workspace");
     } finally {
       setLoading(false);
@@ -111,13 +136,19 @@ export default function CreateWorkspace() {
               <Input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError(""); // Clear error when user types
+                }}
                 placeholder="My Workspace"
                 required
                 minLength={3}
                 maxLength={50}
-                className="border-gray-200"
+                className={`border-gray-200 ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
+              {error && (
+                <p className="text-sm text-red-500 mt-1">{error}</p>
+              )}
             </div>
 
             <Button
