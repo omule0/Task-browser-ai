@@ -16,6 +16,8 @@ export default function WorkspaceSettings() {
 
   useEffect(() => {
     loadWorkspaces();
+    // Update page title
+    document.title = "Workspace Settings";
   }, []);
 
   const loadWorkspaces = async () => {
@@ -96,6 +98,33 @@ export default function WorkspaceSettings() {
     }
   };
 
+  const setDefaultWorkspace = async (workspaceId) => {
+    try {
+      const supabase = createClient();
+      
+      // First, remove default status from all workspaces
+      await supabase
+        .from('workspaces')
+        .update({ is_default: false })
+        .neq('id', workspaceId);
+      
+      // Then set the selected workspace as default
+      const { error } = await supabase
+        .from('workspaces')
+        .update({ is_default: true })
+        .eq('id', workspaceId);
+  
+      if (error) throw error;
+  
+      toast.success('Default workspace updated');
+      loadWorkspaces();
+      refreshWorkspaces();
+    } catch (error) {
+      console.error('Error updating default workspace:', error);
+      toast.error('Error updating default workspace');
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -141,6 +170,7 @@ export default function WorkspaceSettings() {
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{workspace.name}</span>
+                      
                       {workspace.is_default && (
                         <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
                           Default
@@ -150,6 +180,14 @@ export default function WorkspaceSettings() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
+                  {!workspace.is_default && (
+                    <button
+                      onClick={() => setDefaultWorkspace(workspace.id)}
+                      className="text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      Set as Default
+                    </button>
+                  )}
                   {!editing && (
                     <button
                       onClick={() => {
