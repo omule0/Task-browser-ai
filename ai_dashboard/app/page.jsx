@@ -45,7 +45,7 @@ export default function Dashboard() {
     <>
       <title>Dashboard</title>
       <Toaster />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-0">
         <h2 className="text-2xl font-semibold mb-6">
           Welcome back, {user.user_metadata.full_name || user.email}
         </h2>
