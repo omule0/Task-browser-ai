@@ -11,6 +11,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
+  const [fileNames, setFileNames] = useState({});
   const { currentWorkspace } = useWorkspace();
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -31,6 +32,22 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     maxSize: 10485760, // 10MB
   });
 
+  const simulateProgress = (fileName) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 95) {
+        clearInterval(interval);
+        progress = 95; // Cap at 95% until actual upload completes
+      }
+      setUploadProgress(prev => ({
+        ...prev,
+        [fileName]: Math.min(Math.round(progress), 95)
+      }));
+    }, 300);
+    return interval;
+  };
+
   const uploadFiles = async () => {
     try {
       if (!currentWorkspace) {
@@ -46,12 +63,20 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
       const workspacePath = `${currentWorkspace.id}/${user.id}`;
       
+      const fileMapping = {};
+      files.forEach(file => {
+        const timestamp = new Date().getTime();
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const fileName = `${timestamp}-${randomId}-${file.name}`;
+        fileMapping[file.name] = fileName;
+      });
+      setFileNames(fileMapping);
+      
+      const intervals = files.map(file => simulateProgress(file.name));
+      
       const uploadPromises = files.map(async (file) => {
         try {
-          const originalName = file.name;
-          const timestamp = new Date().getTime();
-          const randomId = Math.random().toString(36).substring(2, 15);
-          const fileName = `${timestamp}-${randomId}-${originalName}`;
+          const fileName = fileMapping[file.name];
           const filePath = `${workspacePath}/${fileName}`;
 
           const { data: existingFiles } = await supabase.storage
@@ -60,43 +85,47 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
           const fileExists = existingFiles?.some(f => f.name === fileName);
           if (fileExists) {
-            throw new Error(`File ${originalName} already exists`);
+            throw new Error(`File ${file.name} already exists`);
           }
 
           const { error: uploadError } = await supabase.storage
             .from('documents')
             .upload(filePath, file, {
               cacheControl: '3600',
-              upsert: false,
-              onUploadProgress: (progress) => {
-                const percentage = (progress.loaded / progress.total) * 100;
-                setUploadProgress(prev => ({
-                  ...prev,
-                  [fileName]: Math.round(percentage)
-                }));
-              }
+              upsert: false
             });
 
-          if (uploadError) {
-            if (uploadError.message.includes('storage/object-exists')) {
-              throw new Error(`File ${originalName} already exists`);
-            }
-            throw uploadError;
-          }
+          if (uploadError) throw uploadError;
 
-          return { success: true, fileName: originalName };
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 100
+          }));
+
+          return { success: true, fileName: file.name };
         } catch (error) {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 0
+          }));
           return { success: false, fileName: file.name, error: error.message };
         }
       });
 
       const results = await Promise.all(uploadPromises);
       
+      intervals.forEach(interval => clearInterval(interval));
+      
       const failures = results.filter(r => !r.success);
       const successes = results.filter(r => r.success);
 
       if (successes.length > 0) {
         customToast.success(`Successfully uploaded ${successes.length} file(s)`);
+        setFiles([]);
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+        onClose();
       }
 
       if (failures.length > 0) {
@@ -105,19 +134,13 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         });
       }
 
-      if (successes.length > 0) {
-        setFiles([]);
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-        onClose();
-      }
     } catch (error) {
       console.error('Error uploading files:', error);
       customToast.error(error.message || 'Error uploading files');
     } finally {
       setUploading(false);
       setUploadProgress({});
+      setFileNames({});
     }
   };
 
@@ -172,12 +195,24 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </span>
                   </div>
-                  {uploading && uploadProgress[file.name] !== undefined && (
+                  {uploading && (
                     <div className="w-full">
-                      <Progress value={uploadProgress[file.name]} />
-                      <span className="text-xs text-gray-500 mt-1">
-                        {uploadProgress[file.name]}%
-                      </span>
+                      <Progress 
+                        value={uploadProgress[file.name] || 0} 
+                        className="h-2"
+                      />
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-xs text-gray-500">
+                          {uploadProgress[file.name] === 100 ? (
+                            <span className="text-green-600">Complete</span>
+                          ) : (
+                            `${uploadProgress[file.name] || 0}%`
+                          )}
+                        </span>
+                        {uploadProgress[file.name] === 100 && (
+                          <span className="text-xs text-green-600">✓</span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
