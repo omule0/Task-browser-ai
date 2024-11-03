@@ -26,11 +26,12 @@ const FileNode = ({ data, id }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow w-64">
+    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow w-64 border">
       <Handle
         type="target"
         position={Position.Top}
-        className="w-2 h-2 !bg-gray-300 hover:!bg-blue-500"
+        className="w-8 h-8 !bg-gray-300 hover:!bg-blue-500 border-2 border-white transition-colors"
+        style={{ top: -8 }}
       />
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -60,7 +61,8 @@ const FileNode = ({ data, id }) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-2 h-2 !bg-gray-300 hover:!bg-blue-500"
+        className="w-8 h-8 !bg-gray-300 hover:!bg-blue-500 border-2 border-white transition-colors"
+        style={{ bottom: -8 }}
       />
     </div>
   );
@@ -69,6 +71,32 @@ const FileNode = ({ data, id }) => {
 // Register custom node type
 const nodeTypes = {
   fileNode: FileNode,
+};
+
+// Customize edge options with consistent styling
+const defaultEdgeOptions = {
+  type: 'smoothstep', // smoother edge type
+  animated: true,     // keep the animation
+  style: {
+    strokeWidth: 2,
+    stroke: '#374151', // gray-700
+  },
+  // Increase interaction width to make edges easier to select
+  interactionWidth: 10,
+  // Add custom markers for better visibility
+  markerEnd: {
+    type: 'arrow',
+    width: 20,
+    height: 20,
+    color: '#374151',
+  }
+};
+
+// Customize connection line style
+const connectionLineStyle = {
+  strokeWidth: 2,
+  stroke: '#374151',
+  strokeDasharray: '5,5', // dashed line while connecting
 };
 
 function Flow() {
@@ -233,21 +261,28 @@ function Flow() {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: '#374151', strokeWidth: 2 },
-        }}
+        defaultEdgeOptions={defaultEdgeOptions}
+        connectionLineStyle={connectionLineStyle}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        elevateEdgesOnSelect={true}
+        selectNodesOnDrag={false}
         connectionMode="loose"
         onEdgesDelete={onEdgesDelete}
       >
-        <Controls />
-        <MiniMap />
-        <Background variant="dots" gap={12} size={1} />
+        <Controls className="bg-white rounded-md border shadow-sm" />
+        <MiniMap 
+          className="bg-white rounded-md border shadow-sm" 
+          nodeColor="#374151"
+        />
+        <Background variant="dots" gap={12} size={1} color="#E5E7EB" />
         <Panel position="top-left">
-          <div className="bg-white p-2 rounded shadow-sm">
-            <p className="text-sm text-gray-500">
-              Drag from the bottom handle to the top handle of another node to connect them
+          <div className="bg-white p-3 rounded-lg shadow-sm border">
+            <p className="text-sm text-gray-600">
+              • Click and drag between handles to connect nodes
+              <br/>
+              • Select an edge and press Delete to remove it
+              <br/>
+              • Handles will highlight blue when hovering
             </p>
           </div>
         </Panel>
