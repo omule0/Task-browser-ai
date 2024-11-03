@@ -5,10 +5,12 @@ import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
+import { Progress } from "@/components/ui/progress";
 
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
   const { currentWorkspace } = useWorkspace();
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -44,48 +46,78 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
       const workspacePath = `${currentWorkspace.id}/${user.id}`;
       
-      for (const file of files) {
-        const originalName = file.name;
-        const timestamp = new Date().getTime();
-        const randomId = Math.random().toString(36).substring(2, 15);
-        const fileName = `${timestamp}-${randomId}-${originalName}`;
-        const filePath = `${workspacePath}/${fileName}`;
+      const uploadPromises = files.map(async (file) => {
+        try {
+          const originalName = file.name;
+          const timestamp = new Date().getTime();
+          const randomId = Math.random().toString(36).substring(2, 15);
+          const fileName = `${timestamp}-${randomId}-${originalName}`;
+          const filePath = `${workspacePath}/${fileName}`;
 
-        const { data: existingFiles } = await supabase.storage
-          .from('documents')
-          .list(workspacePath);
+          const { data: existingFiles } = await supabase.storage
+            .from('documents')
+            .list(workspacePath);
 
-        const fileExists = existingFiles?.some(f => f.name === fileName);
-        if (fileExists) {
-          throw new Error(`File ${originalName} already exists`);
-        }
-
-        const { error: uploadError } = await supabase.storage
-          .from('documents')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (uploadError) {
-          if (uploadError.message.includes('storage/object-exists')) {
+          const fileExists = existingFiles?.some(f => f.name === fileName);
+          if (fileExists) {
             throw new Error(`File ${originalName} already exists`);
           }
-          throw uploadError;
+
+          const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false,
+              onUploadProgress: (progress) => {
+                const percentage = (progress.loaded / progress.total) * 100;
+                setUploadProgress(prev => ({
+                  ...prev,
+                  [fileName]: Math.round(percentage)
+                }));
+              }
+            });
+
+          if (uploadError) {
+            if (uploadError.message.includes('storage/object-exists')) {
+              throw new Error(`File ${originalName} already exists`);
+            }
+            throw uploadError;
+          }
+
+          return { success: true, fileName: originalName };
+        } catch (error) {
+          return { success: false, fileName: file.name, error: error.message };
         }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      
+      const failures = results.filter(r => !r.success);
+      const successes = results.filter(r => r.success);
+
+      if (successes.length > 0) {
+        customToast.success(`Successfully uploaded ${successes.length} file(s)`);
       }
 
-      customToast.success('Files uploaded successfully');
-      setFiles([]);
-      if (onUploadSuccess) {
-        onUploadSuccess();
+      if (failures.length > 0) {
+        failures.forEach(({ fileName, error }) => {
+          customToast.error(`Failed to upload ${fileName}: ${error}`);
+        });
       }
-      onClose();
+
+      if (successes.length > 0) {
+        setFiles([]);
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+        onClose();
+      }
     } catch (error) {
       console.error('Error uploading files:', error);
       customToast.error(error.message || 'Error uploading files');
     } finally {
       setUploading(false);
+      setUploadProgress({});
     }
   };
 
@@ -125,19 +157,29 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         {files.length > 0 && (
           <div className="mt-4">
             <h3 className="font-medium mb-2">Selected Files:</h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {files.map((file) => (
                 <div
                   key={file.name}
-                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                  className="flex flex-col bg-gray-50 p-3 rounded"
                 >
-                  <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">{file.name}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">{file.name}</span>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </span>
+                  {uploading && uploadProgress[file.name] !== undefined && (
+                    <div className="w-full">
+                      <Progress value={uploadProgress[file.name]} />
+                      <span className="text-xs text-gray-500 mt-1">
+                        {uploadProgress[file.name]}%
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
