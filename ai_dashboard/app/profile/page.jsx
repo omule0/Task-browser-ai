@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, Upload, Camera, Trash2 } from "lucide-react";
+import { Loader2, Camera, Trash2 } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import { toast } from "react-hot-toast";
 export default function ProfilePage() {
@@ -41,41 +41,56 @@ export default function ProfilePage() {
 
   const uploadAvatar = async (event) => {
     try {
+      setUploading(true);
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        throw new Error('You must select an image to upload.');
+      }
 
       const supabase = createClient();
       
       // Show loading toast
       const loadingToast = customToast.loading('Uploading avatar...');
 
+      // Create file path
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${user?.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Upload the file to Supabase storage
+      const { error: uploadError, data } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update user metadata with the new avatar URL
       const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          avatar_url: filePath,
-        },
+        data: { avatar_url: publicUrl }
       });
 
       if (updateError) throw updateError;
 
+      // Update local state
+      setAvatarUrl(publicUrl);
+      
       // Dismiss loading toast and show success
       toast.dismiss(loadingToast);
       customToast.success('Avatar updated successfully');
-      
-      // Refresh avatar URL
-      setAvatarUrl(filePath);
+
     } catch (error) {
-      console.error('Error uploading avatar:', error);
-      customToast.error('Error uploading avatar');
+      console.error('Error uploading avatar:', error.message);
+      customToast.error(error.message || 'Error uploading avatar');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -84,13 +99,15 @@ export default function ProfilePage() {
       setUploading(true);
       const supabase = createClient();
 
-      // Get the file path from the avatar URL
-      const urlPath = avatarUrl.split('/').slice(-2).join('/');
+      if (!avatarUrl) return;
+
+      // Extract the path from the URL
+      const path = avatarUrl.split('/').slice(-2).join('/');
 
       // Delete the file from storage
       const { error: deleteError } = await supabase.storage
         .from('avatars')
-        .remove([urlPath]);
+        .remove([path]);
 
       if (deleteError) throw deleteError;
 
@@ -105,8 +122,8 @@ export default function ProfilePage() {
       customToast.success('Profile picture removed successfully');
       
     } catch (error) {
-      console.error('Error deleting avatar:', error);
-      customToast.error('Error removing profile picture');
+      console.error('Error deleting avatar:', error.message);
+      customToast.error(error.message || 'Error removing profile picture');
     } finally {
       setUploading(false);
     }
@@ -143,7 +160,7 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Error updating profile:', error);
       // Show error toast
-      toast.error('Failed to update profile', {
+      customToast.error('Failed to update profile', {
         duration: 3000,
         position: 'top-center',
       });
