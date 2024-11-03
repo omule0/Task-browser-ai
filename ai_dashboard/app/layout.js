@@ -28,9 +28,9 @@ export default async function RootLayout({ children }) {
         <WorkspaceProvider>
           <div className="bg-gray-100 min-h-screen flex flex-col">
             <Header/>
-            <div className="flex flex-1">
+            <div className="flex flex-1 relative">
               {user && <Sidebar />}
-              <main className={`flex-1 p-6 ${!user ? 'w-full' : ''}`}>
+              <main className={`flex-1 p-6 ${!user ? 'w-full' : ''} md:ml-0`}>
                 {children}
               </main>
             </div>
