@@ -3,7 +3,6 @@ import {
   HelpCircleIcon,
   LogOutIcon,
   SettingsIcon,
-  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { logout } from "../app/logout/actions";

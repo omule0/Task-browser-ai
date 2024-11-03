@@ -11,6 +11,7 @@ import {
   FolderIcon,
   MenuIcon,
   XIcon,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,23 +75,29 @@ export function Sidebar() {
 
   const navigationItems = [
     {
-      icon: <HomeIcon className="h-4 w-4" />,
-      label: "Home",
+      icon: <HomeIcon className="w-5 h-5" />,
+      label: "Dashboard",
       href: "/",
-      isActive: pathname === "/"
+      isActive: pathname === "/",
     },
     {
-      icon: <FolderIcon className="h-4 w-4" />,
+      icon: <FolderIcon className="w-5 h-5" />,
       label: "Files",
       href: "/files",
-      isActive: pathname === "/files"
+      isActive: pathname === "/files",
     },
     {
-      icon: <SettingsIcon className="h-4 w-4 text-gray-500 hover:text-purple-600" />,
+      icon: <LayoutDashboard className="w-5 h-5" />,
+      label: "Canvas",
+      href: "/canvas",
+      isActive: pathname === "/canvas",
+    },
+    {
+      icon: <SettingsIcon className="w-5 h-5" />,
       label: "Settings",
-      href: "/settings",
-      isActive: pathname === "/settings"
-    }
+      href: "/workspacesettings",
+      isActive: pathname === "/workspacesettings",
+    },
   ];
 
   // Mobile Menu Button

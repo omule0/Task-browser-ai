@@ -70,3 +70,65 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles for React Flow handles */
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background-color: #9CA3AF !important;
+  border: 2px solid white !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__handle:hover {
+  background-color: #3B82F6 !important;
+  transform: scale(1.2);
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__edge.animated path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
+
+/* Add to your existing styles */
+.react-flow__node {
+  max-width: 100%;
+}
+
+.react-flow__node-fileNode {
+  width: 256px; /* w-64 equivalent */
+}
+
+/* Improve tooltip appearance */
+[title] {
+  position: relative;
+  cursor: help;
+}
+
+[title]:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+

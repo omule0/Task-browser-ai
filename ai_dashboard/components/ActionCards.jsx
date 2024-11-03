@@ -63,6 +63,7 @@ export function ActionCards({ onUploadSuccess }) {
           bgColor="bg-white"
           hoverColor="hover:bg-orange-50"
           iconColor="text-orange-500"
+          disabled={true}
         />
       </div>
 
