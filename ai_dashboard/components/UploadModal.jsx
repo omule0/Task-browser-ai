@@ -25,9 +25,9 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'text/plain': ['.txt'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv']
+      // 'application/vnd.ms-excel': ['.xls'],
+      // 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      // 'text/csv': ['.csv']
     },
     maxSize: 10485760, // 10MB
   });
@@ -173,7 +173,8 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
               : "Drag and drop files here, or click to select files"}
           </p>
           <p className="text-sm text-gray-500">
-            Supported files: PDF, DOC, DOCX, TXT, XLS, XLSX, CSV (Max 10MB)
+            Supported file types: PDF, DOC, DOCX, TXT (Max 10MB)
+            {/* Supported files: PDF, DOC, DOCX, TXT, XLS, XLSX, CSV (Max 10MB) */}
           </p>
         </div>
 
