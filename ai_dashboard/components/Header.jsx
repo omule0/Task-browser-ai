@@ -16,7 +16,7 @@ export async function Header() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="bg-purple-900 text-white">
+    <header className="bg-purple-900 text-white z-10 relative">
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-12">
           <div className="flex items-center space-x-4">
