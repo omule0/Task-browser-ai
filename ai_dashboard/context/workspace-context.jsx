@@ -16,26 +16,31 @@ export function WorkspaceProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const loadWorkspaces = async () => {
-    setLoading(true);
-    const supabase = createClient();
-    
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('*')
-      .order('is_default', { ascending: false })
-      .order('created_at', { ascending: false });
+    try {
+      setLoading(true);
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*')
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error loading workspaces:', error);
-      return;
-    }
+      if (error) {
+        console.error('Error loading workspaces:', error);
+        return;
+      }
 
-    setWorkspaces(data || []);
-    if (!currentWorkspace && data?.length > 0) {
-      const defaultWorkspace = data.find(w => w.is_default) || data[0];
-      setCurrentWorkspace(defaultWorkspace);
+      setWorkspaces(data || []);
+      if (!currentWorkspace && data?.length > 0) {
+        const defaultWorkspace = data.find(w => w.is_default) || data[0];
+        setCurrentWorkspace(defaultWorkspace);
+      }
+    } catch (error) {
+      console.error('Error in loadWorkspaces:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
