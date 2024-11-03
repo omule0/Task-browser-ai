@@ -189,6 +189,26 @@ function Flow() {
     }
   }, [nodes, edges, currentWorkspace]);
 
+  const onEdgesDelete = useCallback((edgesToDelete) => {
+    setEdges((eds) => eds.filter(e => !edgesToDelete.find(del => del.id === e.id)));
+    
+    // Save updated state to localStorage
+    if (currentWorkspace) {
+      const positions = nodes.reduce((acc, n) => ({
+        ...acc,
+        [n.id]: n.position
+      }), {});
+      
+      localStorage.setItem(
+        `canvasState-${currentWorkspace.id}`,
+        JSON.stringify({
+          positions,
+          connections: edges.filter(e => !edgesToDelete.find(del => del.id === e.id))
+        })
+      );
+    }
+  }, [nodes, edges, currentWorkspace]);
+
   if (loading) return <Loading />;
   if (!currentWorkspace) {
     return (
@@ -219,6 +239,7 @@ function Flow() {
           style: { stroke: '#374151', strokeWidth: 2 },
         }}
         connectionMode="loose"
+        onEdgesDelete={onEdgesDelete}
       >
         <Controls />
         <MiniMap />
