@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Upload, Camera, Trash2 } from "lucide-react";
-import { toast } from 'react-hot-toast';
 import { customToast } from "@/components/ui/toast-theme";
-
+import { toast } from "react-hot-toast";
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -103,11 +102,11 @@ export default function ProfilePage() {
       if (updateError) throw updateError;
 
       setAvatarUrl(null);
-      toast.success('Profile picture removed successfully');
+      customToast.success('Profile picture removed successfully');
       
     } catch (error) {
       console.error('Error deleting avatar:', error);
-      toast.error('Error removing profile picture');
+      customToast.error('Error removing profile picture');
     } finally {
       setUploading(false);
     }
@@ -132,7 +131,7 @@ export default function ProfilePage() {
       }));
 
       // Show success toast
-      toast.success('Profile updated successfully', {
+      customToast.success('Profile updated successfully', {
         duration: 3000,
         position: 'top-center',
         style: {

@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { toast } from 'react-hot-toast';
+import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
@@ -32,7 +32,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const uploadFiles = async () => {
     try {
       if (!currentWorkspace) {
-        toast.error('Please select a workspace first');
+        customToast.error('Please select a workspace first');
         return;
       }
 
@@ -75,7 +75,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         }
       }
 
-      toast.success('Files uploaded successfully');
+      customToast.success('Files uploaded successfully');
       setFiles([]);
       if (onUploadSuccess) {
         onUploadSuccess();
@@ -83,7 +83,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       onClose();
     } catch (error) {
       console.error('Error uploading files:', error);
-      toast.error(error.message || 'Error uploading files');
+      customToast.error(error.message || 'Error uploading files');
     } finally {
       setUploading(false);
     }
