@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
-export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, onClick }) {
+export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }) {
   const ButtonContent = () => (
     <>
       {icon}
@@ -36,7 +36,6 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, 
         isActive ? "bg-purple-100 text-purple-600 border-l-4 border-purple-600" : ""
       }`}
       asChild={!!href}
-      onClick={onClick}
     >
       {href ? (
         <Link href={href}>
@@ -150,7 +149,6 @@ export function Sidebar() {
             isActive={item.isActive}
             href={item.href}
             isCollapsed={isCollapsed}
-            onClick={() => setIsMobileMenuOpen(false)}
           />
         ))}
       </nav>
