@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { createClient } from '@/utils/supabase/server';
 import { WorkspaceProvider } from "@/context/workspace-context";
 import { Toaster } from "react-hot-toast";
+import { NavigationBar } from "@/components/NavigationBar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }) {
         <WorkspaceProvider>
           <div className="bg-gray-100 min-h-screen flex flex-col">
             <Header/>
+            {user && <NavigationBar />}
             <div className="flex flex-1 relative">
               {user && <Sidebar />}
               <main className={`flex-1 p-6 ${!user ? 'w-full' : ''} md:ml-0`}>
