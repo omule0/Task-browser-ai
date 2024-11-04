@@ -31,32 +31,20 @@ export function HeaderUI({ user, logout }) {
               Digest.ai
             </Link>
           </div>
-          {user && (
-            <div className="flex items-center space-x-4">
-              <GiftIcon className="w-6 h-6 cursor-pointer" />
-              <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
-              <button
-                className="md:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? (
-                  <XIcon className="w-6 h-6" />
-                ) : (
-                  <MenuIcon className="w-6 h-6" />
-                )}
-              </button>
-            </div>
-          )}
-          <div className="hidden md:flex items-center space-x-6">
-            {user ? (
-              <>
+          {user ? (
+            <div className="flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-6">
                 <Link href="/integrations" className="hover:text-purple-200 text-sm">
                   Integrations
                 </Link>
                 <Link href="/templates" className="hover:text-purple-200 text-sm">
                   Templates
                 </Link>
-                <div className="relative group">
+              </div>
+              <div className="flex items-center space-x-4">
+                <GiftIcon className="w-6 h-6 cursor-pointer" />
+                <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
+                <div className="hidden md:block relative group">
                   <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
                     {user.user_metadata.avatar_url ? (
                       <img
@@ -105,21 +93,31 @@ export function HeaderUI({ user, logout }) {
                     </form>
                   </div>
                 </div>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="hover:text-purple-200 text-sm">
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-sm"
+                <button
+                  className="md:hidden"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
+                  {isMobileMenuOpen ? (
+                    <XIcon className="w-6 h-6" />
+                  ) : (
+                    <MenuIcon className="w-6 h-6" />
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-4">
+              <Link href="/login" className="hover:text-purple-200 text-sm">
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-sm"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
           {user && isMobileMenuOpen && (
             <div className="absolute top-12 left-0 right-0 bg-purple-900 p-4 md:hidden">
               <div className="flex flex-col space-y-4">
