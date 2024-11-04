@@ -9,8 +9,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FolderIcon,
-  MenuIcon,
-  XIcon,
   LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,8 +95,8 @@ export function Sidebar() {
     {
       icon: <SettingsIcon className="w-5 h-5" />,
       label: "Settings",
-      href: "/workspacesettings",
-      isActive: pathname === "/workspacesettings",
+      href: "/#",
+      isActive: pathname === "/#",
     },
   ];
 

@@ -51,8 +51,8 @@ export function NavigationBar() {
     },
     {
       label: "Settings",
-      href: "/workspacesettings",
-      isActive: pathname === "/workspacesettings",
+      href: "/#",
+      isActive: pathname === "/#",
       icon: <SettingsIcon className="h-5 w-5" />,
     },
   ];
@@ -91,7 +91,7 @@ export function NavigationBar() {
               {/* Workspace and Search Section */}
               <div className="p-4 border-b">
                 <div className="mb-4">
-                  <WorkspaceSwitcher />
+                  <WorkspaceSwitcher onAction={() => setIsMenuOpen(false)} />
                 </div>
                 <div className="relative">
                   <Input

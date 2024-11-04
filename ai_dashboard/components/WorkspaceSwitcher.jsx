@@ -10,7 +10,7 @@ import {
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
 
-export function WorkspaceSwitcher() {
+export function WorkspaceSwitcher({ onAction }) {
   const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
   const router = useRouter();
 
@@ -40,7 +40,10 @@ export function WorkspaceSwitcher() {
           ))}
           {workspaces.length < 3 && (
             <DropdownMenuItem
-              onClick={() => router.push('/create-workspace')}
+              onClick={() => {
+                router.push('/create-workspace');
+                onAction?.();
+              }}
               className="text-purple-600"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
