@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Loader2, Camera, Trash2 } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import { toast } from "react-hot-toast";
+import { Loading } from "@/components/ui/loading";
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -170,9 +171,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-56px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-      </div>
+      <Loading/>
     );
   }
 
