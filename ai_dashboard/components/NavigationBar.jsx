@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, FolderIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+
 
 export function NavigationBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,21 +35,25 @@ export function NavigationBar() {
       label: "Dashboard",
       href: "/",
       isActive: pathname === "/",
+      icon: <HomeIcon className="h-5 w-5" />,
     },
     {
       label: "Files",
       href: "/files",
       isActive: pathname === "/files",
+      icon: <FolderIcon className="h-5 w-5" />,
     },
     {
       label: "Canvas",
       href: "/canvas",
       isActive: pathname === "/canvas",
+      icon: <LayoutDashboardIcon className="h-5 w-5" />,
     },
     {
       label: "Settings",
       href: "/workspacesettings",
       isActive: pathname === "/workspacesettings",
+      icon: <SettingsIcon className="h-5 w-5" />,
     },
   ];
 
@@ -106,12 +111,13 @@ export function NavigationBar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <div
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-2 rounded-lg transition-colors flex items-center gap-3 ${
                         item.isActive 
                           ? "bg-purple-100 text-purple-600 border-l-4 border-purple-600" 
                           : "hover:bg-gray-100"
                       }`}
                     >
+                      {item.icon}
                       {item.label}
                     </div>
                   </Link>
