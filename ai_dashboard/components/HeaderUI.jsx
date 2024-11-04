@@ -32,16 +32,20 @@ export function HeaderUI({ user, logout }) {
             </Link>
           </div>
           {user && (
-            <button
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <XIcon className="w-6 h-6" />
-              ) : (
-                <MenuIcon className="w-6 h-6" />
-              )}
-            </button>
+            <div className="flex items-center space-x-4">
+              <GiftIcon className="w-6 h-6 cursor-pointer" />
+              <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
+              <button
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <XIcon className="w-6 h-6" />
+                ) : (
+                  <MenuIcon className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           )}
           <div className="hidden md:flex items-center space-x-6">
             {user ? (
@@ -52,8 +56,6 @@ export function HeaderUI({ user, logout }) {
                 <Link href="/templates" className="hover:text-purple-200 text-sm">
                   Templates
                 </Link>
-                <GiftIcon className="w-6 h-6 cursor-pointer" />
-                <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
                 <div className="relative group">
                   <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
                     {user.user_metadata.avatar_url ? (
@@ -135,10 +137,6 @@ export function HeaderUI({ user, logout }) {
                 >
                   Templates
                 </Link>
-                <div className="flex space-x-4" onClick={handleMenuItemClick}>
-                  <GiftIcon className="w-6 h-6 cursor-pointer" />
-                  <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
-                </div>
                 <Link
                   href="/profile"
                   className="flex items-center space-x-2"
