@@ -1,12 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { FileText, Download, Trash2, Loader2, Search } from "lucide-react";
+import { FileText, Download, Trash2, Loader2, Search, Upload, File, Image } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import { Loading } from "@/components/ui/loading";
 import { useWorkspace } from "@/context/workspace-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
@@ -15,6 +25,7 @@ export default function FilesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
   const { currentWorkspace } = useWorkspace();
 
   useEffect(() => {
@@ -158,6 +169,48 @@ export default function FilesPage() {
     }
   };
 
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragActive(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    // TODO: Implement file upload logic here
+    console.log('Files to upload:', files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragActive(false);
+  };
+
+  const handleFileInput = (e) => {
+    const files = Array.from(e.target.files || []);
+    // TODO: Implement file upload logic here
+    console.log('Files to upload:', files);
+  };
+
+  const getFileIcon = (fileName) => {
+    if (fileName.toLowerCase().endsWith('.pdf')) {
+      return <FileText className="h-5 w-5 text-red-500" />;
+    } else if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
+      return <Image className="h-5 w-5 text-blue-500" />;
+    }
+    return <File className="h-5 w-5 text-gray-500" />;
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   if (loading) {
     return (
       <Loading/>
@@ -201,6 +254,30 @@ export default function FilesPage() {
         )}
       </div>
 
+      <div
+        className={`mb-6 border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+          isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:bg-gray-50'
+        }`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
+        <input
+          type="file"
+          multiple
+          onChange={handleFileInput}
+          className="hidden"
+          id="file-upload"
+        />
+        <label htmlFor="file-upload" className="cursor-pointer">
+          <div className="flex flex-col items-center gap-2">
+            <Upload className="h-8 w-8 text-gray-400" />
+            <h3 className="text-lg font-semibold">Click to upload or drag and drop</h3>
+            <p className="text-sm text-gray-500">Maximum file size 50 MB</p>
+          </div>
+        </label>
+      </div>
+
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
           <div className="relative">
@@ -217,76 +294,94 @@ export default function FilesPage() {
 
         {/* Desktop view */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left">
-                  <Checkbox
-                    checked={selectedFiles.length === filteredFiles.length}
-                    onCheckedChange={toggleSelectAll}
-                    aria-label="Select all files"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Uploaded</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredFiles.map((file) => (
-                <tr 
-                  key={file.name} 
-                  className={`hover:bg-gray-50 ${
-                    selectedFiles.includes(file.name) ? 'bg-purple-50' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4">
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px] pl-4">
                     <Checkbox
-                      checked={selectedFiles.includes(file.name)}
-                      onCheckedChange={() => toggleFileSelection(file.name)}
-                      aria-label={`Select ${file.originalName}`}
+                      checked={selectedFiles.length === filteredFiles.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all files"
                     />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FileText className="w-5 h-5 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900">{file.originalName}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {file.originalName.split('.').pop().toUpperCase()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => downloadFile(file.name, file.originalName)}
-                        className="text-gray-400 hover:text-gray-600"
-                        title="Download"
-                      >
-                        <Download className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => deleteFile(file.name)}
-                        disabled={deleting === file.name}
-                        className="text-gray-400 hover:text-red-600"
-                        title="Delete"
-                      >
-                        {deleting === file.name ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </TableHead>
+                  <TableHead>File name</TableHead>
+                  <TableHead>Date uploaded</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right pr-6">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredFiles.map((file) => (
+                  <TableRow 
+                    key={file.name}
+                    className={selectedFiles.includes(file.name) ? 'bg-purple-50' : ''}
+                  >
+                    <TableCell className="pl-4">
+                      <Checkbox
+                        checked={selectedFiles.includes(file.name)}
+                        onCheckedChange={() => toggleFileSelection(file.name)}
+                        aria-label={`Select ${file.originalName}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getFileIcon(file.originalName)}
+                        <div>
+                          <div className="font-medium">{file.originalName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatFileSize(file.metadata?.size)}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(file.created_at), "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="uppercase">
+                        {file.originalName.split('.').pop()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => downloadFile(file.name, file.originalName)}
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4" />
+                          <span className="sr-only">Download</span>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => deleteFile(file.name)}
+                          disabled={deleting === file.name}
+                          title="Delete"
+                        >
+                          {deleting === file.name ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredFiles.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      No files found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         {/* Mobile view */}
