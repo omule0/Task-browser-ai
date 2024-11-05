@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { FileText, Download, Trash2, Loader2, Search, Upload, File, Image } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
@@ -17,6 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDropzone } from 'react-dropzone';
+import { Progress } from "@/components/ui/progress";
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
@@ -25,7 +27,10 @@ export default function FilesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDragActive, setIsDragActive] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [fileNames, setFileNames] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
   const { currentWorkspace } = useWorkspace();
 
   useEffect(() => {
@@ -169,30 +174,118 @@ export default function FilesPage() {
     }
   };
 
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragActive(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    // TODO: Implement file upload logic here
-    console.log('Files to upload:', files);
+  const simulateProgress = (fileName) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 95) {
+        clearInterval(interval);
+        progress = 95;
+      }
+      setUploadProgress(prev => ({
+        ...prev,
+        [fileName]: Math.min(Math.round(progress), 95)
+      }));
+    }, 300);
+    return interval;
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragActive(true);
-  };
+  const onDrop = useCallback(async (acceptedFiles) => {
+    try {
+      if (!currentWorkspace) {
+        customToast.error('Please select a workspace first');
+        return;
+      }
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragActive(false);
-  };
+      setUploadingFiles(acceptedFiles);
+      setIsUploading(true);
 
-  const handleFileInput = (e) => {
-    const files = Array.from(e.target.files || []);
-    // TODO: Implement file upload logic here
-    console.log('Files to upload:', files);
-  };
+      const supabase = createClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+
+      const workspacePath = `${currentWorkspace.id}/${user.id}`;
+      
+      const fileMapping = {};
+      acceptedFiles.forEach(file => {
+        const timestamp = new Date().getTime();
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const fileName = `${timestamp}-${randomId}-${file.name}`;
+        fileMapping[file.name] = fileName;
+      });
+      setFileNames(fileMapping);
+      
+      const intervals = acceptedFiles.map(file => simulateProgress(file.name));
+      
+      const uploadPromises = acceptedFiles.map(async (file) => {
+        try {
+          const fileName = fileMapping[file.name];
+          const filePath = `${workspacePath}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) throw uploadError;
+
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 100
+          }));
+
+          return { success: true, fileName: file.name };
+        } catch (error) {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: 0
+          }));
+          return { success: false, fileName: file.name, error: error.message };
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      
+      intervals.forEach(interval => clearInterval(interval));
+      
+      const failures = results.filter(r => !r.success);
+      const successes = results.filter(r => r.success);
+
+      if (successes.length > 0) {
+        customToast.success(`Successfully uploaded ${successes.length} file(s)`);
+        await loadFiles(); // Refresh the file list
+      }
+
+      if (failures.length > 0) {
+        failures.forEach(({ fileName, error }) => {
+          customToast.error(`Failed to upload ${fileName}: ${error}`);
+        });
+      }
+
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      customToast.error(error.message || 'Error uploading files');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress({});
+      setFileNames({});
+      setUploadingFiles([]);
+    }
+  }, [currentWorkspace]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt'],
+    },
+    maxSize: 10485760, // 10MB
+  });
 
   const getFileIcon = (fileName) => {
     if (fileName.toLowerCase().endsWith('.pdf')) {
@@ -255,28 +348,62 @@ export default function FilesPage() {
       </div>
 
       <div
+        {...getRootProps()}
         className={`mb-6 border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
           isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:bg-gray-50'
         }`}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
       >
-        <input
-          type="file"
-          multiple
-          onChange={handleFileInput}
-          className="hidden"
-          id="file-upload"
-        />
-        <label htmlFor="file-upload" className="cursor-pointer">
-          <div className="flex flex-col items-center gap-2">
-            <Upload className="h-8 w-8 text-gray-400" />
-            <h3 className="text-lg font-semibold">Click to upload or drag and drop</h3>
-            <p className="text-sm text-gray-500">Maximum file size 50 MB</p>
-          </div>
-        </label>
+        <input {...getInputProps()} />
+        <div className="flex flex-col items-center gap-2">
+          <Upload className="h-8 w-8 text-gray-400" />
+          <h3 className="text-lg font-semibold">Click to upload or drag and drop</h3>
+          <p className="text-sm text-gray-500">
+            Supported files: PDF, DOC, DOCX, TXT (Max 10MB)
+          </p>
+        </div>
       </div>
+
+      {uploadingFiles.length > 0 && (
+        <div className="mb-6">
+          <h3 className="font-medium mb-2">Uploading Files:</h3>
+          <div className="space-y-3">
+            {uploadingFiles.map((file) => (
+              <div
+                key={file.name}
+                className="flex flex-col bg-gray-50 p-3 rounded"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm">{file.name}</span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </span>
+                </div>
+                <div className="w-full">
+                  <Progress 
+                    value={uploadProgress[file.name] || 0} 
+                    className="h-2"
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500">
+                      {uploadProgress[file.name] === 100 ? (
+                        <span className="text-green-600">Complete</span>
+                      ) : (
+                        `${uploadProgress[file.name] || 0}%`
+                      )}
+                    </span>
+                    {uploadProgress[file.name] === 100 && (
+                      <span className="text-xs text-green-600">✓</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
