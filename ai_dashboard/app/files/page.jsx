@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { useDropzone } from 'react-dropzone';
 import { Progress } from "@/components/ui/progress";
+import { FileIcon, defaultStyles } from 'react-file-icon';
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
@@ -304,6 +305,77 @@ export default function FilesPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const getFileIconProps = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    const typeMap = {
+      // Documents (Orange gradient)
+      'pdf': { 
+        color: '#FF8500',
+        gradientColor: '#FFB900',
+        type: 'acrobat',
+      },
+      'doc': { 
+        color: '#FF8500',
+        gradientColor: '#FFB900',
+        type: 'document',
+      },
+      'docx': { 
+        color: '#FF8500',
+        gradientColor: '#FFB900',
+        type: 'document',
+      },
+      'txt': { 
+        color: '#FF8500',
+        gradientColor: '#FFB900',
+        type: 'document',
+      },
+      // Spreadsheets (Green gradient)
+      'xls': { 
+        color: '#11D51D',
+        gradientColor: '#82FA6C',
+        type: 'spreadsheet',
+      },
+      'xlsx': { 
+        color: '#11D51D',
+        gradientColor: '#82FA6C',
+        type: 'spreadsheet',
+      },
+      'csv': { 
+        color: '#11D51D',
+        gradientColor: '#82FA6C',
+        type: 'spreadsheet',
+      },
+      // Presentations (Blue gradient)
+      'ppt': { 
+        color: '#1254F8',
+        gradientColor: '#00D2FF',
+        type: 'presentation',
+      },
+      'pptx': { 
+        color: '#1254F8',
+        gradientColor: '#00D2FF',
+        type: 'presentation',
+      },
+    };
+
+    const defaultStyle = {
+      color: '#FF8500',
+      gradientColor: '#FFB900',
+      type: 'document',
+    };
+
+    return {
+      extension,
+      ...(typeMap[extension] || defaultStyle),
+      size: 24,
+      gradientOpacity: 1,
+      fold: false,
+      radius: 6,
+      glyphColor: 'rgba(255,255,255,0.6)'
+    };
+  };
+
   if (loading) {
     return (
       <Loading/>
@@ -373,8 +445,13 @@ export default function FilesPage() {
                 className="flex flex-col bg-gray-50 p-3 rounded"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
+                  <div className="flex items-center space-x-3">
+                    <div className="w-4 h-4">
+                      <FileIcon
+                        {...getFileIconProps(file.name)}
+                        {...defaultStyles}
+                      />
+                    </div>
                     <span className="text-sm">{file.name}</span>
                   </div>
                   <span className="text-sm text-gray-500">
@@ -452,8 +529,13 @@ export default function FilesPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getFileIcon(file.originalName)}
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4">
+                          <FileIcon
+                            {...getFileIconProps(file.originalName)}
+                            {...defaultStyles}
+                          />
+                        </div>
                         <div>
                           <div className="font-medium">{file.originalName}</div>
                           <div className="text-sm text-muted-foreground">
@@ -520,43 +602,46 @@ export default function FilesPage() {
                 selectedFiles.includes(file.name) ? 'bg-purple-50' : ''
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    checked={selectedFiles.includes(file.name)}
-                    onCheckedChange={() => toggleFileSelection(file.name)}
-                    aria-label={`Select ${file.originalName}`}
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  checked={selectedFiles.includes(file.name)}
+                  onCheckedChange={() => toggleFileSelection(file.name)}
+                  aria-label={`Select ${file.originalName}`}
+                />
+                <div className="w-4 h-4">
+                  <FileIcon
+                    {...getFileIconProps(file.originalName)}
+                    {...defaultStyles}
                   />
-                  <FileText className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(file.created_at).toLocaleDateString()} • 
-                      {' ' + file.originalName.split('.').pop().toUpperCase()}
-                    </p>
-                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => downloadFile(file.name, file.originalName)}
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                    title="Download"
-                  >
-                    <Download className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => deleteFile(file.name)}
-                    disabled={deleting === file.name}
-                    className="p-2 text-gray-400 hover:text-red-600"
-                    title="Delete"
-                  >
-                    {deleting === file.name ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-5 h-5" />
-                    )}
-                  </button>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(file.created_at).toLocaleDateString()} • 
+                    {' ' + file.originalName.split('.').pop().toUpperCase()}
+                  </p>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => downloadFile(file.name, file.originalName)}
+                  className="p-2 text-gray-400 hover:text-gray-600"
+                  title="Download"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => deleteFile(file.name)}
+                  disabled={deleting === file.name}
+                  className="p-2 text-gray-400 hover:text-red-600"
+                  title="Delete"
+                >
+                  {deleting === file.name ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
           ))}
