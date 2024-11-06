@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { SearchIcon, BarChartIcon, DatabaseIcon, UploadIcon } from "lucide-react";
-import { UploadModal } from "./UploadModal";
+import { UploadSidebar } from "./UploadSidebar";
 
 function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled, onClick }) {
   return (
@@ -24,7 +24,7 @@ function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, 
 }
 
 export function ActionCards({ onUploadSuccess }) {
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploadSidebarOpen, setIsUploadSidebarOpen] = useState(false);
 
   return (
     <>
@@ -45,7 +45,7 @@ export function ActionCards({ onUploadSuccess }) {
           bgColor="bg-white"
           hoverColor="hover:bg-pink-50"
           iconColor="text-pink-500"
-          onClick={() => setIsUploadModalOpen(true)}
+          onClick={() => setIsUploadSidebarOpen(true)}
         />
         <ActionCard
           icon={<BarChartIcon className="w-6 h-6" />}
@@ -67,9 +67,9 @@ export function ActionCards({ onUploadSuccess }) {
         />
       </div>
 
-      <UploadModal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)}
+      <UploadSidebar 
+        isOpen={isUploadSidebarOpen} 
+        onClose={() => setIsUploadSidebarOpen(false)}
         onUploadSuccess={onUploadSuccess}
       />
     </>

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
+import { Trash2, Download, Loader2, ArrowRight, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/context/workspace-context';

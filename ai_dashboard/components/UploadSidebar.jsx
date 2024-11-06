@@ -6,8 +6,9 @@ import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 import { Progress } from "@/components/ui/progress";
+import { FileIcon, defaultStyles } from 'react-file-icon';
 
-export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
+export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -144,12 +145,42 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     }
   };
 
+  const getFileIconProps = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    const typeMap = {
+      'pdf': { 
+        color: 'mistyrose',
+        type: 'acrobat',
+      },
+      'doc': { 
+        color: 'aliceblue',
+        type: 'document',
+      },
+      'docx': { 
+        color: 'aliceblue',
+        type: 'document',
+      },
+      'txt': { 
+        color: 'ghostwhite',
+        type: 'document',
+      },
+    };
+
+    return {
+      extension,
+      ...(typeMap[extension] || { color: 'aliceblue', type: 'document' }),
+      fold: true,
+      radius: 8,
+    };
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-xl z-50 flex flex-col">
+      <div className="p-6 border-b">
+        <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Upload Files</h2>
           <button
             onClick={onClose}
@@ -158,7 +189,9 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             <X className="w-6 h-6" />
           </button>
         </div>
+      </div>
 
+      <div className="flex-1 overflow-y-auto p-6">
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
@@ -189,7 +222,12 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
-                      <FileText className="w-4 h-4 text-gray-500" />
+                      <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
+                        <FileIcon
+                          {...getFileIconProps(file.name)}
+                          {...defaultStyles}
+                        />
+                      </div>
                       <span className="text-sm">{file.name}</span>
                     </div>
                     <span className="text-sm text-gray-500">
@@ -221,8 +259,10 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             </div>
           </div>
         )}
+      </div>
 
-        <div className="flex justify-end mt-6 space-x-3">
+      <div className="border-t p-6">
+        <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
