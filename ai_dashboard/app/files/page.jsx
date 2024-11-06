@@ -20,6 +20,7 @@ import {
 import { useDropzone } from 'react-dropzone';
 import { Progress } from "@/components/ui/progress";
 import { FileIcon, defaultStyles } from 'react-file-icon';
+import { StorageUsage } from "@/components/StorageUsage";
 
 export default function FilesPage() {
   const [files, setFiles] = useState([]);
@@ -33,6 +34,7 @@ export default function FilesPage() {
   const [fileNames, setFileNames] = useState({});
   const [isUploading, setIsUploading] = useState(false);
   const { currentWorkspace } = useWorkspace();
+  const [storageRefresh, setStorageRefresh] = useState(0);
 
   useEffect(() => {
     if (currentWorkspace) {
@@ -87,13 +89,29 @@ export default function FilesPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase.storage
+      const { data: fileMetadata } = await supabase.storage
+        .from('documents')
+        .list(`${currentWorkspace.id}/${user.id}`, {
+          search: fileName
+        });
+
+      const fileSize = fileMetadata?.[0]?.metadata?.size || 0;
+
+      const { error: deleteError } = await supabase.storage
         .from('documents')
         .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      setFiles(files.filter(file => file.name !== fileName));
+      const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
+        user_id_input: user.id,
+        bytes_to_remove: fileSize
+      });
+
+      if (updateError) throw updateError;
+
+      setFiles(prev => prev.filter(file => file.name !== fileName));
+      setStorageRefresh(prev => prev + 1);
       customToast.success('File deleted successfully');
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -156,6 +174,17 @@ export default function FilesPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
+      const { data: fileMetadata } = await supabase.storage
+        .from('documents')
+        .list(`${currentWorkspace.id}/${user.id}`);
+
+      const selectedFilesMetadata = fileMetadata.filter(file => 
+        selectedFiles.includes(file.name)
+      );
+      const totalSize = selectedFilesMetadata.reduce((acc, file) => 
+        acc + (file.metadata?.size || 0), 0
+      );
+
       const deletePromises = selectedFiles.map(fileName => 
         supabase.storage
           .from('documents')
@@ -164,8 +193,16 @@ export default function FilesPage() {
 
       await Promise.all(deletePromises);
 
+      const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
+        user_id_input: user.id,
+        bytes_to_remove: totalSize
+      });
+
+      if (updateError) throw updateError;
+
       setFiles(files.filter(file => !selectedFiles.includes(file.name)));
       setSelectedFiles([]);
+      setStorageRefresh(prev => prev + 1);
       customToast.success(`Successfully deleted ${selectedFiles.length} file(s)`);
     } catch (error) {
       console.error('Error deleting files:', error);
@@ -265,6 +302,8 @@ export default function FilesPage() {
           customToast.error(`Failed to upload ${fileName}: ${error}`);
         });
       }
+
+      setStorageRefresh(prev => prev + 1);
 
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -395,6 +434,12 @@ export default function FilesPage() {
             </Button>
           </div>
         )}
+      </div>
+
+      <div className="mb-6">
+        <div className="bg-white rounded-lg shadow">
+          <StorageUsage refresh={storageRefresh} />
+        </div>
       </div>
 
       <div
