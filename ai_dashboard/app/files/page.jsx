@@ -424,7 +424,7 @@ export default function FilesPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4" style={{ WebkitFontSmoothing: 'antialiased' }}>
+                    <div className="w-8 h-8" style={{ WebkitFontSmoothing: 'antialiased' }}>
                       <FileIcon
                         {...getFileIconProps(file.name)}
                         {...defaultStyles}
