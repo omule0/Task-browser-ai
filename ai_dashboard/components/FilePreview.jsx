@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { FileText, Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
+import { Trash2, Download, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/context/workspace-context';
 import { customToast } from "@/components/ui/toast-theme";
+import { FileIcon, defaultStyles } from 'react-file-icon';
 
 function FilePreviewSkeleton() {
   return (
@@ -149,6 +150,36 @@ export function FilePreview({ refresh }) {
     }
   };
 
+  const getFileIconProps = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    const typeMap = {
+      'pdf': { 
+        color: 'mistyrose',
+        type: 'acrobat',
+      },
+      'doc': { 
+        color: 'aliceblue',
+        type: 'document',
+      },
+      'docx': { 
+        color: 'aliceblue',
+        type: 'document',
+      },
+      'txt': { 
+        color: 'ghostwhite',
+        type: 'document',
+      },
+    };
+
+    return {
+      extension,
+      ...(typeMap[extension] || { color: 'aliceblue', type: 'document' }),
+      fold: true,
+      radius: 8,
+    };
+  };
+
   if (!currentWorkspace) {
     return (
       <div className="bg-white rounded-lg p-6 text-center">
@@ -192,7 +223,12 @@ export function FilePreview({ refresh }) {
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <div className="flex items-center space-x-3">
-              <FileText className="w-5 h-5 text-gray-500" />
+              <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
+                <FileIcon
+                  {...getFileIconProps(file.originalName)}
+                  {...defaultStyles}
+                />
+              </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">
                   {file.originalName || file.name}

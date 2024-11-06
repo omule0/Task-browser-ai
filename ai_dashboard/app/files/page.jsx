@@ -586,7 +586,7 @@ export default function FilesPage() {
                   onCheckedChange={() => toggleFileSelection(file.name)}
                   aria-label={`Select ${file.originalName}`}
                 />
-                <div className="w-4 h-4">
+                <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
                   <FileIcon
                     {...getFileIconProps(file.originalName)}
                     {...defaultStyles}
