@@ -243,6 +243,25 @@ export default function FilesPage() {
       
       if (userError) throw userError;
 
+      // Get current storage usage
+      const { data: storageData, error: storageError } = await supabase
+        .from('storage_usage')
+        .select('bytes_used, storage_limit')
+        .eq('user_id', user.id)
+        .single();
+
+      if (storageError && storageError.code !== 'PGRST116') throw storageError;
+
+      // Calculate total size of new files
+      const totalNewSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
+      const currentUsage = storageData?.bytes_used || 0;
+      const storageLimit = storageData?.storage_limit || 52428800; // 50MB default
+
+      // Check if upload would exceed limit
+      if (currentUsage + totalNewSize > storageLimit) {
+        throw new Error(`Upload would exceed your storage limit of ${formatBytes(storageLimit)}`);
+      }
+
       const workspacePath = `${currentWorkspace.id}/${user.id}`;
       
       const fileMapping = {};
@@ -270,12 +289,20 @@ export default function FilesPage() {
 
           if (uploadError) throw uploadError;
 
+          // Update storage usage
+          const { error: updateError } = await supabase.rpc('update_storage_usage', {
+            user_id_input: user.id,
+            bytes_to_add: file.size
+          });
+
+          if (updateError) throw updateError;
+
           setUploadProgress(prev => ({
             ...prev,
             [file.name]: 100
           }));
 
-          return { success: true, fileName: file.name };
+          return { success: true, fileName: file.name, size: file.size };
         } catch (error) {
           setUploadProgress(prev => ({
             ...prev,
@@ -303,7 +330,7 @@ export default function FilesPage() {
         });
       }
 
-      setStorageRefresh(prev => prev + 1);
+      setStorageRefresh(prev => prev + 1); // Trigger storage usage refresh
 
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -391,6 +418,16 @@ export default function FilesPage() {
       fold: true,
       radius: 8,
     };
+  };
+
+  // Add formatBytes helper function
+  const formatBytes = (bytes, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   };
 
   if (loading) {
