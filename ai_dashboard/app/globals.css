@@ -113,7 +113,7 @@ body {
 /* Improve tooltip appearance */
 [title] {
   position: relative;
-  cursor: help;
+  cursor: pointer;
 }
 
 [title]:hover::before {
