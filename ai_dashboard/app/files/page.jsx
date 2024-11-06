@@ -311,68 +311,46 @@ export default function FilesPage() {
     const typeMap = {
       // Documents (Orange gradient)
       'pdf': { 
-        color: '#FF8500',
-        gradientColor: '#FFB900',
+        color: 'mistyrose',
         type: 'acrobat',
       },
       'doc': { 
-        color: '#FF8500',
-        gradientColor: '#FFB900',
+        color: 'aliceblue',
         type: 'document',
       },
       'docx': { 
-        color: '#FF8500',
-        gradientColor: '#FFB900',
+        color: 'aliceblue',
         type: 'document',
       },
       'txt': { 
-        color: '#FF8500',
-        gradientColor: '#FFB900',
+        color: 'ghostwhite',
         type: 'document',
       },
       // Spreadsheets (Green gradient)
       'xls': { 
-        color: '#11D51D',
-        gradientColor: '#82FA6C',
+        color: 'palegreen',
         type: 'spreadsheet',
       },
       'xlsx': { 
-        color: '#11D51D',
-        gradientColor: '#82FA6C',
+        color: 'palegreen',
         type: 'spreadsheet',
       },
       'csv': { 
-        color: '#11D51D',
-        gradientColor: '#82FA6C',
+        color: 'palegreen',
         type: 'spreadsheet',
-      },
-      // Presentations (Blue gradient)
-      'ppt': { 
-        color: '#1254F8',
-        gradientColor: '#00D2FF',
-        type: 'presentation',
-      },
-      'pptx': { 
-        color: '#1254F8',
-        gradientColor: '#00D2FF',
-        type: 'presentation',
       },
     };
 
     const defaultStyle = {
-      color: '#FF8500',
-      gradientColor: '#FFB900',
+      color: 'aliceblue',
       type: 'document',
     };
 
     return {
       extension,
       ...(typeMap[extension] || defaultStyle),
-      size: 24,
-      gradientOpacity: 1,
-      fold: false,
-      radius: 6,
-      glyphColor: 'rgba(255,255,255,0.6)'
+      fold: true,
+      radius: 8,
     };
   };
 
@@ -446,7 +424,7 @@ export default function FilesPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className="w-4 h-4">
+                    <div className="w-4 h-4" style={{ WebkitFontSmoothing: 'antialiased' }}>
                       <FileIcon
                         {...getFileIconProps(file.name)}
                         {...defaultStyles}
