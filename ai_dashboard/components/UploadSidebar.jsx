@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { X, Upload, Loader2, FileText } from 'lucide-react';
+import { X, Upload, Loader2, FileText, XCircle } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
@@ -175,6 +175,16 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
     };
   };
 
+  const removeFile = (fileName) => {
+    setFiles(files.filter(file => file.name !== fileName));
+    // Also clean up any progress state if it exists
+    setUploadProgress(prev => {
+      const newProgress = { ...prev };
+      delete newProgress[fileName];
+      return newProgress;
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -218,7 +228,7 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
               {files.map((file) => (
                 <div
                   key={file.name}
-                  className="flex flex-col bg-gray-50 p-3 rounded"
+                  className="flex flex-col bg-gray-50 p-3 rounded group"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
@@ -230,9 +240,20 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
                       </div>
                       <span className="text-sm">{file.name}</span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
+                      {!uploading && (
+                        <button
+                          onClick={() => removeFile(file.name)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                          title="Remove file"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {uploading && (
                     <div className="w-full">
