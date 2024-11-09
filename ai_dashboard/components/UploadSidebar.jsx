@@ -104,7 +104,7 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
             try {
               const formData = new FormData();
               formData.append('filepond', file);
-              const response = await fetch('/api/pdf-parse', {
+              const response = await fetch('/api/pdf', {
                 method: 'POST',
                 body: formData,
               });
