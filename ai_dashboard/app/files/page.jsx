@@ -292,16 +292,52 @@ export default function FilesPage() {
           const fileName = fileMapping[file.name];
           const filePath = `${workspacePath}/${fileName}`;
 
+          let parsedText = '';
+          if (file.type === 'application/pdf') {
+            try {
+              const formData = new FormData();
+              formData.append('filepond', file);
+              const response = await fetch('/api/pdf-parse', {
+                method: 'POST',
+                body: formData,
+              });
+              
+              if (!response.ok) {
+                throw new Error('PDF parsing failed');
+              }
+              
+              parsedText = await response.text();
+
+              // Store parsed content in document_content table
+              const { error: contentError } = await supabase
+                .from('document_content')
+                .insert({
+                  file_path: filePath,
+                  content: parsedText,
+                  workspace_id: currentWorkspace.id,
+                  user_id: user.id
+                });
+
+              if (contentError) throw contentError;
+            } catch (error) {
+              console.error('Error parsing PDF:', error);
+              customToast.error('Error parsing PDF content');
+            }
+          }
+
           const { error: uploadError } = await supabase.storage
             .from('documents')
             .upload(filePath, file, {
               cacheControl: '3600',
-              upsert: false
+              upsert: false,
+              metadata: {
+                size: file.size,
+                hasParsedContent: Boolean(parsedText), // Flag to indicate if content exists
+              }
             });
 
           if (uploadError) throw uploadError;
 
-          // Update storage usage
           const { error: updateError } = await supabase.rpc('update_storage_usage', {
             user_id_input: user.id,
             bytes_to_add: file.size
