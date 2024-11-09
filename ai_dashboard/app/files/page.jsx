@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { FileText, Download, Trash2, Loader2, Search, Upload, File, Image } from "lucide-react";
+import { FileText, Download, Trash2, Loader2, Search, Upload, File, Image, X } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import { Loading } from "@/components/ui/loading";
 import { useWorkspace } from "@/context/workspace-context";
@@ -35,6 +35,7 @@ export default function FilesPage() {
   const [isUploading, setIsUploading] = useState(false);
   const { currentWorkspace } = useWorkspace();
   const [storageRefresh, setStorageRefresh] = useState(0);
+  const [selectedFileContent, setSelectedFileContent] = useState(null);
 
   useEffect(() => {
     if (currentWorkspace) {
@@ -87,8 +88,10 @@ export default function FilesPage() {
       
       setDeleting(fileName);
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
+      if (userError) throw userError;
+
       const { data: fileMetadata } = await supabase.storage
         .from('documents')
         .list(`${currentWorkspace.id}/${user.id}`, {
@@ -113,6 +116,15 @@ export default function FilesPage() {
       setFiles(prev => prev.filter(file => file.name !== fileName));
       setStorageRefresh(prev => prev + 1);
       customToast.success('File deleted successfully');
+
+      // Delete parsed content if it exists
+      const { error: contentDeleteError } = await supabase
+        .from('document_content')
+        .delete()
+        .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`);
+
+      if (contentDeleteError) throw contentDeleteError;
+
     } catch (error) {
       console.error('Error deleting file:', error);
       customToast.error('Error deleting file');
@@ -430,6 +442,100 @@ export default function FilesPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   };
 
+  const viewPDFContent = async (file) => {
+    try {
+      const supabase = createClient();
+      
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      // Get the parsed content from document_content table
+      const { data: contentData, error: contentError } = await supabase
+        .from('document_content')
+        .select('content')
+        .eq('file_path', `${currentWorkspace.id}/${user.id}/${file.name}`)
+        .single();
+
+      if (contentError) throw contentError;
+
+      if (!contentData?.content) {
+        customToast.error('No parsed content available for this file');
+        return;
+      }
+
+      setSelectedFileContent({
+        name: file.originalName,
+        content: contentData.content
+      });
+    } catch (error) {
+      console.error('Error viewing PDF content:', error);
+      customToast.error('Error viewing PDF content');
+    }
+  };
+
+  const renderActions = (file) => (
+    <div className="flex justify-end gap-2">
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => downloadFile(file.name, file.originalName)}
+        title="Download"
+      >
+        <Download className="h-4 w-4" />
+        <span className="sr-only">Download</span>
+      </Button>
+      {file.originalName.toLowerCase().endsWith('.pdf') && (
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => viewPDFContent(file)}
+          title="View Content"
+        >
+          <FileText className="h-4 w-4" />
+          <span className="sr-only">View Content</span>
+        </Button>
+      )}
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => deleteFile(file.name)}
+        disabled={deleting === file.name}
+        title="Delete"
+      >
+        {deleting === file.name ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Trash2 className="h-4 w-4" />
+        )}
+        <span className="sr-only">Delete</span>
+      </Button>
+    </div>
+  );
+
+  const PDFContentModal = () => {
+    if (!selectedFileContent) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">{selectedFileContent.name}</h3>
+            <button
+              onClick={() => setSelectedFileContent(null)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="whitespace-pre-wrap">
+            {selectedFileContent.content}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <Loading/>
@@ -613,31 +719,7 @@ export default function FilesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => downloadFile(file.name, file.originalName)}
-                          title="Download"
-                        >
-                          <Download className="h-4 w-4" />
-                          <span className="sr-only">Download</span>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => deleteFile(file.name)}
-                          disabled={deleting === file.name}
-                          title="Delete"
-                        >
-                          {deleting === file.name ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </div>
+                      {renderActions(file)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -714,6 +796,7 @@ export default function FilesPage() {
         )}
       </div>
     </div>
+    <PDFContentModal />
     </>
   );
 } 
