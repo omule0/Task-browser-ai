@@ -1,9 +1,6 @@
-import { createClient } from '@/utils/supabase/server';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from '@langchain/core/prompts';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { RunnableSequence } from '@langchain/core/runnables';
+import { z } from "zod";
 
 export async function POST(req) {
   try {
@@ -22,63 +19,59 @@ export async function POST(req) {
       chunks.push(...contentChunks);
     }
 
-    // Initialize ChatOpenAI with GPT-4-mini
+    // Define schema for different report types
+    const reportSchemas = {
+      'executive-summary': z.object({
+        keyFindings: z.array(z.string()).describe("List of key findings from the content"),
+        mainInsights: z.array(z.string()).describe("List of main insights derived from the analysis"),
+        recommendations: z.array(z.string()).describe("List of actionable recommendations")
+      }),
+      'detailed-analysis': z.object({
+        findings: z.array(z.object({
+          title: z.string(),
+          description: z.string(),
+          evidence: z.array(z.string())
+        })).describe("Detailed findings with supporting evidence"),
+        recommendations: z.array(z.object({
+          action: z.string(),
+          impact: z.string(),
+          timeline: z.string()
+        })).describe("Detailed recommendations with impact assessment"),
+        risks: z.array(z.object({
+          description: z.string(),
+          severity: z.string(),
+          mitigation: z.string()
+        })).describe("Risk analysis with mitigation strategies")
+      })
+    };
+
+    // Initialize ChatOpenAI with structured output
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
       temperature: 0,
-      maxTokens: 500,
+    }).withStructuredOutput(reportSchemas[template], {
+      name: "report",
+      includeRaw: true
     });
 
-    // Template configurations
-    const templateConfig = {
-      'executive-summary': {
-        systemPrompt: `You are a professional report writer. Analyze the provided content and create a summary that:
-          - Identifies key findings
-          - Highlights main insights
-          - Provides actionable recommendations
-          Create a cohesive response that can be combined with other summaries.`,
-        template: `Analyze this content and provide a summary:\n\n{text}`,
-      },
-      'detailed-analysis': {
-        systemPrompt: `You are a detailed analyst. Create a comprehensive analysis including:
-          - In-depth findings
-          - Supporting evidence
-          - Detailed recommendations
-          - Risk analysis
-          Format with clear headings and structured sections.`,
-        template: `Provide a detailed analysis of this content:\n\n{text}`,
-      }
-    };
-
-    // Process chunks sequentially
-    const processChunk = async (chunk) => {
-      const chain = RunnableSequence.from([
-        PromptTemplate.fromTemplate(templateConfig[template].template),
-        model,
-        new StringOutputParser(),
-      ]);
-
-      return await chain.invoke({ text: chunk });
-    };
-
-    // Process all chunks sequentially
+    // Process chunks sequentially with structured output
     const processedChunks = [];
     for (const chunk of chunks) {
-      const result = await processChunk(chunk);
-      processedChunks.push(result);
+      const result = await model.invoke(
+        `Analyze this content and provide a structured report:\n\n${chunk}`
+      );
+      processedChunks.push(result.parsed); // Using .parsed to get the structured data
     }
 
-    // Clean up and combine the processed chunks
-    const finalReport = processedChunks
-      .join('\n\n')
-      .replace(/Executive Summary:?\s*/gi, '')
-      .replace(/(?:\n\s*){3,}/g, '\n\n')
-      .trim();
+    // Combine the structured outputs
+    const combinedReport = template === 'executive-summary' 
+      ? combineExecutiveSummaries(processedChunks)
+      : combineDetailedAnalyses(processedChunks);
 
-    // Return the generated report
-    return new Response(finalReport, {
+    // Return the structured report
+    return new Response(JSON.stringify(combinedReport), {
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'application/json',
       },
     });
 
@@ -96,4 +89,21 @@ export async function POST(req) {
       }
     );
   }
+}
+
+// Helper functions to combine structured outputs
+function combineExecutiveSummaries(chunks) {
+  return {
+    keyFindings: [...new Set(chunks.flatMap(c => c.keyFindings))],
+    mainInsights: [...new Set(chunks.flatMap(c => c.mainInsights))],
+    recommendations: [...new Set(chunks.flatMap(c => c.recommendations))]
+  };
+}
+
+function combineDetailedAnalyses(chunks) {
+  return {
+    findings: chunks.flatMap(c => c.findings),
+    recommendations: chunks.flatMap(c => c.recommendations),
+    risks: [...new Set(chunks.flatMap(c => c.risks))]
+  };
 }
