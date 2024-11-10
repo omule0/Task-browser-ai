@@ -1,67 +1,216 @@
 {
   "keyFindings": [
-    "China-Africa engagement has expanded significantly since 2000, particularly through the Forum on China-Africa Cooperation (FOCAC).",
-    "Chinese foreign direct investment (FDI) is widespread across Africa, benefiting nearly all African countries.",
-    "Chinese FDI in Africa is diversifying, with financial services, construction, and manufacturing now accounting for 50% of investments, alongside traditional sectors like oil and extractives.",
-    "Over 2,200 Chinese firms, mostly private, are operating in Africa, contributing to infrastructure development.",
-    "Chinese trade has positively impacted economic growth in Africa, especially for commodity exporters, due to high demand and price increases.",
-    "There is potential for diversification of African exports, particularly in agriculture and manufacturing, with China's assistance in overcoming structural and logistical challenges.",
-    "Chinese FDI in Africa surged during the 2008 global financial crisis due to local government support.",
-    "Investments have primarily focused on infrastructure, particularly in energy and transportation.",
-    "Chinese investment has expanded to include mergers, acquisitions, and manufacturing operations in Africa.",
-    "Chinese FDI has created significant job opportunities in labor-intensive sectors.",
-    "Some production centers are export-oriented, while others target local markets.",
-    "Chinese investment in Africa presents both opportunities and challenges.",
-    "Major commodity exporters in Africa may face difficulties due to China's economic rebalancing.",
-    "Increased Chinese investment can expand manufacturing, agricultural exports, and infrastructure development in Africa.",
-    "Chinese companies are likely to outsource labor-intensive manufacturing to Africa.",
-    "The Chinese government is encouraging outward investment, which African countries can attract with the right policies.",
-    "Considerable investments from China in Africa can significantly impact economic transformation and export diversification.",
-    "African countries are keen to learn from China's experience in growth and poverty reduction.",
-    "A proactive approach from both African governments and private companies is essential for maximizing development impact.",
-    "Improvements in the business climate in Africa could attract more Chinese investments, leading to technology transfer and skills development.",
-    "Partnerships through joint ventures between Chinese and African firms can expand the private sector and create employment opportunities.",
-    "Private Chinese companies primarily operate in low-tech, labor-intensive industries.",
-    "These companies have created between 80,000 to 150,000 jobs in the local market.",
-    "Local entrepreneurs are establishing businesses after gaining experience in Chinese firms.",
-    "The Huajin Group invested $10 million to set up a shoe factory in Ethiopia, which became profitable in its first year.",
-    "The factory trained over 90 employees in China before starting operations and produced 2 million pairs of shoes in 2013."
+    {
+      "content": "China-Africa engagement has expanded significantly over the past decade, particularly through the Forum on China-Africa Cooperation (FOCAC).",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese foreign direct investment (FDI) is widespread across Africa, benefiting nearly all African countries and diversifying beyond oil and extractives.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese FDI in Africa has shifted to include financial services, construction, and manufacturing, which now account for 50% of total FDI.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese trade has contributed to economic growth in Africa, particularly benefiting commodity exporters due to high demand and price increases.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "There is significant potential for diversification of African exports, especially in agriculture and manufacturing, as China can assist in overcoming structural and logistical constraints.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese FDI to Africa has increased rapidly since 2004, particularly during the global financial crisis of 2008, supported by local government loan programs.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese FDI in Africa surged during the global financial crisis of 2008, supported by local governments' preferential loan programs.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "Investments in infrastructure, particularly energy and transportation, have addressed physical infrastructure constraints in many African countries.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "Chinese FDI has become a significant source of job creation in several African countries, especially in labor-intensive manufacturing.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "Chinese investments have extended to mergers and acquisitions and the expansion of Chinese-owned manufacturing operations in Africa.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "The changing nature of Chinese investment presents both opportunities and challenges for African countries, particularly for major commodity exporters.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "Chinese investment in Africa presents both opportunities and challenges, particularly for major commodity exporters due to slowing demand and falling prices.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "Increased Chinese investment can expand manufacturing and agricultural exports and develop infrastructure in African countries.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "African countries have a unique opportunity to attract strategic, job-creating investment from China, but they need to implement the right policies to do so.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "Chinese investments in Africa can significantly impact economic transformation and export diversification.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Successful experiences from China's growth and poverty reduction can serve as a model for African countries.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Improvements in the business climate in Africa could attract more large Chinese firms, enhancing technology transfer and global value chain linkages.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Partnerships through joint ventures between Chinese and African firms can expand the private sector and create employment opportunities in Africa.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Chinese investments have created significant job opportunities in African countries, with examples from Nigeria and Tanzania.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Most private Chinese companies are engaged in low-tech, labor-intensive industries, primarily serving the local market.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "Private Chinese companies have created between 80,000 to 150,000 jobs in Ethiopia, contributing to local employment.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "Local entrepreneurs in Ethiopia have established businesses after gaining experience in Chinese firms, indicating a transfer of skills and knowledge.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "The Huajin Group invested about $10 million to establish a shoe factory in Ethiopia, which became profitable in its first year of operation.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "In 2013, the Huajin Group's factory produced 2 million pairs of shoes with a workforce of 3,500 employees, showcasing significant production capacity.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    }
   ],
   "mainInsights": [
-    "China's strategic collaboration with Africa has evolved, focusing on trade, investment, and infrastructure development.",
-    "The diversification of Chinese FDI indicates a shift towards more sustainable and varied economic engagement with Africa.",
-    "The role of Chinese banks in financing infrastructure projects highlights the importance of financial support in fostering economic growth in Africa.",
-    "Chinese trade has significantly contributed to economic growth in Africa.",
-    "China has become Sub-Saharan Africa's largest trading and development partner, with substantial FDI and trade figures.",
-    "The evolving nature of Chinese investment presents both opportunities and challenges for African countries.",
-    "African countries have a unique opportunity to attract strategic investments from China and other partners.",
-    "A conducive business climate and supportive policy framework are essential for attracting investment.",
-    "Policies to lower transport and energy costs, eliminate trade barriers, and enhance labor market flexibility are crucial for investment attraction.",
-    "Maximizing the development impact of Chinese investments requires collaboration between African countries and China.",
-    "Chinese investments have the potential to enhance local manufacturing capabilities and create jobs in Africa.",
-    "Successful case studies, such as the Yuemei Group in Nigeria and various Chinese investments in Tanzania, demonstrate the benefits of foreign investment in local economies.",
-    "The focus of Chinese investments is often on low-tech, labor-intensive industries, which aligns with the local market needs in Africa.",
-    "Investment from Chinese companies can lead to job creation and skills development in local markets.",
-    "Technical training provided to employees can enhance productivity and operational success.",
-    "Successful foreign investments can result in rapid profitability and significant production output."
+    {
+      "content": "The strategic collaboration between China and Africa is facilitated by FOCAC, which has enhanced diplomatic and cooperation initiatives.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "The presence of over 2,200 Chinese firms in Africa indicates a robust and growing economic relationship.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Infrastructure investments, particularly in energy and transportation, are crucial for addressing Africa's development needs.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Chinese trade has contributed significantly to economic growth in Africa, with FDI flows rising to $3.5 billion and FDI stock reaching nearly $25 billion in 2013.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "China became Sub-Saharan Africa's largest trading and development partner, with trade reaching $170 billion.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "The Chinese government is encouraging outward investment, which African countries can attract by creating a conducive business climate.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "To attract investment, African countries need to lower transport and energy costs, eliminate trade barriers, and ensure effective competition policies.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "There is potential for China's investments in Africa to significantly impact economic transformation and export diversification if both parties maximize their partnership.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "Chinese investments in Africa are primarily focused on low-tech, labor-intensive industries, which cater to local markets and create jobs.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "The Yuemei Group's investment in Nigeria demonstrates the potential for Chinese firms to establish manufacturing bases that create local employment and contribute to economic growth.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "In Tanzania, Chinese investments have created between 80,000 to 150,000 jobs, highlighting the role of foreign investment in local economic development.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "The investment by Chinese companies in Ethiopia is focused on low-tech industries, which may limit technological advancement in the region.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "The establishment of training programs for employees indicates a commitment to skill development, which can enhance local workforce capabilities.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "The success of the Huajin Group's shoe factory demonstrates the potential for profitable ventures in Ethiopia's manufacturing sector.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    }
   ],
   "recommendations": [
-    "Encourage further diversification of African exports to include more agricultural and manufactured goods.",
-    "Strengthen partnerships between Chinese firms and African businesses to enhance local capacity and competitiveness.",
-    "Promote knowledge sharing and capacity building initiatives to help African countries address structural and logistical constraints in their export sectors.",
-    "Local firms should enhance their competitiveness to integrate into global value chains.",
-    "African countries should leverage Chinese investments to improve skills and technology transfer.",
-    "Policymakers should create a favorable environment for local firms to thrive alongside Chinese investments.",
-    "African countries should implement policies to create a supportive investment climate.",
-    "Focus on lowering transport and energy costs to attract more investment.",
-    "Eliminate formal and informal trade barriers to facilitate smoother business operations.",
-    "Increase labor market flexibility to accommodate foreign investments.",
-    "Develop effective competition policies to enhance productivity and competitiveness.",
-    "African governments should implement policies to improve the business climate and attract foreign investments.",
-    "Encourage joint ventures between Chinese and African firms to foster knowledge transfer and skills development.",
-    "Promote training programs for local workers to enhance their skills and employability in industries supported by foreign investments.",
-    "Encourage more foreign investments in local industries to boost job creation.",
-    "Implement training programs for local employees to enhance skills and productivity.",
-    "Support local entrepreneurs in establishing businesses to diversify the economy."
+    {
+      "content": "Encourage further diversification of African exports to include more agricultural and manufactured goods.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Leverage China's experience to help African countries overcome structural and logistical constraints in export competitiveness.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Continue to support infrastructure development through Chinese FDI to meet the growing needs of African economies.",
+      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    },
+    {
+      "content": "Local firms in Africa should focus on enhancing their competitiveness to integrate into global value chains as Chinese investment increases.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "African countries should leverage the skills and technology brought by Chinese investments to foster local development and innovation.",
+      "source": "Chunk 2: funds, to encourage investment \r\noverseas. Chinese FDI in Africa \r\nsurged during the global financia..."
+    },
+    {
+      "content": "African countries should implement policies that create a supportive investment climate to attract Chinese and other foreign investments.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "Efforts should be made to lower transport and energy costs to enhance competitiveness and attract investment.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "African nations should focus on increasing the flexibility of labor markets and ensuring effective competition policies to boost productivity and competitiveness.",
+      "source": "Chunk 3: advantage of opportunities to integrate \r\ninto global value chains.  \r\nThe changing nature of Chines..."
+    },
+    {
+      "content": "African governments should adopt proactive measures to improve the business climate to attract more Chinese investments.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Encourage joint ventures between Chinese and African firms to enhance knowledge transfer and expand the private sector.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Leverage successful Chinese investment models to inform local strategies for economic transformation and job creation.",
+      "source": "Chunk 4: considerable investments in \r\nAfrica to have greater impact on \r\neconomic transformation and export ..."
+    },
+    {
+      "content": "Encourage diversification of investments by Chinese companies into higher-tech industries to foster innovation and technological advancement in Ethiopia.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "Enhance collaboration between local entrepreneurs and Chinese firms to facilitate knowledge transfer and the establishment of more local businesses.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    },
+    {
+      "content": "Support the development of training programs that focus on advanced manufacturing techniques to improve the skill set of the local workforce.",
+      "source": "Chunk 5: $541 million.  Most private Chinese companies are engaged in \r\nlow-tech, labor intensive industries,..."
+    }
   ]
 }
