@@ -75,7 +75,7 @@ function deduplicateByContent(array) {
 
 export async function POST(req) {
   try {
-    const { template, contents } = await req.json();
+    const { template, contents, prompt } = await req.json();
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -146,7 +146,9 @@ export async function POST(req) {
       };
 
       const result = await model.invoke(
-        `Analyze this content and provide a structured report. This is chunk ${chunkNumber} of ${chunks.length}. 
+        `Analyze this content and provide a structured report. ${
+          prompt ? `Focus on: ${prompt}. ` : ''
+        }This is chunk ${chunkNumber} of ${chunks.length}. 
          Include this text as the source: "${sourceInfo.preview}...":\n\n${chunk}`
       );
 

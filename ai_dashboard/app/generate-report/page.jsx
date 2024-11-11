@@ -22,6 +22,7 @@ export default function GenerateReportPage() {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [generatedReport, setGeneratedReport] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [reportPrompt, setReportPrompt] = useState("");
   const { currentWorkspace } = useWorkspace();
 
   const templates = [
@@ -118,6 +119,7 @@ export default function GenerateReportPage() {
           template: selectedTemplate,
           contents: selectedContents,
           workspaceId: currentWorkspace.id,
+          prompt: reportPrompt,
         }),
       });
 
@@ -173,6 +175,17 @@ export default function GenerateReportPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Report Focus */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-medium mb-4">Report Focus</h2>
+          <textarea
+            value={reportPrompt}
+            onChange={(e) => setReportPrompt(e.target.value)}
+            placeholder="Specify what you want the report to focus on (optional)"
+            className="w-full h-24 p-3 border rounded-lg resize-none"
+          />
         </div>
 
         {/* File Selection */}
