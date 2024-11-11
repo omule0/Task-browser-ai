@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^0.0.3",
     "@langchain/core": "^0.3.17",
     "@langchain/groq": "^0.1.2",
     "@langchain/openai": "^0.3.12",

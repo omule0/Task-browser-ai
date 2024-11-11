@@ -21,6 +21,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useCompletion } from 'ai/react';
 
 export default function CreateDocument() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -178,6 +179,28 @@ export default function CreateDocument() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const { complete, isLoading } = useCompletion({
+    api: '/api/write_for_me',
+  });
+
+  const handleWriteForMe = async () => {
+    try {
+      const completion = await complete('', {
+        body: {
+          documentType: selectedType,
+          subType: selectedSubType,
+        },
+      });
+      
+      if (completion) {
+        setInputValue(completion);
+        setCharacterCount(completion.length);
+      }
+    } catch (error) {
+      console.error('Error generating text:', error);
+    }
+  };
 
   if (loading || !user) {
     return <Loading />;
@@ -348,9 +371,14 @@ export default function CreateDocument() {
                         <ChevronDown className="ml-2 h-4 w-4" />
                       )}
                     </Button>
-                    <Button variant="outline" className="text-purple-600">
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Write it for me
+                    <Button 
+                      variant="outline" 
+                      className="text-purple-600"
+                      onClick={handleWriteForMe}
+                      disabled={isLoading}
+                    >
+                      <Wand2 className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                      {isLoading ? 'Writing...' : 'Write it for me'}
                     </Button>
                   </div>
 
