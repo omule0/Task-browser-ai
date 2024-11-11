@@ -243,6 +243,44 @@ export default function CreateDocument() {
     loadFiles();
   }, []);
 
+  const handleCreateDocument = async () => {
+    try {
+      const selectedContents = files
+        .filter(file => selectedFiles.includes(file.file_path))
+        .map(file => file.content);
+
+      const response = await fetch('/api/generate-report-groq', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentType: selectedType,
+          subType: selectedSubType,
+          contents: selectedContents,
+          prompt: inputValue,
+          selectedFiles: selectedFiles,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate document');
+      }
+
+      const result = await response.json();
+      
+      // Handle the generated document (you might want to redirect or show a success message)
+      console.log('Generated document:', result);
+      
+      // You can add navigation here
+      // router.push(`/documents/${result.id}`);
+      
+    } catch (error) {
+      console.error('Error creating document:', error);
+      // Add error handling UI feedback
+    }
+  };
+
   if (loading || !user) {
     return <Loading />;
   }
@@ -529,7 +567,10 @@ export default function CreateDocument() {
             <Button variant="outline" onClick={() => setCurrentStep(3)}>
               Previous
             </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={handleCreateDocument}
+            >
               Create Document
             </Button>
           </div>

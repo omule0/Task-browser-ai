@@ -75,7 +75,7 @@ function deduplicateByContent(array) {
 
 export async function POST(req) {
   try {
-    const { template, contents, prompt } = await req.json();
+    const { documentType, subType, contents, prompt, selectedFiles } = await req.json();
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -90,85 +90,86 @@ export async function POST(req) {
       chunks.push(...contentChunks);
     }
 
-    // Define schema for different report types
+    // Define schema based on document type
     const reportSchemas = {
-      "executive-summary": z.object({
+      "Report": z.object({
+        executiveSummary: z.string().describe("A brief overview of the report"),
         keyFindings: z.array(z.object({
-          content: z.string(),
-          source: z.string(),
-        })).describe("List of key findings with their sources"),
-        mainInsights: z.array(z.object({
-          content: z.string(),
-          source: z.string(),
-        })).describe("List of main insights with their sources"),
-        recommendations: z.array(z.object({
-          content: z.string(),
-          source: z.string(),
-        })).describe("List of recommendations with their sources"),
-      }),
-      "detailed-analysis": z.object({
-        findings: z.array(z.object({
           title: z.string(),
           description: z.string(),
           evidence: z.array(z.string()),
           source: z.string(),
-        })).describe("Detailed findings with supporting evidence and sources"),
+        })).describe("List of key findings with supporting evidence"),
         recommendations: z.array(z.object({
           action: z.string(),
           impact: z.string(),
           timeline: z.string(),
-        })).describe("Detailed recommendations with impact assessment"),
-        risks: z.array(z.object({
+        })).describe("List of actionable recommendations"),
+      }),
+      "Proposal": z.object({
+        executiveSummary: z.string().describe("A brief overview of the proposal"),
+        objectives: z.array(z.string()).describe("Key objectives of the proposal"),
+        solution: z.object({
           description: z.string(),
-          severity: z.string(),
-          mitigation: z.string(),
-        })).describe("Risk analysis with mitigation strategies"),
+          benefits: z.array(z.string()),
+          implementation: z.array(z.object({
+            phase: z.string(),
+            activities: z.array(z.string()),
+            timeline: z.string(),
+          })),
+        }).describe("Detailed solution and implementation plan"),
+        budget: z.array(z.object({
+          item: z.string(),
+          cost: z.string(),
+          justification: z.string(),
+        })).describe("Budget breakdown"),
       }),
     };
 
     // Initialize ChatGroq with structured output
     const model = new ChatGroq({
       modelName: "mixtral-8x7b-32768",
-      temperature: 0,
-    }).withStructuredOutput(reportSchemas[template], {
-      name: "report",
-      includeRaw: true,
-    });
+      temperature: 0.7,
+    }).withStructuredOutput(reportSchemas[documentType]);
 
     // Process chunks sequentially
     const processedChunks = [];
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       const chunkNumber = i + 1;
-      const sourceInfo = {
-        chunkNumber,
-        preview: chunk.substring(0, 100)
-      };
 
       const result = await model.invoke(
-        `Analyze this content and provide a structured report. ${
-          prompt ? `Focus on: ${prompt}. ` : ''
-        }This is chunk ${chunkNumber} of ${chunks.length}. 
-         Include this text as the source: "${sourceInfo.preview}...":\n\n${chunk}`
+        `You are a professional document writer. Create a ${documentType.toLowerCase()}${
+          subType ? ` (specifically a ${subType})` : ''
+        } based on the following content${
+          prompt ? ` with this focus: ${prompt}` : ''
+        }. This is chunk ${chunkNumber} of ${chunks.length}:\n\n${chunk}`
       );
 
-      const processedResult = addSourceInfo(result.parsed, sourceInfo);
-      processedChunks.push(processedResult);
+      processedChunks.push(result);
     }
 
-    // Combine the processed chunks based on template type
-    const combinedReport = template === "executive-summary"
-      ? combineExecutiveSummaries(processedChunks)
-      : combineDetailedAnalyses(processedChunks);
+    // Combine the processed chunks into a final document
+    const combinedDocument = {
+      type: documentType,
+      subType: subType,
+      content: processedChunks[0], // For now, just use the first chunk's structure
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        sourceFiles: selectedFiles,
+        prompt: prompt || null,
+      }
+    };
 
-    return new Response(JSON.stringify(combinedReport), {
+    return new Response(JSON.stringify(combinedDocument), {
       headers: { "Content-Type": "application/json" },
     });
+
   } catch (error) {
-    console.error("Error generating report:", error);
+    console.error("Error generating document:", error);
     return new Response(
       JSON.stringify({
-        error: "Failed to generate report",
+        error: "Failed to generate document",
         details: error.message,
       }),
       {
