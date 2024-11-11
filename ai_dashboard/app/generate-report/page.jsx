@@ -109,7 +109,7 @@ export default function GenerateReportPage() {
         .filter(file => selectedFiles.includes(file.file_path))
         .map(file => file.content);
 
-      const response = await fetch('/api/generate-report', {
+      const response = await fetch('/api/generate-report-groq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
