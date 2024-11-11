@@ -324,17 +324,17 @@ export default function CreateDocument() {
         {currentStep === 2 && (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-purple-600" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">
+              <h1 className="text-lg font-bold">
                 Write what your {selectedSubType || selectedType} should be
                 about
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm">
                 With this information, we will craft an exceptional{" "}
                 {selectedSubType || selectedType} for you.
               </p>
