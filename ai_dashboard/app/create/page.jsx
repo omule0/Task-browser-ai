@@ -155,6 +155,11 @@ export default function CreateDocument() {
     setCharacterCount(e.target.value.length);
   };
 
+  const handleExampleSelect = (exampleText) => {
+    setInputValue(exampleText);
+    setCharacterCount(exampleText.length);
+  };
+
   // Auth check similar to dashboard
   useEffect(() => {
     const supabase = createClient();
@@ -351,22 +356,29 @@ export default function CreateDocument() {
 
                   {showExamples && (
                     <div className="grid gap-4">
-                      {documentExamples[selectedType]?.[selectedSubType]?.map(
-                        (example, index) => (
-                          <Card key={index} className="p-4 bg-gray-50">
-                            <div className="flex justify-between items-start">
-                              <p className="text-gray-600">{example.text}</p>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setInputValue(example.text)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </Card>
-                        )
-                      )}
+                      {documentExamples[selectedType]?.[selectedSubType]?.map((example, index) => (
+                        <Card 
+                          key={index} 
+                          className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => handleExampleSelect(example.text)}
+                        >
+                          <div className="flex justify-between items-start">
+                            <p className="text-gray-600">
+                              {example.text}
+                            </p>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent triggering the card click
+                                handleExampleSelect(example.text);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </Card>
+                      ))}
                     </div>
                   )}
                 </div>
