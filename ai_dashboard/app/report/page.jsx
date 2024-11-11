@@ -28,14 +28,16 @@ export default function CreateDocument() {
   const [selectedType, setSelectedType] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const totalSteps = 3;
+  const totalSteps = 4;
   const [showExamples, setShowExamples] = useState(false);
   const [characterCount, setCharacterCount] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [selectedSubType, setSelectedSubType] = useState(null);
   const MINIMUM_CHARACTERS = 30;
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [files, setFiles] = useState([]);
 
-  const steps = ["Document Type", "Content Details", "Review"];
+  const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
   const documentTypes = [
     { icon: <FileText className="h-6 w-6" />, title: "Report" },
@@ -202,6 +204,45 @@ export default function CreateDocument() {
     }
   };
 
+  const loadFiles = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data: filesData, error } = await supabase
+        .from('document_content')
+        .select(`
+          file_path,
+          content,
+          created_at
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const processedFiles = filesData.map(file => {
+        const pathParts = file.file_path.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+        const parts = fileName.split('-');
+        const originalName = parts.slice(2).join('-');
+        
+        return {
+          ...file,
+          originalName,
+          fileName
+        };
+      });
+
+      setFiles(processedFiles);
+    } catch (error) {
+      console.error('Error loading files:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadFiles();
+  }, []);
+
   if (loading || !user) {
     return <Loading />;
   }
@@ -323,6 +364,60 @@ export default function CreateDocument() {
 
         {currentStep === 2 && (
           <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Select Files</h2>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="space-y-4">
+                {files.map((file) => (
+                  <div
+                    key={file.file_path}
+                    className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedFiles.includes(file.file_path)}
+                      onChange={(e) => {
+                        setSelectedFiles(prev =>
+                          e.target.checked
+                            ? [...prev, file.file_path]
+                            : prev.filter(f => f !== file.file_path)
+                        );
+                      }}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <FileText className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <div className="font-medium">{file.originalName}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(file.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {files.length === 0 && (
+                  <div className="text-center text-gray-500 py-4">
+                    No files available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-8">
+              <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                Previous
+              </Button>
+              <Button
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={() => setCurrentStep(3)}
+                disabled={selectedFiles.length === 0}
+              >
+                Next step
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-purple-600" />
@@ -415,12 +510,12 @@ export default function CreateDocument() {
 
             {/* Navigation buttons */}
             <div className="flex justify-between items-center mt-8">
-              <Button variant="outline" onClick={() => setCurrentStep(1)}>
+              <Button variant="outline" onClick={() => setCurrentStep(2)}>
                 Previous
               </Button>
               <Button
                 className="bg-purple-600 hover:bg-purple-700 text-white"
-                onClick={() => setCurrentStep(3)}
+                onClick={() => setCurrentStep(4)}
                 disabled={characterCount < MINIMUM_CHARACTERS}
               >
                 Next step
@@ -429,9 +524,9 @@ export default function CreateDocument() {
           </div>
         )}
 
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <div className="flex justify-between items-center mt-8">
-            <Button variant="outline" onClick={() => setCurrentStep(2)}>
+            <Button variant="outline" onClick={() => setCurrentStep(3)}>
               Previous
             </Button>
             <Button className="bg-purple-600 hover:bg-purple-700 text-white">
