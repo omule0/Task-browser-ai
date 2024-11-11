@@ -8,9 +8,8 @@ const groq = createGroq({
 export async function POST(req) {
   const { documentType, subType } = await req.json();
 
-  const prompt = `Write a brief description for a ${subType || documentType}. 
-    The description should be professional, clear, and detailed enough to serve 
-    as a starting point for creating the document. Keep it between 100-200 characters.`;
+  const prompt = `Given you are to write a  ${subType || documentType}. 
+    generate a topic sentence for the document. Keep it between 100-200 characters.`;
 
   const result = await streamText({
     model: groq('llama-3.1-70b-versatile'),
