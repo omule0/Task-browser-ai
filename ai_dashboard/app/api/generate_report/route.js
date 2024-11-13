@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export async function POST(req) {
   try {
-    const { documentType, subType, content, selectedFiles, fileContents } = await req.json();
+    const { documentType, subType, content, fileContents } = await req.json();
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -23,23 +23,6 @@ export async function POST(req) {
     const getSchema = (type, subType) => {
       const baseSchema = {
         Report: {
-          "Student report": z.object({
-            academicProgress: z.array(
-              z.object({
-                area: z.string().describe("Area of study or skill"),
-                achievement: z.string().describe("Specific achievements and progress"),
-                evidence: z.array(z.string()).describe("Supporting evidence from source documents")
-              })
-            ),
-            recommendations: z.array(
-              z.object({
-                suggestion: z.string().describe("Specific recommendation for improvement"),
-                rationale: z.string().describe("Reasoning behind the recommendation"),
-                implementation: z.string().describe("How to implement the recommendation")
-              })
-            ),
-            summary: z.string().describe("Overall summary of the student's performance")
-          }),
           "Research report": z.object({
             methodology: z.object({
               approach: z.string(),
@@ -61,80 +44,7 @@ export async function POST(req) {
               })
             )
           }),
-          "Annual report": z.object({
-            executiveSummary: z.string(),
-            financialHighlights: z.array(
-              z.object({
-                metric: z.string(),
-                value: z.string(),
-                analysis: z.string()
-              })
-            ),
-            achievements: z.array(
-              z.object({
-                category: z.string(),
-                accomplishments: z.array(z.string())
-              })
-            ),
-            futureOutlook: z.object({
-              opportunities: z.array(z.string()),
-              challenges: z.array(z.string()),
-              strategies: z.array(z.string())
-            })
-          })
         },
-        Proposal: {
-          "Project proposal": z.object({
-            executiveSummary: z.string(),
-            projectScope: z.object({
-              objectives: z.array(z.string()),
-              deliverables: z.array(z.string()),
-              constraints: z.array(z.string())
-            }),
-            methodology: z.string(),
-            timeline: z.array(
-              z.object({
-                phase: z.string(),
-                duration: z.string(),
-                activities: z.array(z.string())
-              })
-            ),
-            budget: z.array(
-              z.object({
-                category: z.string(),
-                amount: z.string(),
-                justification: z.string()
-              })
-            )
-          }),
-          "Sales proposal": z.object({
-            summary: z.string(),
-            clientNeeds: z.array(
-              z.object({
-                need: z.string(),
-                solution: z.string()
-              })
-            ),
-            proposedSolution: z.object({
-              overview: z.string(),
-              benefits: z.array(z.string()),
-              features: z.array(
-                z.object({
-                  name: z.string(),
-                  description: z.string(),
-                  value: z.string()
-                })
-              )
-            }),
-            pricing: z.array(
-              z.object({
-                item: z.string(),
-                cost: z.string(),
-                details: z.string()
-              })
-            )
-          })
-        }
       };
 
       return baseSchema[type]?.[subType];
@@ -163,7 +73,12 @@ export async function POST(req) {
          
          Please ensure the report follows the required structure and incorporates relevant information from the source document.`
       );
-      processedChunks.push(result);
+
+      // Add the source text to the result
+      processedChunks.push({
+        ...result,
+        sourceText: chunk // Store the original chunk text
+      });
     }
 
     // Combine the results
@@ -182,41 +97,53 @@ export async function POST(req) {
   }
 }
 
-function combineReports(chunks, documentType, subType) {
-  // Track sources for each piece of content
+function combineReports(chunks) {
   const sourceMap = new Map();
   
   const combined = chunks.reduce((acc, chunk, index) => {
+    const sourceInfo = {
+      chunkIndex: `Chunk ${index + 1}`,
+      preview: truncateText(chunk.sourceText, 150) // Use the stored source text
+    };
+
     Object.entries(chunk).forEach(([key, value]) => {
+      if (key === 'sourceText') return; // Skip the sourceText field itself
+
       if (Array.isArray(value)) {
         // For array fields, add source with text preview
         const itemsWithSource = value.map(item => ({
           ...item,
-          source: {
-            chunkIndex: `Chunk ${index + 1}`,
-            preview: truncateText(chunk.sourceText || "No preview available", 150)
-          }
+          source: sourceInfo
         }));
         acc[key] = [...(acc[key] || []), ...itemsWithSource];
-      } else if (typeof value === 'object') {
-        // For nested objects, add source with text preview
+      } else if (typeof value === 'object' && value !== null) {
+        // For nested objects, recursively add source
+        const processNestedObject = (obj) => {
+          const processed = {};
+          Object.entries(obj).forEach(([nestedKey, nestedValue]) => {
+            if (Array.isArray(nestedValue)) {
+              processed[nestedKey] = nestedValue.map(item => 
+                typeof item === 'object' ? { ...item, source: sourceInfo } : item
+              );
+            } else if (typeof nestedValue === 'object' && nestedValue !== null) {
+              processed[nestedKey] = processNestedObject(nestedValue);
+            } else {
+              processed[nestedKey] = nestedValue;
+            }
+          });
+          return { ...processed, source: sourceInfo };
+        };
+        
         acc[key] = {
           ...(acc[key] || {}),
-          ...value,
-          source: {
-            chunkIndex: `Chunk ${index + 1}`,
-            preview: truncateText(chunk.sourceText || "No preview available", 150)
-          }
+          ...processNestedObject(value)
         };
       } else {
         // For simple fields, track source in sourceMap
         acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
         sourceMap.set(key, [
           ...(sourceMap.get(key) || []),
-          {
-            chunkIndex: `Chunk ${index + 1}`,
-            preview: truncateText(chunk.sourceText || "No preview available", 150)
-          }
+          sourceInfo
         ]);
       }
     });

@@ -8,13 +8,6 @@ import { Loading } from "@/components/ui/loading";
 import {
   ChevronDown,
   FileText,
-  Layout,
-  GraduationCap,
-  Search,
-  BarChart3,
-  Briefcase,
-  DollarSign,
-  Handshake,
   Sparkles,
   ChevronUp,
   Pencil,
@@ -31,7 +24,7 @@ import {
 } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-
+import { documentTypes, subTypes, documentExamples } from "./constants/constants";
 export default function CreateDocument() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedType, setSelectedType] = useState(null);
@@ -51,107 +44,6 @@ export default function CreateDocument() {
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
-  const documentTypes = [
-    { icon: <FileText className="h-6 w-6" />, title: "Report" },
-    { icon: <Layout className="h-6 w-6" />, title: "Proposal" },
-  ];
-
-  const subTypes = {
-    Report: [
-      {
-        icon: <GraduationCap className="h-5 w-5" />,
-        title: "Student report",
-        description:
-          "A document detailing a student's academic progress or findings",
-      },
-      {
-        icon: <Search className="h-5 w-5" />,
-        title: "Research report",
-        description:
-          "A detailed document presenting clear findings and analysis",
-      },
-      {
-        icon: <BarChart3 className="h-5 w-5" />,
-        title: "Annual report",
-        description: "A trustworthy update on annual financial achievements",
-      },
-    ],
-    Proposal: [
-      {
-        icon: <Briefcase className="h-5 w-5" />,
-        title: "Project proposal",
-        description:
-          "A comprehensive plan outlining project scope and approach",
-      },
-      {
-        icon: <DollarSign className="h-5 w-5" />,
-        title: "Sales proposal",
-        description:
-          "A personalized document designed to persuade potential clients",
-      },
-      {
-        icon: <Handshake className="h-5 w-5" />,
-        title: "Partnership proposal",
-        description:
-          "A formal document outlining a business alliance or collaboration offer",
-      },
-    ],
-  };
-
-  const documentExamples = {
-    Report: {
-      "Student report": [
-        {
-          text: "A student report analyzing the impact of remote learning on student performance during the COVID-19 pandemic, including survey data and academic results.",
-        },
-        {
-          text: "A comprehensive student report examining the effectiveness of different study techniques among first-year university students.",
-        },
-      ],
-      "Research report": [
-        {
-          text: "A research report investigating the adoption of artificial intelligence in small businesses, including case studies and ROI analysis.",
-        },
-        {
-          text: "A detailed research report on emerging renewable energy technologies and their potential impact on urban power grids.",
-        },
-      ],
-      "Annual report": [
-        {
-          text: "An annual report highlighting the company's sustainable initiatives, financial performance, and strategic growth in the Asia-Pacific market.",
-        },
-        {
-          text: "A comprehensive annual report showcasing the organization's achievements, financial metrics, and future expansion plans.",
-        },
-      ],
-    },
-    Proposal: {
-      "Project proposal": [
-        {
-          text: "A project proposal for implementing a company-wide digital transformation initiative, including timeline and resource allocation.",
-        },
-        {
-          text: "A detailed project proposal for developing a sustainable smart city infrastructure system.",
-        },
-      ],
-      "Sales proposal": [
-        {
-          text: "A sales proposal for an enterprise-level cloud computing solution tailored for healthcare providers.",
-        },
-        {
-          text: "A customized sales proposal for implementing an AI-powered customer service platform.",
-        },
-      ],
-      "Partnership proposal": [
-        {
-          text: "A partnership proposal for collaboration between a tech startup and an established manufacturer to develop IoT solutions.",
-        },
-        {
-          text: "A strategic partnership proposal for joint market expansion in emerging markets.",
-        },
-      ],
-    },
-  };
 
   const handleCardClick = (title) => {
     setSelectedType(title);
@@ -204,6 +96,7 @@ export default function CreateDocument() {
         body: {
           documentType: selectedType,
           subType: selectedSubType,
+          selectedFiles: selectedFiles,
         },
       });
       
