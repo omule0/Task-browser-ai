@@ -1,10 +1,11 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req) {
   try {
-    const { documentType, subType, content, fileContents } = await req.json();
+    const { documentType, subType, content, fileContents, selectedFiles, workspaceId } = await req.json();
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -53,6 +54,28 @@ export async function POST(req) {
 
     // Combine the results
     const combinedReport = combineReports(processedChunks, documentType, subType);
+
+    // After generating the report, store it in the database
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const { error: insertError } = await supabase
+      .from('generated_reports')
+      .insert({
+        user_id: user.id,
+        workspace_id: workspaceId,
+        document_type: documentType,
+        sub_type: subType,
+        content: content,
+        report_data: combinedReport,
+        source_files: selectedFiles
+      });
+
+    if (insertError) throw insertError;
 
     return new Response(JSON.stringify(combinedReport), {
       headers: { "Content-Type": "application/json" },

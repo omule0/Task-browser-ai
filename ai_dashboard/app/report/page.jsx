@@ -16,16 +16,12 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useCompletion } from 'ai/react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { documentTypes, subTypes, documentExamples } from "./constants/constants";
+import { useWorkspace } from "@/context/workspace-context";
+import { useRouter } from "next/navigation";
+
 export default function CreateDocument() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedType, setSelectedType] = useState(null);
   const [user, setUser] = useState(null);
@@ -41,6 +37,7 @@ export default function CreateDocument() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState(null);
   const [generationError, setGenerationError] = useState(null);
+  const { currentWorkspace } = useWorkspace();
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -150,6 +147,11 @@ export default function CreateDocument() {
 
   const generateReport = async () => {
     try {
+      if (!currentWorkspace) {
+        customToast.error('Please select a workspace first');
+        return;
+      }
+
       setIsGenerating(true);
       setGenerationError(null);
 
@@ -179,15 +181,18 @@ export default function CreateDocument() {
           content: inputValue,
           selectedFiles,
           fileContents,
+          workspaceId: currentWorkspace.id,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate report');
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to generate report');
       }
 
       const report = await response.json();
       setGeneratedReport(report);
+      router.push('/reports');
       
     } catch (error) {
       console.error('Error generating report:', error);
@@ -195,77 +200,6 @@ export default function CreateDocument() {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const renderReportContent = (key, value) => {
-    if (Array.isArray(value)) {
-      return value.map((item, index) => (
-        <div key={index} className="border-l-2 border-purple-200 pl-4 py-2">
-          {renderReportItem(item)}
-          {item.source && (
-            <div className="mt-2">
-              <Badge variant="secondary" className="text-xs">
-                Source: {item.source.chunkIndex}
-              </Badge>
-              <p className="text-xs text-gray-500 mt-1">
-                {item.source.preview}
-              </p>
-            </div>
-          )}
-        </div>
-      ));
-    } else if (typeof value === 'object' && value !== null) {
-      if (value.content) {
-        return (
-          <div>
-            <p>{value.content}</p>
-            {value.sources && value.sources.map((source, index) => (
-              <div key={index} className="mt-2">
-                <Badge variant="secondary" className="text-xs">
-                  Source: {source.chunkIndex}
-                </Badge>
-                <p className="text-xs text-gray-500 mt-1">
-                  {source.preview}
-                </p>
-              </div>
-            ))}
-          </div>
-        );
-      }
-      return Object.entries(value).map(([subKey, subValue], index) => (
-        <div key={index} className="mt-2">
-          <h4 className="font-medium text-sm">{subKey.replace(/([A-Z])/g, ' $1').trim()}</h4>
-          {renderReportContent(subKey, subValue)}
-        </div>
-      ));
-    }
-    return <p>{value}</p>;
-  };
-
-  const renderReportItem = (item) => {
-    if (typeof item === 'string') return <p>{item}</p>;
-    
-    return Object.entries(item).map(([key, value]) => {
-      if (key === 'source') return null;
-      if (Array.isArray(value)) {
-        return (
-          <div key={key} className="mt-2">
-            <h4 className="font-medium text-sm">{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
-            <ul className="list-disc list-inside">
-              {value.map((v, i) => (
-                <li key={i} className="text-sm">{v}</li>
-              ))}
-            </ul>
-          </div>
-        );
-      }
-      return (
-        <div key={key} className="mt-2">
-          <h4 className="font-medium text-sm">{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
-          <p className="text-sm">{value}</p>
-        </div>
-      );
-    });
   };
 
   if (loading || !user) {
@@ -600,29 +534,6 @@ export default function CreateDocument() {
               {generationError && (
                 <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
                   {generationError}
-                </div>
-              )}
-
-              {/* Generated Report Display */}
-              {generatedReport && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Generated Report</h3>
-                  <ScrollArea className="h-[600px] rounded-md border p-4">
-                    <Accordion type="single" collapsible className="w-full">
-                      {Object.entries(generatedReport).map(([key, value], index) => (
-                        <AccordionItem key={index} value={`item-${index}`}>
-                          <AccordionTrigger className="text-left">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="space-y-4">
-                              {renderReportContent(key, value)}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </ScrollArea>
                 </div>
               )}
             </div>
