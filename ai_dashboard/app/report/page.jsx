@@ -243,6 +243,55 @@ export default function CreateDocument() {
     loadFiles();
   }, []);
 
+  const generateReport = async () => {
+    try {
+      // Get content from selected files
+      const supabase = createClient();
+      const fileContents = await Promise.all(
+        selectedFiles.map(async (filePath) => {
+          const { data, error } = await supabase
+            .from('document_content')
+            .select('content')
+            .eq('file_path', filePath)
+            .single();
+
+          if (error) throw error;
+          return data.content;
+        })
+      );
+
+      const response = await fetch('/api/generate_report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentType: selectedType,
+          subType: selectedSubType,
+          content: inputValue,
+          selectedFiles,
+          fileContents,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      const report = await response.json();
+      
+      // Handle the generated report (e.g., save to database, display to user)
+      console.log('Generated report:', report);
+      
+      // You might want to navigate to a new page to display the report
+      // or update the UI to show the generated content
+
+    } catch (error) {
+      console.error('Error generating report:', error);
+      // Show error message to user
+    }
+  };
+
   if (loading || !user) {
     return <Loading />;
   }
@@ -525,13 +574,17 @@ export default function CreateDocument() {
         )}
 
         {currentStep === 4 && (
-          <div className="flex justify-between items-center mt-8">
-            <Button variant="outline" onClick={() => setCurrentStep(3)}>
-              Previous
-            </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-              Create Document
-            </Button>
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Review and Generate</h2>
+              {/* Add review content here */}
+              <Button
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={generateReport}
+              >
+                Generate Report
+              </Button>
+            </div>
           </div>
         )}
       </div>
