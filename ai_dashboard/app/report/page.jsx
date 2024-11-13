@@ -563,9 +563,13 @@ export default function CreateDocument() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
                   <div className="mt-1 space-y-1">
-                    {selectedFiles.map((file, index) => (
-                      <div key={index} className="text-sm">{file}</div>
-                    ))}
+                    {selectedFiles.map((file, index) => {
+                      const parts = file.split('/').pop().split('-');
+                      const originalName = parts.slice(2).join('-');
+                      return (
+                        <div key={index} className="text-sm">{originalName}</div>
+                      );
+                    })}
                   </div>
                 </div>
                 <div>
@@ -619,25 +623,15 @@ export default function CreateDocument() {
                       ))}
                     </Accordion>
                   </ScrollArea>
-
-                  {/* Export buttons */}
-                  <div className="mt-4 flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => exportReport(generatedReport, 'pdf')}
-                    >
-                      Export as PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => exportReport(generatedReport, 'docx')}
-                    >
-                      Export as DOCX
-                    </Button>
-                  </div>
                 </div>
               )}
             </div>
+            {/* Navigation buttons */}
+            <div className="flex justify-between items-center mt-8">
+                <Button variant="outline" onClick={() => setCurrentStep(3)}>
+                  Previous
+                </Button>
+              </div>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ChatOpenAI } from "@langchain/openai";
-import { z } from "zod";
+import { getSchema } from "./schemas/reportSchemas";
 
 export async function POST(req) {
   try {
@@ -20,36 +20,6 @@ export async function POST(req) {
     }
 
     // Define schemas based on document type and subtype
-    const getSchema = (type, subType) => {
-      const baseSchema = {
-        Report: {
-          "Research report": z.object({
-            methodology: z.object({
-              approach: z.string(),
-              dataCollection: z.string(),
-              analysis: z.string()
-            }),
-            findings: z.array(
-              z.object({
-                key: z.string().describe("Key finding"),
-                evidence: z.array(z.string()),
-                implications: z.string()
-              })
-            ),
-            conclusions: z.array(z.string()),
-            recommendations: z.array(
-              z.object({
-                recommendation: z.string(),
-                justification: z.string()
-              })
-            )
-          }),
-        },
-      };
-
-      return baseSchema[type]?.[subType];
-    };
-
     const schema = getSchema(documentType, subType);
     if (!schema) {
       throw new Error("Invalid document type or subtype");
