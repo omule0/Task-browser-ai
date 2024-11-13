@@ -101,13 +101,41 @@ export function FilePreview({ refresh }) {
 
       setDeleting(fileName);
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      const { error } = await supabase.storage
+      if (userError) throw userError;
+
+      // Get file metadata for size
+      const { data: fileMetadata } = await supabase.storage
+        .from('documents')
+        .list(`${currentWorkspace.id}/${user.id}`, {
+          search: fileName
+        });
+
+      const fileSize = fileMetadata?.[0]?.metadata?.size || 0;
+
+      // Delete the file
+      const { error: deleteError } = await supabase.storage
         .from('documents')
         .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+
+      // Update storage usage
+      const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
+        user_id_input: user.id,
+        bytes_to_remove: fileSize
+      });
+
+      if (updateError) throw updateError;
+
+      // Delete parsed content if it exists
+      const { error: contentDeleteError } = await supabase
+        .from('document_content')
+        .delete()
+        .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`);
+
+      if (contentDeleteError) throw contentDeleteError;
 
       setFiles(files.filter(file => file.name !== fileName));
       customToast.success('File deleted successfully');
