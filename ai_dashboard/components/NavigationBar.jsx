@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, FolderIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, FolderIcon, FileIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
@@ -44,11 +44,17 @@ export function NavigationBar() {
       icon: <FolderIcon className="h-5 w-5" />,
     },
     {
-      label: "Canvas",
-      href: "/canvas",
-      isActive: pathname === "/canvas",
-      icon: <LayoutDashboardIcon className="h-5 w-5" />,
+      label: "Documents",
+      href: "/reports",
+      isActive: pathname === "/reports",
+      icon: <FileIcon className="h-5 w-5" />,
     },
+    // {
+    //   label: "Canvas",
+    //   href: "/canvas",
+    //   isActive: pathname === "/canvas",
+    //   icon: <LayoutDashboardIcon className="h-5 w-5" />,
+    // },
     {
       label: "Settings",
       href: "/#",

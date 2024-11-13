@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { SearchIcon, BarChartIcon, DatabaseIcon, UploadIcon } from "lucide-react";
+import { SearchIcon, BarChartIcon, UploadIcon, FileIcon } from "lucide-react";
 import { UploadSidebar } from "./UploadSidebar";
+import { useRouter } from "next/navigation";
 
 function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled, onClick }) {
   return (
@@ -25,6 +26,7 @@ function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, 
 
 export function ActionCards({ onUploadSuccess }) {
   const [isUploadSidebarOpen, setIsUploadSidebarOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <>
@@ -57,13 +59,13 @@ export function ActionCards({ onUploadSuccess }) {
           disabled={true}
         />
         <ActionCard
-          icon={<DatabaseIcon className="w-6 h-6" />}
-          title="Connect Data"
-          description="Connect your data source"
+          icon={<FileIcon className="w-6 h-6" />}
+          title="Create Document"
+          description="Create a document"
           bgColor="bg-white"
           hoverColor="hover:bg-orange-50"
           iconColor="text-orange-500"
-          disabled={true}
+          onClick={() => router.push('/create-document')}
         />
       </div>
 

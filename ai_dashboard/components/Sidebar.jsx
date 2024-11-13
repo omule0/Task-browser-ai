@@ -9,7 +9,9 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FolderIcon,
+  FileIcon,
   LayoutDashboard,
+  BarChart2Icon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,11 +87,17 @@ export function Sidebar() {
       href: "/files",
       isActive: pathname === "/files",
     },
+    // {
+    //   icon: <LayoutDashboard className="w-5 h-5" />,
+    //   label: "Canvas",
+    //   href: "/canvas",
+    //   isActive: pathname === "/canvas",
+    // },
     {
-      icon: <LayoutDashboard className="w-5 h-5" />,
-      label: "Canvas",
-      href: "/canvas",
-      isActive: pathname === "/canvas",
+      icon: <FileIcon className="w-5 h-5" />,
+      label: "Documents",
+      href: "/reports",
+      isActive: pathname === "/reports",
     },
     {
       icon: <SettingsIcon className="w-5 h-5" />,

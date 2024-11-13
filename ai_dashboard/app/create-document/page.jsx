@@ -88,7 +88,7 @@ export default function CreateDocument() {
   }, []);
 
   const { complete, isLoading } = useCompletion({
-    api: "/api/write_for_me",
+    api: "/api/topic_generator",
   });
 
   const handleWriteForMe = async () => {
