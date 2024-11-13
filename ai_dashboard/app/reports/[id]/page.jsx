@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,14 @@ import { useRouter } from "next/navigation";
 import { renderReportContent } from "@/utils/reportRendering";
 
 export default function ReportDetail({ params }) {
+  const resolvedParams = use(params);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     loadReport();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   const loadReport = async () => {
     try {
@@ -23,7 +24,7 @@ export default function ReportDetail({ params }) {
       const { data, error } = await supabase
         .from('generated_reports')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', resolvedParams.id)
         .single();
 
       if (error) throw error;
