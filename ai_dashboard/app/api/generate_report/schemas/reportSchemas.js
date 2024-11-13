@@ -18,7 +18,6 @@ export const reportSchemas = {
         z.object({
           finding: z.string().describe("Key research finding"),
           evidence: z.array(z.string()).describe("Supporting data or observations"),
-          visualization: z.string().optional().describe("Description of any tables, graphs, or statistics")
         })
       ),
       discussion: z.object({

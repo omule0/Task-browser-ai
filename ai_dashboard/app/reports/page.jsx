@@ -4,9 +4,10 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, ChevronRight, Calendar } from "lucide-react";
+import { FileText, ChevronRight, Calendar, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "@/context/workspace-context";
+import { customToast } from "@/components/ui/toast-theme";
 
 export default function GeneratedReports() {
   const [reports, setReports] = useState([]);
@@ -38,6 +39,32 @@ export default function GeneratedReports() {
       console.error('Error loading reports:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (e, reportId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('generated_reports')
+        .delete()
+        .match({ 
+          id: reportId,
+          user_id: (await supabase.auth.getUser()).data.user.id 
+        });
+
+      if (error) {
+        throw error;
+      }
+      
+      customToast.success('Report deleted successfully');
+      loadReports();
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      customToast.error(error.message || 'Failed to delete report');
     }
   };
 
@@ -79,6 +106,14 @@ export default function GeneratedReports() {
                       {new Date(report.created_at).toLocaleDateString()}
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-400 hover:text-red-600"
+                    onClick={(e) => handleDelete(e, report.id)}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
               </div>
