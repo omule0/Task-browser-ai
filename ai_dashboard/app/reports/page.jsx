@@ -74,7 +74,7 @@ export default function GeneratedReports() {
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Generated Reports</h1>
-        <Link href="/report">
+        <Link href="/create-document">
           <Button className="bg-purple-600 hover:bg-purple-700 text-white">
             Generate New Report
           </Button>

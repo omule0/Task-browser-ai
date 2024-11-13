@@ -43,6 +43,12 @@ export default function CreateDocument() {
   const [generatedReport, setGeneratedReport] = useState(null);
   const [generationError, setGenerationError] = useState(null);
   const { currentWorkspace } = useWorkspace();
+  const [progress, setProgress] = useState({
+    setup: 0,
+    analysis: 0,
+    generation: 0,
+    optimization: 0
+  });
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -212,6 +218,21 @@ export default function CreateDocument() {
       setIsGenerating(false);
     }
   };
+
+  useEffect(() => {
+    let interval;
+    if (isGenerating) {
+      interval = setInterval(() => {
+        setProgress(prev => ({
+          setup: Math.min(prev.setup + 2, 100),
+          analysis: Math.min(prev.analysis + 1.5, 100),
+          generation: Math.min(prev.generation + 1, 100),
+          optimization: Math.min(prev.optimization + 0.8, 100)
+        }));
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
   if (loading || !user) {
     return <Loading />;
@@ -500,71 +521,94 @@ export default function CreateDocument() {
 
         {currentStep === 4 && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Review and Generate
-              </h2>
-
-              {/* Summary of selections */}
-              <div className="mb-6 space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Document Type
-                  </h3>
-                  <p className="mt-1">{selectedSubType || selectedType}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Selected Files
-                  </h3>
-                  <div className="mt-1 space-y-1">
-                    {selectedFiles.map((file, index) => {
-                      const parts = file.split("/").pop().split("-");
-                      const originalName = parts.slice(2).join("-");
-                      return (
-                        <div key={index} className="text-sm">
-                          {originalName}
-                        </div>
-                      );
-                    })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-purple-600" />
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Requirements
-                  </h3>
-                  <p className="mt-1 text-sm">{inputValue}</p>
+
+                <div className="space-y-4">
+                  <h1 className="text-2xl font-bold">
+                    {isGenerating ? (
+                      <>
+                        We're generating your{' '}
+                        <span className="text-purple-600">{selectedSubType || selectedType}</span> now
+                      </>
+                    ) : (
+                      'Review and Generate'
+                    )}
+                  </h1>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
+                      <p className="mt-1">{selectedSubType || selectedType}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
+                      <div className="mt-1 space-y-1">
+                        {selectedFiles.map((file, index) => {
+                          const parts = file.split("/").pop().split("-");
+                          const originalName = parts.slice(2).join("-");
+                          return (
+                            <div key={index} className="text-sm">{originalName}</div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                      <p className="mt-1 text-sm">{inputValue}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Generate button */}
-              {!generatedReport && (
+              {isGenerating ? (
+                <div className="space-y-4">
+                  <Card className="p-4 flex justify-between items-center">
+                    <span className="font-medium">Initial setup</span>
+                    <Progress value={progress.setup} className="w-32 h-2" />
+                  </Card>
+                  <Card className="p-4 flex justify-between items-center">
+                    <span className="font-medium">Content analysis</span>
+                    <Progress value={progress.analysis} className="w-32 h-2" />
+                  </Card>
+                  <Card className="p-4 flex justify-between items-center">
+                    <span className="font-medium">Report generation</span>
+                    <Progress value={progress.generation} className="w-32 h-2" />
+                  </Card>
+                  <Card className="p-4 flex justify-between items-center">
+                    <span className="font-medium">Final optimization</span>
+                    <Progress value={progress.optimization} className="w-32 h-2" />
+                  </Card>
+                </div>
+              ) : (
                 <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                  className="bg-purple-600 hover:bg-purple-700 text-white w-1/2 h-12 text-lg mx-auto"
                   onClick={generateReport}
                   disabled={isGenerating}
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Report...
-                    </>
-                  ) : (
-                    "Generate Report"
-                  )}
+                  Generate Report
                 </Button>
               )}
-
-              {/* Error message */}
-              {generationError && (
-                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
-                  {generationError}
-                </div>
-              )}
             </div>
+
+            {/* Error message */}
+            {generationError && (
+              <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
+                {generationError}
+              </div>
+            )}
+
             {/* Navigation buttons */}
             <div className="flex justify-between items-center mt-8">
-              <Button variant="outline" onClick={() => setCurrentStep(3)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(3)}
+                disabled={isGenerating}
+              >
                 Previous
               </Button>
             </div>
