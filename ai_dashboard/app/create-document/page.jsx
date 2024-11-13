@@ -15,10 +15,15 @@ import {
   Loader2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { useCompletion } from 'ai/react';
-import { documentTypes, subTypes, documentExamples } from "./constants/constants";
+import { useCompletion } from "ai/react";
+import {
+  documentTypes,
+  subTypes,
+  documentExamples,
+} from "./constants/constants";
 import { useWorkspace } from "@/context/workspace-context";
 import { useRouter } from "next/navigation";
+import { customToast } from "@/components/ui/toast-theme";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -40,7 +45,6 @@ export default function CreateDocument() {
   const { currentWorkspace } = useWorkspace();
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
-
 
   const handleCardClick = (title) => {
     setSelectedType(title);
@@ -84,60 +88,64 @@ export default function CreateDocument() {
   }, []);
 
   const { complete, isLoading } = useCompletion({
-    api: '/api/write_for_me',
+    api: "/api/write_for_me",
   });
 
   const handleWriteForMe = async () => {
     try {
-      const completion = await complete('', {
+      const completion = await complete("", {
         body: {
           documentType: selectedType,
           subType: selectedSubType,
           selectedFiles: selectedFiles,
         },
       });
-      
+
       if (completion) {
         setInputValue(completion);
         setCharacterCount(completion.length);
       }
     } catch (error) {
-      console.error('Error generating text:', error);
+      console.error("Error generating text:", error);
     }
   };
 
   const loadFiles = async () => {
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       const { data: filesData, error } = await supabase
-        .from('document_content')
-        .select(`
+        .from("document_content")
+        .select(
+          `
           file_path,
           content,
           created_at
-        `)
-        .eq('user_id', user.id);
+        `
+        )
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
-      const processedFiles = filesData.map(file => {
-        const pathParts = file.file_path.split('/');
+      const processedFiles = filesData.map((file) => {
+        const pathParts = file.file_path.split("/");
         const fileName = pathParts[pathParts.length - 1];
-        const parts = fileName.split('-');
-        const originalName = parts.slice(2).join('-');
-        
+        const parts = fileName.split("-");
+        const originalName = parts.slice(2).join("-");
+
         return {
           ...file,
           originalName,
-          fileName
+          fileName,
         };
       });
 
       setFiles(processedFiles);
     } catch (error) {
-      console.error('Error loading files:', error);
+      console.error("Error loading files:", error);
     }
   };
 
@@ -148,7 +156,7 @@ export default function CreateDocument() {
   const generateReport = async () => {
     try {
       if (!currentWorkspace) {
-        customToast.error('Please select a workspace first');
+        customToast.error("Please select a workspace first");
         return;
       }
 
@@ -160,9 +168,9 @@ export default function CreateDocument() {
       const fileContents = await Promise.all(
         selectedFiles.map(async (filePath) => {
           const { data, error } = await supabase
-            .from('document_content')
-            .select('content')
-            .eq('file_path', filePath)
+            .from("document_content")
+            .select("content")
+            .eq("file_path", filePath)
             .single();
 
           if (error) throw error;
@@ -170,10 +178,10 @@ export default function CreateDocument() {
         })
       );
 
-      const response = await fetch('/api/generate_report', {
-        method: 'POST',
+      const response = await fetch("/api/generate_report", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           documentType: selectedType,
@@ -187,16 +195,19 @@ export default function CreateDocument() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate report');
+        throw new Error(errorData.details || "Failed to generate report");
       }
 
       const report = await response.json();
       setGeneratedReport(report);
-      router.push('/reports');
-      
+      customToast.success("Report generated successfully!");
+      setTimeout(() => {
+        router.push("/reports");
+      }, 1000); // Short delay to allow toast to be visible
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error("Error generating report:", error);
       setGenerationError(error.message);
+      customToast.error("Failed to generate report");
     } finally {
       setIsGenerating(false);
     }
@@ -335,10 +346,10 @@ export default function CreateDocument() {
                       type="checkbox"
                       checked={selectedFiles.includes(file.file_path)}
                       onChange={(e) => {
-                        setSelectedFiles(prev =>
+                        setSelectedFiles((prev) =>
                           e.target.checked
                             ? [...prev, file.file_path]
-                            : prev.filter(f => f !== file.file_path)
+                            : prev.filter((f) => f !== file.file_path)
                         );
                       }}
                       className="h-4 w-4 rounded border-gray-300"
@@ -425,42 +436,46 @@ export default function CreateDocument() {
                         <ChevronDown className="ml-2 h-4 w-4" />
                       )}
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="text-purple-600"
                       onClick={handleWriteForMe}
                       disabled={isLoading}
                     >
-                      <Wand2 className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      {isLoading ? 'Writing...' : 'Write it for me'}
+                      <Wand2
+                        className={`mr-2 h-4 w-4 ${
+                          isLoading ? "animate-spin" : ""
+                        }`}
+                      />
+                      {isLoading ? "Writing..." : "Write it for me"}
                     </Button>
                   </div>
 
                   {showExamples && (
                     <div className="grid gap-4">
-                      {documentExamples[selectedType]?.[selectedSubType]?.map((example, index) => (
-                        <Card 
-                          key={index} 
-                          className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                          onClick={() => handleExampleSelect(example.text)}
-                        >
-                          <div className="flex justify-between items-start">
-                            <p className="text-gray-600">
-                              {example.text}
-                            </p>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent triggering the card click
-                                handleExampleSelect(example.text);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
+                      {documentExamples[selectedType]?.[selectedSubType]?.map(
+                        (example, index) => (
+                          <Card
+                            key={index}
+                            className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                            onClick={() => handleExampleSelect(example.text)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <p className="text-gray-600">{example.text}</p>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent triggering the card click
+                                  handleExampleSelect(example.text);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </Card>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -486,28 +501,38 @@ export default function CreateDocument() {
         {currentStep === 4 && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Review and Generate</h2>
-              
+              <h2 className="text-xl font-semibold mb-4">
+                Review and Generate
+              </h2>
+
               {/* Summary of selections */}
               <div className="mb-6 space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Document Type
+                  </h3>
                   <p className="mt-1">{selectedSubType || selectedType}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Selected Files
+                  </h3>
                   <div className="mt-1 space-y-1">
                     {selectedFiles.map((file, index) => {
-                      const parts = file.split('/').pop().split('-');
-                      const originalName = parts.slice(2).join('-');
+                      const parts = file.split("/").pop().split("-");
+                      const originalName = parts.slice(2).join("-");
                       return (
-                        <div key={index} className="text-sm">{originalName}</div>
+                        <div key={index} className="text-sm">
+                          {originalName}
+                        </div>
                       );
                     })}
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Requirements
+                  </h3>
                   <p className="mt-1 text-sm">{inputValue}</p>
                 </div>
               </div>
@@ -525,7 +550,7 @@ export default function CreateDocument() {
                       Generating Report...
                     </>
                   ) : (
-                    'Generate Report'
+                    "Generate Report"
                   )}
                 </Button>
               )}
@@ -539,10 +564,10 @@ export default function CreateDocument() {
             </div>
             {/* Navigation buttons */}
             <div className="flex justify-between items-center mt-8">
-                <Button variant="outline" onClick={() => setCurrentStep(3)}>
-                  Previous
-                </Button>
-              </div>
+              <Button variant="outline" onClick={() => setCurrentStep(3)}>
+                Previous
+              </Button>
+            </div>
           </div>
         )}
       </div>
