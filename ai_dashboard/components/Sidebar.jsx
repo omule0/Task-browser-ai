@@ -138,7 +138,7 @@ export function Sidebar() {
         </Button>
       </div>
 
-      {!isCollapsed && (
+      {/* {!isCollapsed && (
         <div className="relative mb-4">
           <Input
             type="text"
@@ -146,7 +146,7 @@ export function Sidebar() {
             className="p-2 rounded-lg border border-gray-300 focus:ring-purple-500"
           />
         </div>
-      )}
+      )} */}
 
       <nav className="space-y-2">
         {navigationItems.map((item, index) => (

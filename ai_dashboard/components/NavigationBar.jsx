@@ -99,13 +99,13 @@ export function NavigationBar() {
                 <div className="mb-4">
                   <WorkspaceSwitcher onAction={() => setIsMenuOpen(false)} />
                 </div>
-                <div className="relative">
+                {/* <div className="relative">
                   <Input
                     type="text"
                     placeholder="Search"
                     className="w-full p-2 rounded-lg border border-gray-300 focus:ring-purple-500"
                   />
-                </div>
+                </div> */}
               </div>
 
               {/* Navigation Items */}
