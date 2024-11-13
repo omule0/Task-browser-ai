@@ -8,7 +8,7 @@ import {
   SettingsIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  FolderIcon,
+  FileText,
   FileIcon,
   LayoutDashboard,
   BarChart2Icon,
@@ -82,7 +82,7 @@ export function Sidebar() {
       isActive: pathname === "/",
     },
     {
-      icon: <FolderIcon className="w-5 h-5" />,
+      icon: <FileIcon className="w-5 h-5" />,
       label: "Files",
       href: "/files",
       isActive: pathname === "/files",
@@ -94,7 +94,7 @@ export function Sidebar() {
     //   isActive: pathname === "/canvas",
     // },
     {
-      icon: <FileIcon className="w-5 h-5" />,
+      icon: <FileText className="w-5 h-5" />,
       label: "Documents",
       href: "/reports",
       isActive: pathname === "/reports",
