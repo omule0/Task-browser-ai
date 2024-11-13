@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { renderReportContent } from "@/utils/reportRendering";
 
 export default function ReportDetail({ params }) {
   const resolvedParams = use(params);
@@ -59,16 +58,8 @@ export default function ReportDetail({ params }) {
 
       <div className="bg-white rounded-lg shadow p-6">
         <div className="prose max-w-none">
-          {Object.entries(report.report_data).map(([key, value], index) => (
-            <div key={index} className="mb-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {key.replace(/([A-Z])/g, ' $1').trim()}
-              </h2>
-              <div className="space-y-4">
-                {renderReportContent(key, value)}
-              </div>
-            </div>
-          ))}
+          {/* Render json report data */}
+          {JSON.stringify(report.report_data)}
         </div>
       </div>
     </div>
