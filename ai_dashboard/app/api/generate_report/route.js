@@ -6,12 +6,6 @@ export async function POST(req) {
   try {
     const { documentType, subType, content, selectedFiles, fileContents } = await req.json();
 
-    console.log("documentType", documentType);
-    console.log("subType", subType);
-    console.log("content", content);
-    console.log("selectedFiles", selectedFiles);
-    console.log("fileContents", fileContents);
-
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 90000,
@@ -153,7 +147,7 @@ export async function POST(req) {
 
     // Initialize ChatOpenAI with structured output
     const model = new ChatOpenAI({
-      modelName: "gpt-4",
+      modelName: "gpt-4o-mini",
       temperature: 0,
     }).withStructuredOutput(schema);
 
@@ -189,23 +183,61 @@ export async function POST(req) {
 }
 
 function combineReports(chunks, documentType, subType) {
-  // Implement combining logic based on document type and subtype
-  // This is a simplified example
-  const combined = chunks.reduce((acc, chunk) => {
+  // Track sources for each piece of content
+  const sourceMap = new Map();
+  
+  const combined = chunks.reduce((acc, chunk, index) => {
     Object.entries(chunk).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        acc[key] = [...(acc[key] || []), ...value];
+        // For array fields, add source with text preview
+        const itemsWithSource = value.map(item => ({
+          ...item,
+          source: {
+            chunkIndex: `Chunk ${index + 1}`,
+            preview: truncateText(chunk.sourceText || "No preview available", 150)
+          }
+        }));
+        acc[key] = [...(acc[key] || []), ...itemsWithSource];
       } else if (typeof value === 'object') {
-        acc[key] = { ...(acc[key] || {}), ...value };
+        // For nested objects, add source with text preview
+        acc[key] = {
+          ...(acc[key] || {}),
+          ...value,
+          source: {
+            chunkIndex: `Chunk ${index + 1}`,
+            preview: truncateText(chunk.sourceText || "No preview available", 150)
+          }
+        };
       } else {
+        // For simple fields, track source in sourceMap
         acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
+        sourceMap.set(key, [
+          ...(sourceMap.get(key) || []),
+          {
+            chunkIndex: `Chunk ${index + 1}`,
+            preview: truncateText(chunk.sourceText || "No preview available", 150)
+          }
+        ]);
       }
     });
     return acc;
   }, {});
 
-  console.log("combined", combined);
+  // Add source information for simple fields
+  Object.keys(combined).forEach(key => {
+    if (typeof combined[key] === 'string') {
+      combined[key] = {
+        content: combined[key],
+        sources: sourceMap.get(key)
+      };
+    }
+  });
 
   return combined;
+}
 
+// Helper function to truncate text and add ellipsis
+function truncateText(text, maxLength) {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
 }

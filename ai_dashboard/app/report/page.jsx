@@ -19,9 +19,18 @@ import {
   ChevronUp,
   Pencil,
   Wand2,
+  Loader2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useCompletion } from 'ai/react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 export default function CreateDocument() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -36,6 +45,9 @@ export default function CreateDocument() {
   const MINIMUM_CHARACTERS = 30;
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [files, setFiles] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState(null);
+  const [generationError, setGenerationError] = useState(null);
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -245,6 +257,9 @@ export default function CreateDocument() {
 
   const generateReport = async () => {
     try {
+      setIsGenerating(true);
+      setGenerationError(null);
+
       // Get content from selected files
       const supabase = createClient();
       const fileContents = await Promise.all(
@@ -267,7 +282,7 @@ export default function CreateDocument() {
         },
         body: JSON.stringify({
           documentType: selectedType,
-          subType: selectedSubType,
+          subType: selectedSubType || selectedType,
           content: inputValue,
           selectedFiles,
           fileContents,
@@ -279,17 +294,85 @@ export default function CreateDocument() {
       }
 
       const report = await response.json();
+      setGeneratedReport(report);
       
-      // Handle the generated report (e.g., save to database, display to user)
-      console.log('Generated report:', report);
-      
-      // You might want to navigate to a new page to display the report
-      // or update the UI to show the generated content
-
     } catch (error) {
       console.error('Error generating report:', error);
-      // Show error message to user
+      setGenerationError(error.message);
+    } finally {
+      setIsGenerating(false);
     }
+  };
+
+  const renderReportContent = (key, value) => {
+    if (Array.isArray(value)) {
+      return value.map((item, index) => (
+        <div key={index} className="border-l-2 border-purple-200 pl-4 py-2">
+          {renderReportItem(item)}
+          {item.source && (
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs">
+                Source: {item.source.chunkIndex}
+              </Badge>
+              <p className="text-xs text-gray-500 mt-1">
+                {item.source.preview}
+              </p>
+            </div>
+          )}
+        </div>
+      ));
+    } else if (typeof value === 'object' && value !== null) {
+      if (value.content) {
+        return (
+          <div>
+            <p>{value.content}</p>
+            {value.sources && value.sources.map((source, index) => (
+              <div key={index} className="mt-2">
+                <Badge variant="secondary" className="text-xs">
+                  Source: {source.chunkIndex}
+                </Badge>
+                <p className="text-xs text-gray-500 mt-1">
+                  {source.preview}
+                </p>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return Object.entries(value).map(([subKey, subValue], index) => (
+        <div key={index} className="mt-2">
+          <h4 className="font-medium text-sm">{subKey.replace(/([A-Z])/g, ' $1').trim()}</h4>
+          {renderReportContent(subKey, subValue)}
+        </div>
+      ));
+    }
+    return <p>{value}</p>;
+  };
+
+  const renderReportItem = (item) => {
+    if (typeof item === 'string') return <p>{item}</p>;
+    
+    return Object.entries(item).map(([key, value]) => {
+      if (key === 'source') return null;
+      if (Array.isArray(value)) {
+        return (
+          <div key={key} className="mt-2">
+            <h4 className="font-medium text-sm">{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
+            <ul className="list-disc list-inside">
+              {value.map((v, i) => (
+                <li key={i} className="text-sm">{v}</li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+      return (
+        <div key={key} className="mt-2">
+          <h4 className="font-medium text-sm">{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
+          <p className="text-sm">{value}</p>
+        </div>
+      );
+    });
   };
 
   if (loading || !user) {
@@ -577,13 +660,90 @@ export default function CreateDocument() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-4">Review and Generate</h2>
-              {/* Add review content here */}
-              <Button
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-                onClick={generateReport}
-              >
-                Generate Report
-              </Button>
+              
+              {/* Summary of selections */}
+              <div className="mb-6 space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
+                  <p className="mt-1">{selectedSubType || selectedType}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
+                  <div className="mt-1 space-y-1">
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className="text-sm">{file}</div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                  <p className="mt-1 text-sm">{inputValue}</p>
+                </div>
+              </div>
+
+              {/* Generate button */}
+              {!generatedReport && (
+                <Button
+                  className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                  onClick={generateReport}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating Report...
+                    </>
+                  ) : (
+                    'Generate Report'
+                  )}
+                </Button>
+              )}
+
+              {/* Error message */}
+              {generationError && (
+                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
+                  {generationError}
+                </div>
+              )}
+
+              {/* Generated Report Display */}
+              {generatedReport && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Generated Report</h3>
+                  <ScrollArea className="h-[600px] rounded-md border p-4">
+                    <Accordion type="single" collapsible className="w-full">
+                      {Object.entries(generatedReport).map(([key, value], index) => (
+                        <AccordionItem key={index} value={`item-${index}`}>
+                          <AccordionTrigger className="text-left">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-4">
+                              {renderReportContent(key, value)}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </ScrollArea>
+
+                  {/* Export buttons */}
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => exportReport(generatedReport, 'pdf')}
+                    >
+                      Export as PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => exportReport(generatedReport, 'docx')}
+                    >
+                      Export as DOCX
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
