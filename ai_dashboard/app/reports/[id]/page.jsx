@@ -7,6 +7,82 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+const renderReportSection = (data, level = 0) => {
+  if (!data) return null;
+
+  if (Array.isArray(data)) {
+    return (
+      <ul className="list-disc pl-6 space-y-2">
+        {data.map((item, index) => (
+          <li key={index} className="text-gray-700">
+            {typeof item === 'object' ? (
+              <div>
+                {item.finding && <div className="font-medium">{item.finding}</div>}
+                {item.evidence && (
+                  <ul className="list-circle pl-6 mt-2">
+                    {item.evidence.map((evidence, i) => (
+                      <li key={i} className="text-gray-600">{evidence}</li>
+                    ))}
+                  </ul>
+                )}
+                {item.source && (
+                  <div className="text-sm text-gray-500 mt-1">
+                    Source: {item.source.chunkIndex} - {item.source.preview}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <span>{item}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (typeof data === 'object') {
+    return (
+      <div className={`space-y-4 ${level > 0 ? 'mt-4' : ''}`}>
+        {Object.entries(data).map(([key, value]) => {
+          if (key === 'source') {
+            return (
+              <div key={key} className="text-sm text-gray-500">
+                Source: {value.chunkIndex} - {value.preview}
+              </div>
+            );
+          }
+          
+          // Handle content with sources structure
+          if (key === 'content' && data.sources) {
+            return (
+              <div key={key}>
+                <p className="text-gray-700">{value}</p>
+                <div className="text-sm text-gray-500 mt-1">
+                  Sources:
+                  {data.sources.map((source, i) => (
+                    <div key={i}>{source.chunkIndex} - {source.preview}</div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={key}>
+              <h3 className={`font-medium capitalize mb-2 ${level === 0 ? 'text-xl' : 'text-lg'}`}>
+                {key.replace(/([A-Z])/g, ' $1').trim()}
+              </h3>
+              {renderReportSection(value, level + 1)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return <p className="text-gray-700">{data}</p>;
+};
+
 export default function ReportDetail({ params }) {
   const resolvedParams = use(params);
   const [report, setReport] = useState(null);
@@ -58,8 +134,7 @@ export default function ReportDetail({ params }) {
 
       <div className="bg-white rounded-lg shadow p-6">
         <div className="prose max-w-none">
-          {/* Render json report data */}
-          {JSON.stringify(report.report_data)}
+          {renderReportSection(report.report_data)}
         </div>
       </div>
     </div>

@@ -132,3 +132,6 @@ body {
   pointer-events: none;
 }
 
+.list-circle {
+  list-style-type: circle;
+}
