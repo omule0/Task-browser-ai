@@ -4,9 +4,115 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { 
+  ArrowLeft, 
+  ChevronDown, 
+  ChevronUp, 
+  ExternalLink,
+  Menu,
+  X,
+  Download,
+  Share2,
+  Printer,
+  Search,
+  BookOpen
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+const TableOfContents = ({ sections, activeSection, onSectionClick }) => {
+  return (
+    <div className="bg-white rounded-lg shadow p-4 sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <BookOpen className="w-5 h-5" />
+        Table of Contents
+      </h2>
+      <nav>
+        {sections.map((section) => (
+          <div key={section.id} className="mb-4">
+            <a
+              href={`#${section.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                onSectionClick(section.id);
+              }}
+              className={`block py-2 px-3 rounded-md transition-colors ${
+                activeSection === section.id
+                  ? "bg-blue-50 text-blue-600 font-medium"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              {section.title}
+            </a>
+            {section.subsections && (
+              <div className="ml-4 mt-2 border-l-2 border-gray-100">
+                {section.subsections.map((subsection) => (
+                  <a
+                    key={subsection.id}
+                    href={`#${subsection.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSectionClick(subsection.id);
+                    }}
+                    className={`block py-1 px-3 text-sm transition-colors ${
+                      activeSection === subsection.id
+                        ? "text-blue-600 font-medium"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {subsection.title}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
+const ActionBar = ({ onPrint, onDownload, onShare, onSearch }) => (
+  <div className="flex items-center gap-2 mb-6">
+    <Button
+      variant="outline"
+      size="sm"
+      className="flex items-center gap-2"
+      onClick={onPrint}
+    >
+      <Printer className="w-4 h-4" />
+      Print
+    </Button>
+    <Button
+      variant="outline"
+      size="sm"
+      className="flex items-center gap-2"
+      onClick={onDownload}
+    >
+      <Download className="w-4 h-4" />
+      Download PDF
+    </Button>
+    <Button
+      variant="outline"
+      size="sm"
+      className="flex items-center gap-2"
+      onClick={onShare}
+    >
+      <Share2 className="w-4 h-4" />
+      Share
+    </Button>
+    <div className="flex-grow" />
+    <div className="relative">
+      <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search in report..."
+        className="pl-9 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onChange={(e) => onSearch(e.target.value)}
+      />
+    </div>
+  </div>
+);
 
 const SectionCard = ({ title, children, defaultExpanded = true }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -121,93 +227,150 @@ const renderListItems = (items, type = "disc") => {
   );
 };
 
-const ResearchReport = ({ data }) => (
-  <div className="space-y-6">
-    <SectionCard title="Introduction">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Context</h3>
-          {renderContent(data.introduction.context)}
-          {data.introduction.source && <SourceReference source={data.introduction.source} />}
+const ResearchReport = ({ data, activeSection }) => {
+  return (
+    <div className="space-y-6">
+      <SectionCard title="Introduction" id="introduction" isActive={activeSection === "introduction"}>
+        <div className="space-y-6">
+          <div id="context">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Context</h3>
+            {renderContent(data.introduction.context)}
+            {data.introduction.source && <SourceReference source={data.introduction.source} />}
+          </div>
+          <div id="objectives">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Objectives</h3>
+            {renderListItems(data.introduction.objectives)}
+            {data.introduction.source && <SourceReference source={data.introduction.source} />}
+          </div>
+          <div id="significance">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Significance</h3>
+            {renderContent(data.introduction.significance)}
+            {data.introduction.source && <SourceReference source={data.introduction.source} />}
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Objectives</h3>
-          {renderListItems(data.introduction.objectives)}
-          {data.introduction.source && <SourceReference source={data.introduction.source} />}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Significance</h3>
-          {renderContent(data.introduction.significance)}
-          {data.introduction.source && <SourceReference source={data.introduction.source} />}
-        </div>
-      </div>
-    </SectionCard>
+      </SectionCard>
 
-    <SectionCard title="Methodology">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Research Design</h3>
-          {renderContent(data.methodology.researchDesign)}
-          {data.methodology.source && <SourceReference source={data.methodology.source} />}
+      <SectionCard title="Methodology" id="methodology" isActive={activeSection === "methodology"}>
+        <div className="space-y-6">
+          <div id="research-design">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Research Design</h3>
+            {renderContent(data.methodology.researchDesign)}
+            {data.methodology.source && <SourceReference source={data.methodology.source} />}
+          </div>
+          <div id="participants">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Participants</h3>
+            {renderContent(data.methodology.participants)}
+            {data.methodology.source && <SourceReference source={data.methodology.source} />}
+          </div>
+          <div id="data-collection">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Data Collection</h3>
+            {renderContent(data.methodology.dataCollection)}
+            {data.methodology.source && <SourceReference source={data.methodology.source} />}
+          </div>
+          <div id="analysis-method">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Analysis Method</h3>
+            {renderContent(data.methodology.analysisMethod)}
+            {data.methodology.source && <SourceReference source={data.methodology.source} />}
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Participants</h3>
-          {renderContent(data.methodology.participants)}
-          {data.methodology.source && <SourceReference source={data.methodology.source} />}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Data Collection</h3>
-          {renderContent(data.methodology.dataCollection)}
-          {data.methodology.source && <SourceReference source={data.methodology.source} />}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Analysis Method</h3>
-          {renderContent(data.methodology.analysisMethod)}
-          {data.methodology.source && <SourceReference source={data.methodology.source} />}
-        </div>
-      </div>
-    </SectionCard>
+      </SectionCard>
 
-    <SectionCard title="Key Findings">
-      {renderListItems(data.results)}
-    </SectionCard>
+      <SectionCard title="Key Findings" id="findings" isActive={activeSection === "findings"}>
+        {renderListItems(data.results)}
+      </SectionCard>
 
-    <SectionCard title="Discussion">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Interpretation</h3>
-          {renderListItems(data.discussion.interpretation)}
-          {data.discussion.source && <SourceReference source={data.discussion.source} />}
+      <SectionCard title="Discussion" id="discussion" isActive={activeSection === "discussion"}>
+        <div className="space-y-6">
+          <div id="interpretation">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Interpretation</h3>
+            {renderListItems(data.discussion.interpretation)}
+            {data.discussion.source && <SourceReference source={data.discussion.source} />}
+          </div>
+          <div id="implications">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Implications</h3>
+            {renderListItems(data.discussion.implications)}
+            {data.discussion.source && <SourceReference source={data.discussion.source} />}
+          </div>
+          <div id="limitations">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Limitations</h3>
+            {renderListItems(data.discussion.limitations)}
+            {data.discussion.source && <SourceReference source={data.discussion.source} />}
+          </div>
+          <div id="future-research">
+            <h3 className="text-lg font-medium text-gray-900 mb-3">Future Research</h3>
+            {renderListItems(data.discussion.futureResearch)}
+            {data.discussion.source && <SourceReference source={data.discussion.source} />}
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Implications</h3>
-          {renderListItems(data.discussion.implications)}
-          {data.discussion.source && <SourceReference source={data.discussion.source} />}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Limitations</h3>
-          {renderListItems(data.discussion.limitations)}
-          {data.discussion.source && <SourceReference source={data.discussion.source} />}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Future Research</h3>
-          {renderListItems(data.discussion.futureResearch)}
-          {data.discussion.source && <SourceReference source={data.discussion.source} />}
-        </div>
-      </div>
-    </SectionCard>
-  </div>
-);
+      </SectionCard>
+    </div>
+  );
+};
 
 export default function ReportDetail({ params }) {
   const resolvedParams = use(params);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState(null);
+  const [showToc, setShowToc] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+
+  const sections = [
+    {
+      id: "introduction",
+      title: "Introduction",
+      subsections: [
+        { id: "context", title: "Context" },
+        { id: "objectives", title: "Objectives" },
+        { id: "significance", title: "Significance" }
+      ]
+    },
+    {
+      id: "methodology",
+      title: "Methodology",
+      subsections: [
+        { id: "research-design", title: "Research Design" },
+        { id: "participants", title: "Participants" },
+        { id: "data-collection", title: "Data Collection" },
+        { id: "analysis-method", title: "Analysis Method" }
+      ]
+    },
+    {
+      id: "findings",
+      title: "Key Findings"
+    },
+    {
+      id: "discussion",
+      title: "Discussion",
+      subsections: [
+        { id: "interpretation", title: "Interpretation" },
+        { id: "implications", title: "Implications" },
+        { id: "limitations", title: "Limitations" },
+        { id: "future-research", title: "Future Research" }
+      ]
+    }
+  ];
 
   useEffect(() => {
     loadReport();
   }, [resolvedParams.id]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll("[id]");
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        if (section.offsetTop <= scrollPosition) {
+          setActiveSection(section.id);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const loadReport = async () => {
     try {
@@ -228,27 +391,105 @@ export default function ReportDetail({ params }) {
     }
   };
 
+  const handleSectionClick = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownload = () => {
+    // Implement PDF download functionality
+    console.log("Download PDF");
+  };
+
+  const handleShare = () => {
+    // Implement share functionality
+    console.log("Share report");
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    // Implement search highlighting
+  };
+
   if (loading) return <Loading />;
   if (!report) return null;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-8">
-        <Link href="/reports">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Reports
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {report.sub_type || report.document_type}
-        </h1>
-        <div className="flex items-center gap-2 mt-3 text-gray-500">
-          <span>Generated on {new Date(report.created_at).toLocaleDateString()}</span>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex gap-6">
+        {/* Sidebar with Table of Contents */}
+        <div className="w-64 hidden lg:block">
+          <TableOfContents
+            sections={sections}
+            activeSection={activeSection}
+            onSectionClick={handleSectionClick}
+          />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-grow">
+          <div className="mb-8">
+            <Link href="/reports">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Reports
+              </Button>
+            </Link>
+            
+            {/* Mobile ToC Toggle */}
+            <Button
+              variant="outline"
+              className="lg:hidden mb-4 ml-2"
+              onClick={() => setShowToc(!showToc)}
+            >
+              {showToc ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {showToc ? "Hide Contents" : "Show Contents"}
+            </Button>
+
+            <h1 className="text-3xl font-bold text-gray-900">
+              {report.sub_type || report.document_type}
+            </h1>
+            <div className="flex items-center gap-2 mt-3 text-gray-500">
+              <span>Generated on {new Date(report.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          {/* Mobile ToC */}
+          {showToc && (
+            <div className="lg:hidden mb-6">
+              <Card>
+                <CardContent className="py-4">
+                  <TableOfContents
+                    sections={sections}
+                    activeSection={activeSection}
+                    onSectionClick={handleSectionClick}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          <ActionBar
+            onPrint={handlePrint}
+            onDownload={handleDownload}
+            onShare={handleShare}
+            onSearch={handleSearch}
+          />
+
+          {report.report_data && (
+            <ResearchReport 
+              data={report.report_data} 
+              activeSection={activeSection}
+            />
+          )}
         </div>
       </div>
-
-      {report.report_data && <ResearchReport data={report.report_data} />}
     </div>
   );
 }
