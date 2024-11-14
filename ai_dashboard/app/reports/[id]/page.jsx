@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import html2pdf from 'html2pdf.js';
 
 const TableOfContents = ({ sections, activeSection, onSectionClick }) => {
   return (
@@ -403,8 +404,28 @@ export default function ReportDetail({ params }) {
   };
 
   const handleDownload = () => {
-    // Implement PDF download functionality
-    console.log("Download PDF");
+    // Get the content to convert to PDF
+    const element = document.getElementById('report-content');
+    
+    const opt = {
+      margin: 0.5,
+      // For A4 paper size
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+
+    // Remove the table of contents and action bar temporarily
+    const toc = document.querySelector('.toc-container');
+    const actionBar = document.querySelector('.action-bar');
+    if (toc) toc.style.display = 'none';
+    if (actionBar) actionBar.style.display = 'none';
+
+    // Generate PDF
+    html2pdf().set(opt).from(element).save()
+      .then(() => {
+        // Restore the hidden elements
+        if (toc) toc.style.display = 'block';
+        if (actionBar) actionBar.style.display = 'flex';
+      });
   };
 
   const handleShare = () => {
@@ -424,7 +445,7 @@ export default function ReportDetail({ params }) {
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex gap-6">
         {/* Sidebar with Table of Contents */}
-        <div className="w-64 hidden lg:block">
+        <div className="w-64 hidden lg:block toc-container">
           <TableOfContents
             sections={sections}
             activeSection={activeSection}
@@ -462,7 +483,7 @@ export default function ReportDetail({ params }) {
 
           {/* Mobile ToC */}
           {showToc && (
-            <div className="lg:hidden mb-6">
+            <div className="lg:hidden mb-6 toc-container">
               <Card>
                 <CardContent className="py-4">
                   <TableOfContents
@@ -475,18 +496,22 @@ export default function ReportDetail({ params }) {
             </div>
           )}
 
-          <ActionBar
-            onPrint={handlePrint}
-            onDownload={handleDownload}
-            onShare={handleShare}
-            onSearch={handleSearch}
-          />
+          <div className="action-bar">
+            <ActionBar
+              onPrint={handlePrint}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onSearch={handleSearch}
+            />
+          </div>
 
           {report.report_data && (
-            <ResearchReport 
-              data={report.report_data} 
-              activeSection={activeSection}
-            />
+            <div id="report-content">
+              <ResearchReport 
+                data={report.report_data} 
+                activeSection={activeSection}
+              />
+            </div>
           )}
         </div>
       </div>
