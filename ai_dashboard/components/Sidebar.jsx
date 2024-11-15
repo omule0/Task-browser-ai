@@ -51,7 +51,7 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
 }
 
 export function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 

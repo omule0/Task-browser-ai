@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import html2pdf from 'html2pdf.js';
 
 const TableOfContents = ({ sections, activeSection, onSectionClick }) => {
   return (
@@ -403,13 +402,15 @@ export default function ReportDetail({ params }) {
     window.print();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // Dynamically import html2pdf only on client side
+    const html2pdf = (await import('html2pdf.js')).default;
+    
     // Get the content to convert to PDF
     const element = document.getElementById('report-content');
     
     const opt = {
       margin: 0.5,
-      // For A4 paper size
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     };
 
