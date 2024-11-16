@@ -96,11 +96,20 @@ function combineReports(chunks) {
   const combined = chunks.reduce((acc, chunk, index) => {
     const sourceInfo = {
       chunkIndex: `Source [${index + 1}]`,
-      preview: truncateText(chunk.sourceText, 150) // Use the stored source text
+      preview: truncateText(chunk.sourceText, 150)
     };
 
     Object.entries(chunk).forEach(([key, value]) => {
-      if (key === 'sourceText') return; // Skip the sourceText field itself
+      if (key === 'sourceText') return;
+
+      if (key === 'title') {
+        // For title, only use the first occurrence
+        if (!acc[key]) {
+          acc[key] = value;
+          sourceMap.set(key, [sourceInfo]);
+        }
+        return;
+      }
 
       if (Array.isArray(value)) {
         // For array fields, add source with text preview

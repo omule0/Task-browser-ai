@@ -18,6 +18,12 @@ export default function BuysideDueDiligence({ report }) {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Report Title */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">{report.title.content}</h1>
+        <SourceTag source={report.title.sources[0]} />
+      </div>
+
       {/* Executive Summary */}
       <Card className="p-6">
         <SectionHeader icon={<TrendingUp className="w-6 h-6 text-blue-600" />} title="Executive Summary" />

@@ -1,8 +1,19 @@
 import { z } from "zod";
 
+const validateWordCount = (str, min = 6, max = 12) => {
+  const wordCount = str.trim().split(/\s+/).length;
+  return wordCount >= min && wordCount <= max;
+};
+
 export const reportSchemas = {
   Report: {
     "Research report": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the research report. Should be between 6-12 words"),
       introduction: z.object({
         context: z.string().describe("Background and context of the research"),
         objectives: z.array(z.string()).describe("Research objectives or questions"),
@@ -28,6 +39,12 @@ export const reportSchemas = {
       })
     }),
     "Buyside Due Diligence": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the due diligence report. Should be between 6-12 words"),
       executiveSummary: z.object({
         overview: z.string().describe("High-level overview of key findings"),
         recommendation: z.string().describe("Strategic recommendation based on analysis"),
