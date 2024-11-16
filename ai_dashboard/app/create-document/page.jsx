@@ -201,7 +201,7 @@ export default function CreateDocument() {
         })
       );
 
-      const response = await fetch("/api/generate_report", {
+      const response = await fetch("/api/generate_document", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -218,7 +218,7 @@ export default function CreateDocument() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to generate report");
+        throw new Error(errorData.details || `Failed to generate ${selectedSubType || selectedType}`);
       }
 
       const report = await response.json();
@@ -236,16 +236,16 @@ export default function CreateDocument() {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       setGeneratedReport(report);
-      customToast.success("Report generated successfully!");
+      customToast.success(`${selectedSubType || selectedType} generated successfully!`);
       
       // Delay navigation slightly longer to show completion state
       setTimeout(() => {
-        router.push("/reports");
+        router.push("/documents");
       }, 1000);
     } catch (error) {
-      console.error("Error generating report:", error);
+      console.error(`Error generating ${selectedSubType || selectedType}:`, error);
       setGenerationError(error.message);
-      customToast.error("Failed to generate report");
+      customToast.error(`Failed to generate ${selectedSubType || selectedType}`);
     } finally {
       setIsGenerating(false);
     }
@@ -648,7 +648,7 @@ export default function CreateDocument() {
                     <Progress value={progress.analysis} className="w-32 h-2" />
                   </Card>
                   <Card className="p-4 flex justify-between items-center">
-                    <span className="font-medium">Report generation</span>
+                    <span className="font-medium">{selectedSubType || selectedType} generation</span>
                     <Progress value={progress.generation} className="w-32 h-2" />
                   </Card>
                   <Card className="p-4 flex justify-between items-center">
@@ -657,17 +657,17 @@ export default function CreateDocument() {
                   </Card>
                   <p className="text-sm text-gray-500 text-center mt-4">
                     {progress.isComplete 
-                      ? "Report generated successfully!" 
-                      : <span className={shimmerClass}>Please wait while we generate your report...</span>}
+                      ? `${selectedSubType || selectedType} generated successfully!` 
+                      : <span className={shimmerClass}>Please wait while we generate your {selectedSubType || selectedType}...</span>}
                   </p>
                 </div>
               ) : (
                 <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white w-1/2 h-12 text-lg mx-auto"
+                  className="bg-purple-600 hover:bg-purple-700 text-white w-full h-12 text-lg mx-auto"
                   onClick={generateReport}
                   disabled={isGenerating}
                 >
-                  Generate Report
+                  Generate {selectedSubType || selectedType}
                 </Button>
               )}
             </div>
