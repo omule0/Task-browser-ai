@@ -95,7 +95,7 @@ function combineReports(chunks) {
   
   const combined = chunks.reduce((acc, chunk, index) => {
     const sourceInfo = {
-      chunkIndex: `Chunk ${index + 1}`,
+      chunkIndex: `Source [${index + 1}]`,
       preview: truncateText(chunk.sourceText, 150) // Use the stored source text
     };
 

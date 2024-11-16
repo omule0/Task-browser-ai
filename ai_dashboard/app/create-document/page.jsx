@@ -50,7 +50,8 @@ export default function CreateDocument() {
     setup: 0,
     analysis: 0,
     generation: 0,
-    optimization: 0
+    optimization: 0,
+    isComplete: false
   });
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
 
@@ -218,6 +219,13 @@ export default function CreateDocument() {
       }
 
       const report = await response.json();
+      setProgress(prev => ({
+        setup: 100,
+        analysis: 100,
+        generation: 100,
+        optimization: 100,
+        isComplete: true
+      }));
       setGeneratedReport(report);
       customToast.success("Report generated successfully!");
       setTimeout(() => {
@@ -234,18 +242,27 @@ export default function CreateDocument() {
 
   useEffect(() => {
     let interval;
-    if (isGenerating) {
+    if (isGenerating && !progress.isComplete) {
       interval = setInterval(() => {
-        setProgress(prev => ({
-          setup: Math.min(prev.setup + 2, 100),
-          analysis: Math.min(prev.analysis + 1.5, 100),
-          generation: Math.min(prev.generation + 1, 100),
-          optimization: Math.min(prev.optimization + 0.8, 100)
-        }));
+        setProgress(prev => {
+          // Slower progress increments
+          const newSetup = Math.min(prev.setup + 1, 95);
+          const newAnalysis = prev.setup > 30 ? Math.min(prev.analysis + 0.8, 95) : prev.analysis;
+          const newGeneration = prev.analysis > 40 ? Math.min(prev.generation + 0.6, 95) : prev.generation;
+          const newOptimization = prev.generation > 50 ? Math.min(prev.optimization + 0.4, 95) : prev.optimization;
+
+          return {
+            setup: newSetup,
+            analysis: newAnalysis,
+            generation: newGeneration,
+            optimization: newOptimization,
+            isComplete: false
+          };
+        });
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [isGenerating]);
+  }, [isGenerating, progress.isComplete]);
 
   if (loading || !user) {
     return <Loading />;
@@ -626,6 +643,11 @@ export default function CreateDocument() {
                     <span className="font-medium">Final optimization</span>
                     <Progress value={progress.optimization} className="w-32 h-2" />
                   </Card>
+                  <p className="text-sm text-gray-500 text-center mt-4">
+                    {progress.isComplete 
+                      ? "Report generated successfully!" 
+                      : "Please wait while we generate your report..."}
+                  </p>
                 </div>
               ) : (
                 <Button
