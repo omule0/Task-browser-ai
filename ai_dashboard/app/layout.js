@@ -28,9 +28,11 @@ export default async function RootLayout({ children }) {
         <Toaster/>
         <WorkspaceProvider>
           <div className="bg-gray-100 min-h-screen flex flex-col">
-            <Header/>
-            {user && <NavigationBar />}
-            <div className="flex flex-1 relative">
+            <div className="fixed top-0 left-0 right-0 z-50">
+              <Header/>
+              {user && <NavigationBar />}
+            </div>
+            <div className={`flex flex-1 relative ${user ? 'md:pt-[48px] pt-[96px]' : 'pt-[48px]'}`}>
               {user && <Sidebar />}
               <main className={`flex-1 p-6 ${!user ? 'w-full' : ''} md:ml-0`}>
                 {children}
