@@ -30,7 +30,7 @@ export async function POST(req) {
 
         pdfParser.on('pdfParser_dataReady', () => {
           parsedText = pdfParser.getRawTextContent();
-          console.log(parsedText);
+          // console.log(parsedText);
           resolve(parsedText);
         });
 

@@ -24,6 +24,7 @@ import {
 import { useWorkspace } from "@/context/workspace-context";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function CreateDocument() {
     generation: 0,
     optimization: 0
   });
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -118,6 +120,7 @@ export default function CreateDocument() {
 
   const loadFiles = async () => {
     try {
+      setIsLoadingFiles(true);
       const supabase = createClient();
       const {
         data: { user },
@@ -132,7 +135,8 @@ export default function CreateDocument() {
           created_at
         `
         )
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("workspace_id", currentWorkspace?.id);
 
       if (error) throw error;
 
@@ -152,12 +156,19 @@ export default function CreateDocument() {
       setFiles(processedFiles);
     } catch (error) {
       console.error("Error loading files:", error);
+    } finally {
+      setIsLoadingFiles(false);
     }
   };
 
   useEffect(() => {
-    loadFiles();
-  }, []);
+    if (currentWorkspace?.id) {
+      loadFiles();
+      setSelectedFiles([]);
+    } else {
+      setFiles([]);
+    }
+  }, [currentWorkspace?.id]);
 
   const generateReport = async () => {
     try {
@@ -358,36 +369,50 @@ export default function CreateDocument() {
             <h2 className="text-2xl font-semibold">Select Files</h2>
             <div className="bg-white rounded-lg shadow p-6">
               <div className="space-y-4">
-                {files.map((file) => (
-                  <div
-                    key={file.file_path}
-                    className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedFiles.includes(file.file_path)}
-                      onChange={(e) => {
-                        setSelectedFiles((prev) =>
-                          e.target.checked
-                            ? [...prev, file.file_path]
-                            : prev.filter((f) => f !== file.file_path)
-                        );
-                      }}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    <FileText className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <div className="font-medium">{file.originalName}</div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(file.created_at).toLocaleDateString()}
+                {isLoadingFiles ? (
+                  // Loading skeletons
+                  Array(3).fill(0).map((_, index) => (
+                    <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border">
+                      <Skeleton className="h-4 w-4" />
+                      <Skeleton className="h-5 w-5" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-4 w-[200px]" />
+                        <Skeleton className="h-3 w-[100px]" />
                       </div>
                     </div>
-                  </div>
-                ))}
-                {files.length === 0 && (
+                  ))
+                ) : files.length === 0 ? (
                   <div className="text-center text-gray-500 py-4">
                     No files available
                   </div>
+                ) : (
+                  // Existing file list rendering
+                  files.map((file) => (
+                    <div
+                      key={file.file_path}
+                      className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedFiles.includes(file.file_path)}
+                        onChange={(e) => {
+                          setSelectedFiles((prev) =>
+                            e.target.checked
+                              ? [...prev, file.file_path]
+                              : prev.filter((f) => f !== file.file_path)
+                          );
+                        }}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      <FileText className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <div className="font-medium">{file.originalName}</div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(file.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
