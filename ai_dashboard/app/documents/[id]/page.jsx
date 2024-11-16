@@ -5,16 +5,20 @@ import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import BuysideDueDiligence from "./buyside-due-diligence";
 import ResearchReport from "./research-report";
 
-export default function DocumentView({ params }) {
+export default function DocumentView() {
+  const params = useParams();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadReport();
-  }, []);
+    if (params.id) {
+      loadReport();
+    }
+  }, [params.id]);
 
   const loadReport = async () => {
     try {
