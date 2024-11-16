@@ -45,8 +45,8 @@ export function NavigationBar() {
     },
     {
       label: "Documents",
-      href: "/reports",
-      isActive: pathname === "/reports",
+      href: "/documents",
+      isActive: pathname === "/documents",
       icon: <FileText className="h-5 w-5" />,
     },
     // {

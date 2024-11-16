@@ -73,17 +73,17 @@ export default function GeneratedReports() {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Generated Reports</h1>
+        <h1 className="text-2xl font-semibold">Generated Documents</h1>
         <Link href="/create-document">
           <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-            Generate New Report
+            Generate New Document
           </Button>
         </Link>
       </div>
 
       <div className="grid gap-4">
         {reports.map((report) => (
-          <Link key={report.id} href={`/reports/${report.id}`}>
+          <Link key={report.id} href={`/documents/${report.id}`}>
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">

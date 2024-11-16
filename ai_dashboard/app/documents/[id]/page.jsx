@@ -457,10 +457,10 @@ export default function ReportDetail({ params }) {
         {/* Main Content */}
         <div className="flex-grow">
           <div className="mb-8">
-            <Link href="/reports">
+            <Link href="/documents">
               <Button variant="ghost" className="mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Reports
+                Back to Documents
               </Button>
             </Link>
             

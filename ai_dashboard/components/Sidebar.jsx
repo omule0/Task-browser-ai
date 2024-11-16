@@ -96,8 +96,8 @@ export function Sidebar() {
     {
       icon: <FileText className="w-5 h-5" />,
       label: "Documents",
-      href: "/reports",
-      isActive: pathname === "/reports",
+      href: "/documents",
+      isActive: pathname === "/documents",
     },
     {
       icon: <SettingsIcon className="w-5 h-5" />,
