@@ -42,7 +42,7 @@ export async function POST(req) {
          Source document content:
          ${chunk}
          
-         Please ensure the ${subType} follows the required structure and incorporates relevant information from the source document.`
+         Please ensure the ${documentType} follows the required structure and incorporates relevant information from the source document.`
       );
 
       // Add the source text to the result
