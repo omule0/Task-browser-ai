@@ -28,6 +28,9 @@ import { customToast } from "@/components/ui/toast-theme";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
+// Update the shimmer class with more contrasting colors
+const shimmerClass = "animate-pulse bg-gradient-to-r from-purple-300 via-purple-500 to-purple-300 bg-clip-text text-transparent font-semibold";
+
 export default function CreateDocument() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -245,11 +248,12 @@ export default function CreateDocument() {
     if (isGenerating && !progress.isComplete) {
       interval = setInterval(() => {
         setProgress(prev => {
-          // Slower progress increments
-          const newSetup = Math.min(prev.setup + 1, 95);
-          const newAnalysis = prev.setup > 30 ? Math.min(prev.analysis + 0.8, 95) : prev.analysis;
-          const newGeneration = prev.analysis > 40 ? Math.min(prev.generation + 0.6, 95) : prev.generation;
-          const newOptimization = prev.generation > 50 ? Math.min(prev.optimization + 0.4, 95) : prev.optimization;
+          // First three bars reach 100% quickly
+          const newSetup = Math.min(prev.setup + 2, 100);
+          const newAnalysis = prev.setup > 50 ? Math.min(prev.analysis + 1.5, 100) : prev.analysis;
+          const newGeneration = prev.analysis > 70 ? Math.min(prev.generation + 1, 100) : prev.generation;
+          // Last bar stays at 95% until complete
+          const newOptimization = prev.generation > 90 ? Math.min(prev.optimization + 0.4, 95) : prev.optimization;
 
           return {
             setup: newSetup,
@@ -646,7 +650,7 @@ export default function CreateDocument() {
                   <p className="text-sm text-gray-500 text-center mt-4">
                     {progress.isComplete 
                       ? "Report generated successfully!" 
-                      : "Please wait while we generate your report..."}
+                      : <span className={shimmerClass}>Please wait while we generate your report...</span>}
                   </p>
                 </div>
               ) : (
