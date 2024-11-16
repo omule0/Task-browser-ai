@@ -16,7 +16,7 @@ export async function POST(req) {
 
   const prompt = `Generate a topic sentence for a ${subType || documentType} that will analyze or discuss the following files: ${fileNames.join(', ')}. 
   Consider the file names as topics or themes to incorporate.
-  The topic sentence should be clear, specific, and between 30-100 characters.`;
+  The topic sentence should be clear, specific, and between 30-100 characters. Note only state the topic sentence, do not include any other text.`;
 
   const result = await streamText({
     model: groq('llama-3.1-70b-versatile'),
