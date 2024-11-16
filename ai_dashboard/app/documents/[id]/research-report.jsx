@@ -7,6 +7,7 @@ import {
   Microscope,  // Changed from Flask
   Target
 } from "lucide-react";
+import ReportActions from "@/components/report-actions";
 
 // First, let's define these as actual components
 const SectionHeader = ({ icon, title }) => (
@@ -23,10 +24,19 @@ const SourceTag = ({ source }) => (
 );
 
 export default function ResearchReport({ report }) {
+  const sections = [
+    { id: "introduction", title: "Introduction" },
+    { id: "methodology", title: "Methodology" },
+    { id: "results", title: "Results" },
+    { id: "discussion", title: "Discussion" }
+  ];
+
   if (!report) return null;
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <ReportActions sections={sections} />
+      
       {/* Report Title */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold">{report.title.content}</h1>
@@ -34,7 +44,7 @@ export default function ResearchReport({ report }) {
       </div>
 
       {/* Introduction */}
-      <Card className="p-6">
+      <Card id="introduction" className="p-6">
         <SectionHeader icon={<BookOpen className="w-6 h-6 text-blue-600" />} title="Introduction" />
         <div className="space-y-4">
           <div>
@@ -61,7 +71,7 @@ export default function ResearchReport({ report }) {
       </Card>
 
       {/* Methodology */}
-      <Card className="p-6">
+      <Card id="methodology" className="p-6">
         <SectionHeader icon={<Microscope className="w-6 h-6 text-purple-600" />} title="Methodology" />
         <div className="space-y-4">
           <div>
@@ -89,7 +99,7 @@ export default function ResearchReport({ report }) {
       </Card>
 
       {/* Results */}
-      <Card className="p-6">
+      <Card id="results" className="p-6">
         <SectionHeader icon={<BarChart className="w-6 h-6 text-green-600" />} title="Results" />
         <div className="space-y-4">
           {report.results?.map((result, index) => (
@@ -111,7 +121,7 @@ export default function ResearchReport({ report }) {
       </Card>
 
       {/* Discussion */}
-      <Card className="p-6">
+      <Card id="discussion" className="p-6">
         <SectionHeader icon={<MessageCircle className="w-6 h-6 text-yellow-600" />} title="Discussion" />
         <div className="space-y-4">
           <div>

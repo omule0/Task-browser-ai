@@ -1,8 +1,16 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, TrendingUp, Building2, Users, LineChart, Shield, Lightbulb } from "lucide-react";
+import ReportActions from "@/components/report-actions";
 
 export default function BuysideDueDiligence({ report }) {
+  const sections = [
+    { id: "executive-summary", title: "Executive Summary" },
+    { id: "market-analysis", title: "Market Analysis" },
+    { id: "risk-assessment", title: "Risk Assessment" },
+    { id: "recommendations", title: "Recommendations" }
+  ];
+
   const SectionHeader = ({ icon, title }) => (
     <div className="flex items-center gap-2 mb-4">
       {icon}
@@ -18,6 +26,8 @@ export default function BuysideDueDiligence({ report }) {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <ReportActions sections={sections} />
+      
       {/* Report Title */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold">{report.title.content}</h1>
@@ -25,7 +35,7 @@ export default function BuysideDueDiligence({ report }) {
       </div>
 
       {/* Executive Summary */}
-      <Card className="p-6">
+      <Card id="executive-summary" className="p-6">
         <SectionHeader icon={<TrendingUp className="w-6 h-6 text-blue-600" />} title="Executive Summary" />
         <div className="space-y-4">
           <div>
@@ -49,7 +59,7 @@ export default function BuysideDueDiligence({ report }) {
       </Card>
 
       {/* Market Analysis */}
-      <Card className="p-6">
+      <Card id="market-analysis" className="p-6">
         <SectionHeader icon={<LineChart className="w-6 h-6 text-green-600" />} title="Market Analysis" />
         <div className="space-y-6">
           <div>
@@ -110,7 +120,7 @@ export default function BuysideDueDiligence({ report }) {
       </Card>
 
       {/* Risk Assessment */}
-      <Card className="p-6">
+      <Card id="risk-assessment" className="p-6">
         <SectionHeader icon={<AlertTriangle className="w-6 h-6 text-red-600" />} title="Risk Assessment" />
         <div className="space-y-4">
           {report.riskAssessment.map((risk, index) => (
@@ -137,7 +147,7 @@ export default function BuysideDueDiligence({ report }) {
       </Card>
 
       {/* Recommendations */}
-      <Card className="p-6">
+      <Card id="recommendations" className="p-6">
         <SectionHeader icon={<Lightbulb className="w-6 h-6 text-yellow-600" />} title="Recommendations" />
         <div className="space-y-4">
           {[
