@@ -222,18 +222,26 @@ export default function CreateDocument() {
       }
 
       const report = await response.json();
-      setProgress(prev => ({
+      
+      // First ensure all progress bars reach 100%
+      setProgress({
         setup: 100,
         analysis: 100,
         generation: 100,
         optimization: 100,
         isComplete: true
-      }));
+      });
+
+      // Wait for a brief moment to ensure animations complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       setGeneratedReport(report);
       customToast.success("Report generated successfully!");
+      
+      // Delay navigation slightly longer to show completion state
       setTimeout(() => {
         router.push("/reports");
-      }, 1000); // Short delay to allow toast to be visible
+      }, 1000);
     } catch (error) {
       console.error("Error generating report:", error);
       setGenerationError(error.message);
@@ -248,12 +256,12 @@ export default function CreateDocument() {
     if (isGenerating && !progress.isComplete) {
       interval = setInterval(() => {
         setProgress(prev => {
-          // First three bars reach 100% quickly
-          const newSetup = Math.min(prev.setup + 2, 100);
-          const newAnalysis = prev.setup > 50 ? Math.min(prev.analysis + 1.5, 100) : prev.analysis;
-          const newGeneration = prev.analysis > 70 ? Math.min(prev.generation + 1, 100) : prev.generation;
-          // Last bar stays at 95% until complete
-          const newOptimization = prev.generation > 90 ? Math.min(prev.optimization + 0.4, 95) : prev.optimization;
+          // Faster progression for first three bars
+          const newSetup = Math.min(prev.setup + 4, 95);
+          const newAnalysis = prev.setup > 50 ? Math.min(prev.analysis + 3, 95) : prev.analysis;
+          const newGeneration = prev.analysis > 70 ? Math.min(prev.generation + 2, 95) : prev.generation;
+          // Slower progression for optimization
+          const newOptimization = prev.generation > 90 ? Math.min(prev.optimization + 1, 90) : prev.optimization;
 
           return {
             setup: newSetup,
