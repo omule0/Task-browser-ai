@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { ActionCards } from "@/components/ActionCards";
 import { FilePreview } from "@/components/FilePreview";
+import { ReportPreview } from "@/components/ReportPreview";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 
@@ -50,6 +51,9 @@ export default function Dashboard() {
         <ActionCards onUploadSuccess={handleUploadSuccess} />
         <div className="mt-8">
           <FilePreview refresh={refreshFiles} />
+        </div>
+        <div className="mt-8">
+          <ReportPreview />
         </div>
       </main>
     </>
