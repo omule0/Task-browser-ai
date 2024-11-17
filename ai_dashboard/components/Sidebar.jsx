@@ -121,14 +121,15 @@ export function Sidebar() {
   if (isMobile) return null;
 
   return (
-    <div className="relative flex">
+    <div className="relative flex h-full">
       <aside
         className={`
           flex-col
           bg-background
           p-4
-          transition-all duration-300
+          h-full
           border-r
+          transition-all duration-300
           ${isCollapsed ? "w-20" : "w-48"}
         `}
       >
@@ -138,7 +139,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
             {!isCollapsed && (
               <span className="px-2 text-xs font-medium text-muted-foreground">GENERAL</span>

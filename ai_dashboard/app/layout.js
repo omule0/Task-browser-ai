@@ -24,17 +24,17 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex flex-col`}>
         <Toaster/>
         <WorkspaceProvider>
-          <div className="bg-background min-h-screen flex flex-col">
-            <div className="fixed top-0 left-0 right-0 z-50">
+          <div className="flex flex-col h-full">
+            <div className="shrink-0">
               <Header/>
               {user && <NavigationBar />}
             </div>
-            <div className={`flex flex-1 relative ${user ? 'md:pt-[48px] pt-[96px]' : 'pt-[48px]'}`}>
+            <div className="flex flex-1 h-[calc(100vh-48px)] overflow-hidden">
               {user && <Sidebar />}
-              <main className={`flex-1 p-6 ${!user ? 'w-full' : ''} md:ml-0`}>
+              <main className="flex-1 overflow-y-auto p-6">
                 {children}
               </main>
             </div>
