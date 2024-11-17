@@ -7,36 +7,39 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/context/workspace-context';
 import { customToast } from "@/components/ui/toast-theme";
 import { FileIcon, defaultStyles } from 'react-file-icon';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 function FilePreviewSkeleton() {
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex justify-between items-center mb-4">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-4 w-24" />
-      </div>
-      <div className="space-y-3">
-        {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-          >
-            <div className="flex items-center space-x-3">
-              <Skeleton className="w-5 h-5 rounded" />
-              <div>
-                <Skeleton className="h-4 w-48 mb-1" />
-                <Skeleton className="h-3 w-24" />
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            >
+              <div className="flex items-center space-x-3">
+                <Skeleton className="w-5 h-5 rounded" />
+                <div>
+                  <Skeleton className="h-4 w-48 mb-1" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Skeleton className="w-8 h-8 rounded" />
+                <Skeleton className="w-8 h-8 rounded" />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Skeleton className="w-8 h-8 rounded" />
-              <Skeleton className="w-8 h-8 rounded" />
-            </div>
-          </div>
-        ))}
-        <Skeleton className="h-12 w-full rounded-lg" />
-      </div>
-    </div>
+          ))}
+          <Skeleton className="h-12 w-full rounded-lg" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -210,11 +213,13 @@ export function FilePreview({ refresh }) {
 
   if (!currentWorkspace) {
     return (
-      <div className="bg-white rounded-lg p-6 text-center">
-        <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No workspace selected</h3>
-        <p className="text-gray-500">Please select or create a workspace to view files</p>
-      </div>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-1">No workspace selected</h3>
+          <p className="text-muted-foreground">Please select or create a workspace to view files</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -224,27 +229,31 @@ export function FilePreview({ refresh }) {
 
   if (files.length === 0) {
     return (
-      <div className="bg-white rounded-lg p-6 text-center">
-        <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No files uploaded</h3>
-        <p className="text-gray-500">Your uploaded files will appear here</p>
-      </div>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-1">No files uploaded</h3>
+          <p className="text-muted-foreground">Your uploaded files will appear here</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium text-gray-900">Recent Files</h3>
-        <Link 
-          href="/files" 
-          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
-        >
-          View all files
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-      <div className="space-y-3">
+    <Card>
+      <CardHeader className="pb-0">
+        <div className="flex justify-between items-center">
+          <CardTitle>Recent Files</CardTitle>
+          <Link 
+            href="/files" 
+            className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+          >
+            View all files
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
         {files.slice(0, 2).map((file) => (
           <div
             key={file.name}
@@ -292,13 +301,13 @@ export function FilePreview({ refresh }) {
         {files.length > 2 && (
           <Link href="/files">
             <div className="text-center p-3 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors cursor-pointer">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 +{files.length - 2} more files
               </p>
             </div>
           </Link>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 } 
