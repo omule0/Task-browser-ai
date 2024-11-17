@@ -119,11 +119,9 @@ export function Sidebar() {
       `}
     >
       <div className="flex items-center justify-between mb-4">
-        {!isCollapsed && (
-          <div className="flex-1">
-            <WorkspaceSwitcher />
-          </div>
-        )}
+        <div className={`flex-1 ${isCollapsed ? 'w-full' : ''}`}>
+          <WorkspaceSwitcher isCollapsed={isCollapsed} />
+        </div>
         <Button
           variant="ghost"
           size="icon"
