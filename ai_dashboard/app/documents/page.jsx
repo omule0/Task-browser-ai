@@ -71,11 +71,11 @@ export default function GeneratedReports() {
   if (loading) return <Loading />;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Generated Documents</h1>
-        <Link href="/create-document">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold">Generated Documents</h1>
+        <Link href="/create-document" className="w-full sm:w-auto">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto">
             Generate New Document
           </Button>
         </Link>
@@ -85,36 +85,40 @@ export default function GeneratedReports() {
         {reports.map((report) => (
           <Link key={report.id} href={`/documents/${report.id}`}>
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center space-x-4 w-full sm:w-auto">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <FileText className="w-5 h-5 text-purple-600" />
                   </div>
-                  <div>
-                    <h3 className="font-medium">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium truncate">
                       {report.sub_type || report.document_type}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2 sm:line-clamp-1">
                       {report.content.substring(0, 100)}...
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 w-full sm:w-auto justify-end">
                   <div className="text-right">
                     <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {new Date(report.created_at).toLocaleDateString()}
+                      <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                      <span className="truncate">
+                        {new Date(report.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-400 hover:text-red-600"
-                    onClick={(e) => handleDelete(e, report.id)}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-400 hover:text-red-600"
+                      onClick={(e) => handleDelete(e, report.id)}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </Button>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </div>
                 </div>
               </div>
             </Card>
@@ -122,12 +126,12 @@ export default function GeneratedReports() {
         ))}
 
         {reports.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="text-center py-8 sm:py-12">
+            <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
               No reports generated yet
             </h3>
-            <p className="text-gray-500">
+            <p className="text-sm sm:text-base text-gray-500">
               Start by generating your first report
             </p>
           </div>
