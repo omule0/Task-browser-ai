@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ActionCards } from "@/components/ActionCards";
-import { FilePreview } from "@/components/FilePreview";
-import { ReportPreview } from "@/components/ReportPreview";
+import { DashboardTabs } from "@/components/DashboardTabs";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 
@@ -49,11 +48,8 @@ export default function Dashboard() {
           Welcome back, {user.user_metadata.full_name || user.email}
         </h2>
         <ActionCards onUploadSuccess={handleUploadSuccess} />
-        <div className="mt-8">
-          <FilePreview refresh={refreshFiles} />
-        </div>
-        <div className="mt-8">
-          <ReportPreview />
+        <div className="grid gap-4">
+          <DashboardTabs refresh={refreshFiles} />
         </div>
       </main>
     </>

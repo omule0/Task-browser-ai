@@ -50,7 +50,7 @@ export function ReportPreview() {
           </div>
 
           <div className="grid gap-4">
-            {[1, 2, 3].map((index) => (
+            {[1, 2].map((index) => (
               <Card key={index} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
