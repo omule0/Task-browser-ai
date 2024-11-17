@@ -40,16 +40,16 @@ function ActionCard({ icon, title, description, variant = "default", disabled, o
       )}
       onClick={disabled ? undefined : onClick}
     >
-      <div className="p-6 flex items-start space-x-4">
+      <div className="p-4 flex items-start space-x-3">
         <div className={cn(
-          "p-3 rounded-lg flex items-center justify-center",
+          "p-2 rounded-lg flex items-center justify-center",
           style.icon
         )}>
           {icon}
         </div>
-        <div className="space-y-1">
-          <h4 className="font-semibold tracking-tight">{title}</h4>
-          <p className="text-sm text-muted-foreground">{description}</p>
+        <div className="space-y-0.5">
+          <h4 className="font-medium text-sm">{title}</h4>
+          <p className="text-xs text-muted-foreground leading-tight">{description}</p>
         </div>
       </div>
     </Card>
