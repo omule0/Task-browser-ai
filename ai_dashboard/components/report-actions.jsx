@@ -42,7 +42,7 @@ export default function ReportActions({ sections }) {
             </nav>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 space-y-2">
+          <div className="bg-white rounded-lg shadow-lg p-4 space-y-2 w-48">
             <Button
               variant="ghost"
               className="w-full justify-start"
