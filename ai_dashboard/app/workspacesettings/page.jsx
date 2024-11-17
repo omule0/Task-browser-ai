@@ -6,6 +6,9 @@ import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 import { Loading } from "@/components/ui/loading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function WorkspaceSettings() {
   const [workspaces, setWorkspaces] = useState([]);
@@ -15,6 +18,7 @@ export default function WorkspaceSettings() {
   const [editName, setEditName] = useState("");
   const { currentWorkspace, loadWorkspaces: refreshWorkspaces } =
     useWorkspace();
+  const router = useRouter();
 
   useEffect(() => {
     loadWorkspaces();
@@ -132,8 +136,21 @@ export default function WorkspaceSettings() {
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Workspace Settings</CardTitle>
-            <CardDescription>Manage your workspaces</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Workspace Settings</CardTitle>
+                <CardDescription>Manage your workspaces</CardDescription>
+              </div>
+              {workspaces.length < 3 && (
+                <Button
+                  onClick={() => router.push('/create-workspace')}
+                  variant="outline"
+                >
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  Create Workspace
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {workspaces.length >= 3 && (
