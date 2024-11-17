@@ -23,7 +23,13 @@ export function WorkspaceSwitcher({ onAction }) {
     <div className="flex items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-[200px] justify-between">
+          <Button
+            variant="outline"
+            className="w-[200px] justify-between relative border-input bg-background hover:bg-accent hover:text-accent-foreground pl-3 text-left font-normal"
+          >
+            <span className="absolute -top-2.5 left-2 bg-background px-1 text-xs text-muted-foreground">
+              Workspace
+            </span>
             {currentWorkspace?.name ?? "Select workspace"}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
