@@ -7,6 +7,13 @@ import { customToast } from "@/components/ui/toast-theme";
 import { useWorkspace } from "@/context/workspace-context";
 import { Progress } from "@/components/ui/progress";
 import { FileIcon, defaultStyles } from 'react-file-icon';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
   const [uploading, setUploading] = useState(false);
@@ -239,126 +246,122 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-xl z-50 flex flex-col">
-      <div className="p-6 border-b">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Upload Files</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:w-[540px] md:w-[720px] overflow-y-auto">
+        <SheetHeader className="pb-6">
+          <div className="flex justify-between items-center">
+            <SheetTitle>Upload Files</SheetTitle>
+          </div>
+        </SheetHeader>
+
+        <div className="flex-1">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+              ${isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300'}
+              ${files.length > 0 ? 'border-green-500 bg-green-50' : ''}`}
           >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
+            <input {...getInputProps()} />
+            <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-600 mb-2">
+              {isDragActive
+                ? "Drop the files here"
+                : "Drag and drop files here, or click to select files"}
+            </p>
+            <p className="text-sm text-gray-500">
+              Supported file types: PDF, DOC, DOCX, TXT (Max 10MB)
+              {/* Supported files: PDF, DOC, DOCX, TXT, XLS, XLSX, CSV (Max 10MB) */}
+            </p>
+          </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-            ${isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300'}
-            ${files.length > 0 ? 'border-green-500 bg-green-50' : ''}`}
-        >
-          <input {...getInputProps()} />
-          <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 mb-2">
-            {isDragActive
-              ? "Drop the files here"
-              : "Drag and drop files here, or click to select files"}
-          </p>
-          <p className="text-sm text-gray-500">
-            Supported file types: PDF, DOC, DOCX, TXT (Max 10MB)
-            {/* Supported files: PDF, DOC, DOCX, TXT, XLS, XLSX, CSV (Max 10MB) */}
-          </p>
-        </div>
-
-        {files.length > 0 && (
-          <div className="mt-4">
-            <h3 className="font-medium mb-2">Selected Files:</h3>
-            <div className="space-y-3">
-              {files.map((file) => (
-                <div
-                  key={file.name}
-                  className="flex flex-col bg-gray-50 p-3 rounded group"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
-                        <FileIcon
-                          {...getFileIconProps(file.name)}
-                          {...defaultStyles}
-                        />
+          {files.length > 0 && (
+            <div className="mt-4">
+              <h3 className="font-medium mb-2">Selected Files:</h3>
+              <div className="space-y-3">
+                {files.map((file) => (
+                  <div
+                    key={file.name}
+                    className="flex flex-col bg-gray-50 p-3 rounded group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
+                          <FileIcon
+                            {...getFileIconProps(file.name)}
+                            {...defaultStyles}
+                          />
+                        </div>
+                        <span className="text-sm">{file.name}</span>
                       </div>
-                      <span className="text-sm">{file.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </span>
-                      {!uploading && (
-                        <button
-                          onClick={() => removeFile(file.name)}
-                          className="p-1 text-gray-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Remove file"
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {uploading && (
-                    <div className="w-full">
-                      <Progress 
-                        value={uploadProgress[file.name] || 0} 
-                        className="h-2"
-                      />
-                      <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs text-gray-500">
-                          {uploadProgress[file.name] === 100 ? (
-                            <span className="text-green-600">Complete</span>
-                          ) : (
-                            `${uploadProgress[file.name] || 0}%`
-                          )}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
                         </span>
-                        {uploadProgress[file.name] === 100 && (
-                          <span className="text-xs text-green-600">✓</span>
+                        {!uploading && (
+                          <button
+                            onClick={() => removeFile(file.name)}
+                            className="p-1 text-gray-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Remove file"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
                         )}
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {uploading && (
+                      <div className="w-full">
+                        <Progress 
+                          value={uploadProgress[file.name] || 0} 
+                          className="h-2"
+                        />
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-xs text-gray-500">
+                            {uploadProgress[file.name] === 100 ? (
+                              <span className="text-green-600">Complete</span>
+                            ) : (
+                              `${uploadProgress[file.name] || 0}%`
+                            )}
+                          </span>
+                          {uploadProgress[file.name] === 100 && (
+                            <span className="text-xs text-green-600">✓</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      <div className="border-t p-6">
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={uploadFiles}
-            disabled={files.length === 0 || uploading}
-            className={`px-4 py-2 text-sm text-white rounded-md flex items-center
-              ${files.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Uploading...
-              </>
-            ) : (
-              'Upload Files'
-            )}
-          </button>
+          )}
         </div>
-      </div>
-    </div>
+
+        <div className="border-t mt-6 pt-6">
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={uploadFiles}
+              disabled={files.length === 0 || uploading}
+              className={`px-4 py-2 text-sm text-white rounded-md flex items-center
+                ${files.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : (
+                'Upload Files'
+              )}
+            </button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 } 
 
