@@ -75,14 +75,24 @@ export function NavigationBar() {
               className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
               onClick={() => setIsMenuOpen(false)}
             />
-            <div className="fixed left-0 top-[96px] bottom-0 w-64 bg-background z-50 flex flex-col border-r">
-              <div className="p-4 border-b">
-                <div className="mb-4">
-                  <WorkspaceSwitcher onAction={() => setIsMenuOpen(false)} />
-                </div>
+            <div className="fixed left-0 top-0 h-screen w-64 bg-background z-50 flex flex-col border-r">
+              <div className="h-12 border-b flex items-center px-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="hover:bg-accent"
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium ml-2">{currentPage}</span>
               </div>
 
-              <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+              <div className="p-4 border-b">
+                <WorkspaceSwitcher onAction={() => setIsMenuOpen(false)} />
+              </div>
+
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                 {navigationItems.map((item, index) => (
                   <Link 
                     key={index} 
