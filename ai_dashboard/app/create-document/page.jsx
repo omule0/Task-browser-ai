@@ -333,7 +333,7 @@ export default function CreateDocument() {
         {currentStep === 1 && (
           <>
             <h2 className="text-2xl font-semibold">Select Document Type</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {documentTypes.map((doc) => (
                 <Card
                   key={doc.title}
@@ -342,10 +342,10 @@ export default function CreateDocument() {
                   }`}
                   onClick={() => handleCardClick(doc.title)}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-center text-center space-y-3">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col items-center text-center space-y-2">
                       <div
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           selectedType === doc.title
                             ? "bg-purple-500"
                             : "bg-purple-100"
@@ -353,7 +353,7 @@ export default function CreateDocument() {
                       >
                         {doc.icon}
                       </div>
-                      <h3 className="font-medium">{doc.title}</h3>
+                      <h3 className="text-sm font-medium">{doc.title}</h3>
                     </div>
                   </CardContent>
                 </Card>
@@ -362,26 +362,26 @@ export default function CreateDocument() {
 
             {/* Sub Types */}
             {selectedType && subTypes[selectedType] && (
-              <div className="mt-8 space-y-4">
-                <h3 className="text-xl font-medium">
+              <div className="mt-6 space-y-3">
+                <h3 className="text-lg font-medium">
                   Select type of {selectedType.toLowerCase()}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {subTypes[selectedType].map((subType) => (
                     <Card
                       key={subType.title}
                       className="hover:border-purple-400 cursor-pointer transition-colors"
                       onClick={() => handleSubTypeClick(subType.title)}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col space-y-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
                               {subType.icon}
                             </div>
-                            <h4 className="font-medium">{subType.title}</h4>
+                            <h4 className="text-sm font-medium">{subType.title}</h4>
                           </div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-xs text-gray-500 line-clamp-2">
                             {subType.description}
                           </p>
                         </div>
