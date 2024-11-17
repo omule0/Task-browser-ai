@@ -13,9 +13,9 @@ export function DashboardTabs({ refresh }) {
           <FileText className="w-4 h-4" />
           Files
         </TabsTrigger>
-        <TabsTrigger value="reports" className="flex items-center gap-2">
+        <TabsTrigger value="documents" className="flex items-center gap-2">
           <FileOutput className="w-4 h-4" />
-          Reports
+          Documents
         </TabsTrigger>
       </TabsList>
       
@@ -23,7 +23,7 @@ export function DashboardTabs({ refresh }) {
         <FilePreview refresh={refresh} />
       </TabsContent>
       
-      <TabsContent value="reports">
+      <TabsContent value="documents">
         <ReportPreview />
       </TabsContent>
     </Tabs>
