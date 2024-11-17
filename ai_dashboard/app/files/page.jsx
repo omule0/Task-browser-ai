@@ -581,144 +581,135 @@ export default function FilesPage() {
   return (
     <>
     <title>Files</title>
-    <div className="p-6">
-      <div className="mb-6 flex justify-between items-center">
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold mb-2">Files</h1>
-          <p className="text-gray-500">Manage your uploaded files</p>
+          <h1 className="text-3xl font-bold tracking-tight">Files</h1>
+          <p className="text-muted-foreground">Upload and manage your documents</p>
         </div>
+        
         {selectedFiles.length > 0 && (
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
+            <Badge variant="secondary">
               {selectedFiles.length} selected
-            </span>
+            </Badge>
             <Button
               variant="destructive"
               size="sm"
               onClick={deleteSelectedFiles}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Selected
-                </>
+                <Trash2 className="mr-2 h-4 w-4" />
               )}
+              Delete Selected
             </Button>
           </div>
         )}
       </div>
 
-      <div className="mb-6">
-        <div className="bg-white rounded-lg shadow">
-          <StorageUsage refresh={storageRefresh} />
-        </div>
-      </div>
-
+      {/* Upload Zone */}
       <div
         {...getRootProps()}
-        className={`mb-6 border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-          isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:bg-gray-50'
+        className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
+          isDragActive 
+            ? 'border-primary bg-primary/5' 
+            : 'border-muted hover:bg-muted/50'
         }`}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-2">
-          <Upload className="h-8 w-8 text-gray-400" />
-          <h3 className="text-lg font-semibold">Click to upload or drag and drop</h3>
-          <p className="text-sm text-gray-500">
-            Supported files: PDF, DOC, DOCX, TXT (Max 10MB)
+          <div className="p-3 rounded-full bg-primary/10">
+            <Upload className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="font-semibold">Drop files here or click to upload</h3>
+          <p className="text-sm text-muted-foreground">
+            PDF, DOC, DOCX, TXT (Max 10MB)
           </p>
         </div>
       </div>
 
+      {/* Upload Progress */}
       {uploadingFiles.length > 0 && (
-        <div className="mb-6">
-          <h3 className="font-medium mb-2">Uploading Files:</h3>
+        <div className="space-y-4">
+          <h3 className="font-semibold">Uploading Files</h3>
           <div className="space-y-3">
             {uploadingFiles.map((file) => (
               <div
                 key={file.name}
-                className="flex flex-col bg-gray-50 p-3 rounded"
+                className="bg-muted/50 p-4 rounded-lg space-y-2"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8" style={{ WebkitFontSmoothing: 'antialiased' }}>
-                      <FileIcon
-                        {...getFileIconProps(file.name)}
-                        {...defaultStyles}
-                      />
+                    <div className="w-8 h-8">
+                      <FileIcon {...getFileIconProps(file.name)} {...defaultStyles} />
                     </div>
-                    <span className="text-sm">{file.name}</span>
+                    <div>
+                      <p className="font-medium">{file.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-sm text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  <span className="text-sm text-muted-foreground">
+                    {uploadProgress[file.name]}%
                   </span>
                 </div>
-                <div className="w-full">
-                  <Progress 
-                    value={uploadProgress[file.name] || 0} 
-                    className="h-2"
-                  />
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-gray-500">
-                      {uploadProgress[file.name] === 100 ? (
-                        <span className="text-green-600">Complete</span>
-                      ) : (
-                        `${uploadProgress[file.name] || 0}%`
-                      )}
-                    </span>
-                    {uploadProgress[file.name] === 100 && (
-                      <span className="text-xs text-green-600">✓</span>
-                    )}
-                  </div>
-                </div>
+                <Progress value={uploadProgress[file.name] || 0} className="h-1" />
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow">
+      {/* Files Section - Table for desktop, Cards for mobile */}
+      <div className="rounded-lg border bg-card">
         <div className="p-4 border-b">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <input
               type="text"
               placeholder="Search files..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-muted/50 border-0 rounded-md focus-visible:ring-2 focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Desktop view */}
-        <div className="hidden md:block overflow-x-auto">
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
+        {/* Desktop Table View */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[40px] pl-4">
+                  <Checkbox
+                    checked={selectedFiles.length === filteredFiles.length}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all files"
+                  />
+                </TableHead>
+                <TableHead>File name</TableHead>
+                <TableHead>Date uploaded</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right pr-6">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredFiles.length === 0 ? (
                 <TableRow>
-                  <TableHead className="w-[40px] pl-4">
-                    <Checkbox
-                      checked={selectedFiles.length === filteredFiles.length}
-                      onCheckedChange={toggleSelectAll}
-                      aria-label="Select all files"
-                    />
-                  </TableHead>
-                  <TableHead>File name</TableHead>
-                  <TableHead>Date uploaded</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right pr-6">Actions</TableHead>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-muted-foreground">No files found</p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredFiles.map((file) => (
+              ) : (
+                filteredFiles.map((file) => (
                   <TableRow 
                     key={file.name}
                     className={selectedFiles.includes(file.name) ? 'bg-purple-50' : ''}
@@ -758,81 +749,120 @@ export default function FilesPage() {
                       {renderActions(file)}
                     </TableCell>
                   </TableRow>
-                ))}
-                {filteredFiles.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No files found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
 
-        {/* Mobile view */}
-        <div className="md:hidden">
-          {filteredFiles.map((file) => (
-            <div 
-              key={file.name} 
-              className={`p-4 border-b last:border-b-0 ${
-                selectedFiles.includes(file.name) ? 'bg-purple-50' : ''
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Checkbox
-                  checked={selectedFiles.includes(file.name)}
-                  onCheckedChange={() => toggleFileSelection(file.name)}
-                  aria-label={`Select ${file.originalName}`}
-                />
-                <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
-                  <FileIcon
-                    {...getFileIconProps(file.originalName)}
-                    {...defaultStyles}
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(file.created_at).toLocaleDateString()} • 
-                    {' ' + file.originalName.split('.').pop().toUpperCase()}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => downloadFile(file.name, file.originalName)}
-                  className="p-2 text-gray-400 hover:text-gray-600"
-                  title="Download"
-                >
-                  <Download className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => deleteFile(file.name)}
-                  disabled={deleting === file.name}
-                  className="p-2 text-gray-400 hover:text-red-600"
-                  title="Delete"
-                >
-                  {deleting === file.name ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-5 h-5" />
-                  )}
-                </button>
+        {/* Mobile Card View */}
+        <div className="block md:hidden">
+          {filteredFiles.length === 0 ? (
+            <div className="p-4 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <FileText className="h-8 w-8 text-muted-foreground" />
+                <p className="text-muted-foreground">No files found</p>
               </div>
             </div>
-          ))}
+          ) : (
+            <div className="divide-y">
+              {filteredFiles.map((file) => (
+                <div key={file.name} className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center h-full pt-1">
+                      <Checkbox
+                        checked={selectedFiles.includes(file.name)}
+                        onCheckedChange={() => toggleFileSelection(file.name)}
+                        aria-label={`Select ${file.originalName}`}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8">
+                          <FileIcon
+                            {...getFileIconProps(file.originalName)}
+                            {...defaultStyles}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{file.originalName}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{formatFileSize(file.metadata?.size)}</span>
+                            <span>•</span>
+                            <span>{format(new Date(file.created_at), "MMM d, yyyy")}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-3">
+                        <Badge variant="secondary" className="uppercase">
+                          {file.originalName.split('.').pop()}
+                        </Badge>
+                        <div className="flex-1" />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => downloadFile(file.name, file.originalName)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        {file.originalName.toLowerCase().endsWith('.pdf') && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => viewPDFContent(file)}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteFile(file.name)}
+                          disabled={deleting === file.name}
+                        >
+                          {deleting === file.name ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+      </div>
 
-        {filteredFiles.length === 0 && (
-          <div className="px-6 py-4 text-center text-gray-500">
-            No files found
+      {/* PDF Content Modal with improved styling */}
+      {selectedFileContent && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+          <div className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-2xl max-h-[80vh] border rounded-lg bg-card shadow-lg">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold">{selectedFileContent.name}</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedFileContent(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-8rem)]">
+              <pre className="whitespace-pre-wrap text-sm">
+                {selectedFileContent.content}
+              </pre>
+            </div>
           </div>
-        )}
+        </div>
+      )}
+      {/* Storage Usage Card */}
+      <div className="rounded-lg border bg-card">
+        <StorageUsage refresh={storageRefresh} />
       </div>
     </div>
-    <PDFContentModal />
     </>
   );
 } 
