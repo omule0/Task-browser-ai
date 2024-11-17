@@ -5,6 +5,24 @@ import { useState } from "react";
 export default function ReportActions({ sections }) {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handlePrint = () => {
+    // Store current scroll position
+    const scrollPos = window.scrollY;
+    
+    // Add print-specific class to body
+    document.body.classList.add('printing');
+    
+    // Trigger print
+    window.print();
+    
+    // Clean up after print dialog closes
+    setTimeout(() => {
+      document.body.classList.remove('printing');
+      window.scrollTo(0, scrollPos);
+      setIsOpen(false);
+    }, 100);
+  };
+
   const scrollToSection = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setIsOpen(false);
@@ -46,10 +64,7 @@ export default function ReportActions({ sections }) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => {
-                window.print();
-                setIsOpen(false);
-              }}
+              onClick={handlePrint}
             >
               <Printer className="w-4 h-4 mr-2" />
               Print

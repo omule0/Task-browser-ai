@@ -144,3 +144,29 @@ body {
 .animate-fade-in {
   animation: fade-in 0.5s ease-in;
 }
+
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Show only the report and its contents */
+  .printable-report,
+  .printable-report * {
+    visibility: visible !important;
+  }
+  
+  /* Position the report at the top of the printed page */
+  .printable-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide specific elements we never want to print */
+  .print\:hidden {
+    display: none !important;
+  }
+}

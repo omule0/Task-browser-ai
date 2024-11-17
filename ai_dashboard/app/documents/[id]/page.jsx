@@ -74,7 +74,7 @@ export default function DocumentView() {
         </div>
       </div>
 
-      <div className="py-6">
+      <div className="py-6 printable-report">
         {renderReport()}
       </div>
     </div>
