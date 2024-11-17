@@ -129,7 +129,7 @@ export function Sidebar() {
           p-4
           transition-all duration-300
           border-r
-          ${isCollapsed ? "w-20" : "w-64"}
+          ${isCollapsed ? "w-20" : "w-48"}
         `}
       >
         <div className="flex items-center mb-6">
