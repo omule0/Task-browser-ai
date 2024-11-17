@@ -19,6 +19,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 export function HeaderUI({ user, logout }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,49 +69,46 @@ export function HeaderUI({ user, logout }) {
                   <Share2 className="h-5 w-5" />
                 </Button>
               </div>
-              <div className="hidden md:block relative group">
-                <Avatar>
-                  {user.user_metadata.avatar_url ? (
-                    <AvatarImage src={user.user_metadata.avatar_url} alt="Profile" />
-                  ) : (
-                    <AvatarFallback>
-                      {user.user_metadata.full_name?.[0] || user.email[0].toUpperCase()}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible
-                before:absolute before:h-2 before:w-full before:-top-2 before:right-0"
-                >
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <div>
+              <div className="hidden md:block">
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <Avatar className="cursor-pointer h-8 w-8">
+                      {user.user_metadata.avatar_url ? (
+                        <AvatarImage src={user.user_metadata.avatar_url} alt="Profile" />
+                      ) : (
+                        <AvatarFallback>
+                          {user.user_metadata.full_name?.[0] || user.email[0].toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-64">
+                    <Link
+                      href="/profile"
+                      className="block mb-2"
+                    >
                       <div className="font-medium">
                         {user.user_metadata.full_name || "Profile"}
                       </div>
                       <div className="text-gray-500 text-xs">
                         {user.email}
                       </div>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/workspacesettings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <div className="flex items-center gap-2">
+                    </Link>
+                    <Link
+                      href="/workspacesettings"
+                      className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-100 p-2 rounded-md"
+                    >
                       <SettingsIcon className="w-4 h-4" />
                       Workspace Settings
-                    </div>
-                  </Link>
-                  <form action={handleSignOut}>
-                    <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                      <LogOutIcon className="w-4 h-4" />
-                      <span>Sign out</span>
-                    </button>
-                  </form>
-                </div>
+                    </Link>
+                    <form action={handleSignOut}>
+                      <button className="w-full flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+                        <LogOutIcon className="w-4 h-4" />
+                        <span>Sign out</span>
+                      </button>
+                    </form>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
 
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
