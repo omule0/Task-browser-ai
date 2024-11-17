@@ -108,61 +108,65 @@ export function Sidebar() {
   ];
 
   return (
-    <aside
-      className={`
-        flex-col
-        bg-white
-        p-4
-        transition-all duration-300
-        border-r
-        ${isCollapsed ? "w-20" : "w-64"}
-      `}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`flex-1 ${isCollapsed ? 'w-full' : ''}`}>
-          <WorkspaceSwitcher isCollapsed={isCollapsed} />
+    <div className="relative flex">
+      <aside
+        className={`
+          flex-col
+          bg-white
+          p-4
+          transition-all duration-300
+          border-r
+          ${isCollapsed ? "w-20" : "w-64"}
+        `}
+      >
+        <div className="flex items-center mb-4">
+          <div className="flex-1">
+            <WorkspaceSwitcher isCollapsed={isCollapsed} />
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="ml-2 hidden md:flex" // Hide on mobile
-        >
-          {isCollapsed ? (
-            <ChevronRightIcon className="h-4 w-4" />
-          ) : (
-            <ChevronLeftIcon className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
 
-      {/* {!isCollapsed && (
-        <div className="relative mb-4">
-          <Input
-            type="text"
-            placeholder="Search"
-            className="p-2 rounded-lg border border-gray-300 focus:ring-purple-500"
-          />
+        {/* {!isCollapsed && (
+          <div className="relative mb-4">
+            <Input
+              type="text"
+              placeholder="Search"
+              className="p-2 rounded-lg border border-gray-300 focus:ring-purple-500"
+            />
+          </div>
+        )} */}
+
+        <nav className="space-y-2">
+          {navigationItems.map((item, index) => (
+            <SidebarItem
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              isActive={item.isActive}
+              href={item.href}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </nav>
+
+        <div className="mt-auto">
+          {/* Additional footer items can go here */}
         </div>
-      )} */}
+      </aside>
 
-      <nav className="space-y-2">
-        {navigationItems.map((item, index) => (
-          <SidebarItem
-            key={index}
-            icon={item.icon}
-            label={item.label}
-            isActive={item.isActive}
-            href={item.href}
-            isCollapsed={isCollapsed}
-          />
-        ))}
-      </nav>
-
-      <div className="mt-auto">
-        {/* Additional footer items can go here */}
-      </div>
-    </aside>
+      {/* Collapse button positioned absolutely */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-4 top-6 hidden md:flex h-8 w-8 rounded-full border bg-white shadow-sm"
+      >
+        {isCollapsed ? (
+          <ChevronRightIcon className="h-4 w-4" />
+        ) : (
+          <ChevronLeftIcon className="h-4 w-4" />
+        )}
+      </Button>
+    </div>
   );
 }
 
