@@ -7,25 +7,33 @@ import { FileText, FileOutput } from "lucide-react";
 
 export function DashboardTabs({ refresh }) {
   return (
-    <Tabs defaultValue="files" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="files" className="flex items-center gap-2">
-          <FileText className="w-4 h-4" />
-          Files
+    <Tabs defaultValue="files" className="w-full space-y-4">
+      <TabsList className="grid w-full grid-cols-2 gap-2 p-1">
+        <TabsTrigger 
+          value="files" 
+          className="flex items-center justify-center gap-2 px-2 py-2 sm:px-4"
+        >
+          <FileText className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm whitespace-nowrap">Files</span>
         </TabsTrigger>
-        <TabsTrigger value="documents" className="flex items-center gap-2">
-          <FileOutput className="w-4 h-4" />
-          Documents
+        <TabsTrigger 
+          value="documents" 
+          className="flex items-center justify-center gap-2 px-2 py-2 sm:px-4"
+        >
+          <FileOutput className="w-4 h-4 flex-shrink-0" />
+          <span className="text-sm whitespace-nowrap">Documents</span>
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="files">
-        <FilePreview refresh={refresh} />
-      </TabsContent>
-      
-      <TabsContent value="documents">
-        <ReportPreview />
-      </TabsContent>
+      <div className="mt-4 sm:mt-6">
+        <TabsContent value="files" className="m-0">
+          <FilePreview refresh={refresh} />
+        </TabsContent>
+        
+        <TabsContent value="documents" className="m-0">
+          <ReportPreview />
+        </TabsContent>
+      </div>
     </Tabs>
   );
 } 

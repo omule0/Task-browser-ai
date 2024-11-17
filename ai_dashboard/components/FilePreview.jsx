@@ -242,7 +242,7 @@ export function FilePreview({ refresh }) {
   return (
     <Card>
       <CardHeader className="pb-0">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <CardTitle>Recent Files</CardTitle>
           <Link 
             href="/files" 
@@ -257,17 +257,17 @@ export function FilePreview({ refresh }) {
         {files.slice(0, 2).map((file) => (
           <div
             key={file.name}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors gap-2"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-5 h-5" style={{ WebkitFontSmoothing: 'antialiased' }}>
+            <div className="flex items-center space-x-3 w-full sm:w-auto">
+              <div className="w-5 h-5 flex-shrink-0" style={{ WebkitFontSmoothing: 'antialiased' }}>
                 <FileIcon
                   {...getFileIconProps(file.originalName)}
                   {...defaultStyles}
                 />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 truncate">
                   {file.originalName || file.name}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -275,7 +275,7 @@ export function FilePreview({ refresh }) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
               <button
                 onClick={() => downloadFile(file.name, file.originalName)}
                 className="p-1 text-gray-500 hover:text-gray-700 transition-colors"

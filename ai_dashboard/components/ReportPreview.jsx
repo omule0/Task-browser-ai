@@ -80,7 +80,7 @@ export function ReportPreview() {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h2 className="text-xl font-semibold">Recent Documents</h2>
           <Link href="/documents" className="text-sm text-purple-600 hover:text-purple-700">
             View all documents
@@ -91,21 +91,21 @@ export function ReportPreview() {
           {recentReports.map((report) => (
             <Link key={report.id} href={`/documents/${report.id}`}>
               <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center space-x-4 w-full sm:w-auto">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-purple-600" />
                     </div>
-                    <div>
-                      <h3 className="font-medium">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium truncate">
                         {report.sub_type || report.document_type}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2 sm:line-clamp-1">
                         {report.content.substring(0, 100)}...
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-4 w-full sm:w-auto justify-end">
                     <div className="text-right">
                       <div className="flex items-center text-sm text-gray-500">
                         <Calendar className="w-4 h-4 mr-1" />
