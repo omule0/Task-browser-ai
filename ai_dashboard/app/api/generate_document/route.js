@@ -3,6 +3,47 @@ import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
 import { createClient } from "@/utils/supabase/server";
 
+// Add this helper function at the top
+function getHumanFriendlyError(error) {
+  // Common error patterns and their user-friendly messages
+  const errorPatterns = {
+    'Title should be between 6-12 words': 'The generated title is too long. Please try again with more specific requirements for a concise title.',
+    'Invalid document type': 'The selected document type is not supported. Please try again.',
+    'context length': 'Your input is too long. Please provide a shorter description or reduce the number of files.',
+    'rate limit': 'We\'re processing too many requests. Please wait a moment and try again.',
+    'invalid_api_key': 'There was an authentication error. Please contact support.',
+    'Failed to generate': 'Unable to generate the document. Try adjusting your description to be more specific.',
+    'Failed to parse': 'The generated content did not meet our requirements. Please try again with more specific instructions.',
+    'OutputParserException': 'The generated content format was invalid. Please try again with clearer requirements.',
+  };
+
+  // First check if it's a schema validation error
+  if (error.message.includes('Failed to parse')) {
+    try {
+      // Extract the specific validation error message
+      const match = error.message.match(/Error: \[(.*?)\]/);
+      if (match) {
+        const validationError = JSON.parse(match[1]);
+        if (validationError.message) {
+          return `Please adjust your requirements: ${validationError.message}`;
+        }
+      }
+    } catch (e) {
+      // If parsing fails, fall back to pattern matching
+    }
+  }
+
+  // Check if error message matches any known patterns
+  for (const [pattern, message] of Object.entries(errorPatterns)) {
+    if (error.message.toLowerCase().includes(pattern.toLowerCase())) {
+      return message;
+    }
+  }
+
+  // Default error message
+  return 'There was an error generating your document. Please try providing more specific requirements or contact support if the issue persists.';
+}
+
 export async function POST(req) {
   try {
     const { documentType, subType, content, fileContents, selectedFiles, workspaceId } = await req.json();
@@ -36,20 +77,26 @@ export async function POST(req) {
     const processedChunks = [];
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      const result = await model.invoke(
-        `Generate a ${subType} based on the following content and requirements: ${content}
-         
-         Source document content:
-         ${chunk}
-         
-         Ensure the ${documentType} follows the required structure and incorporates relevant information from the source document.`
-      );
+      try {
+        const result = await model.invoke(
+          `Generate a ${subType} based on the following content and requirements: ${content}
+           
+           Source document content:
+           ${chunk}
+           
+           Important: Ensure the title is between 6-12 words and the ${documentType} follows the required structure.
+           Incorporate relevant information from the source document.`
+        );
 
-      // Add the source text to the result
-      processedChunks.push({
-        ...result,
-        sourceText: chunk // Store the original chunk text
-      });
+        // Add the source text to the result
+        processedChunks.push({
+          ...result,
+          sourceText: chunk
+        });
+      } catch (chunkError) {
+        console.error(`Error processing chunk ${i + 1}:`, chunkError);
+        throw new Error(`Failed to process content: ${getHumanFriendlyError(chunkError)}`);
+      }
     }
 
     // Combine the results
@@ -83,9 +130,21 @@ export async function POST(req) {
 
   } catch (error) {
     console.error("Error generating report:", error);
+    
+    // Get user-friendly error message
+    const friendlyMessage = getHumanFriendlyError(error);
+    
     return new Response(
-      JSON.stringify({ error: "Failed to generate report", details: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ 
+        error: "Failed to generate report", 
+        details: friendlyMessage,
+        technicalDetails: error.message,
+        errorType: error.name || 'UnknownError'
+      }),
+      { 
+        status: 500, 
+        headers: { "Content-Type": "application/json" } 
+      }
     );
   }
 }

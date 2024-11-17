@@ -218,7 +218,7 @@ export default function CreateDocument() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || `Failed to generate ${selectedSubType || selectedType}`);
+        throw new Error(errorData.details || 'Failed to generate document');
       }
 
       const report = await response.json();
@@ -245,8 +245,22 @@ export default function CreateDocument() {
     } catch (error) {
       console.error(`Error generating ${selectedSubType || selectedType}:`, error);
       setGenerationError(error.message);
-      customToast.error(`Failed to generate ${selectedSubType || selectedType}`);
-    } finally {
+      
+      // Show more specific error toast
+      customToast.error(
+        error.message.includes('Try adjusting your description') 
+          ? 'Please provide more specific requirements for better results'
+          : `Failed to generate ${selectedSubType || selectedType}`
+      );
+      
+      // Reset progress if there's an error
+      setProgress({
+        setup: 0,
+        analysis: 0,
+        generation: 0,
+        optimization: 0,
+        isComplete: false
+      });
       setIsGenerating(false);
     }
   };
