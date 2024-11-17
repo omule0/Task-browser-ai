@@ -6,9 +6,15 @@ import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, FileText, FileIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function NavigationBar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
@@ -54,50 +60,30 @@ export function NavigationBar() {
     <div className="bg-background border-b md:hidden">
       <div className="flex items-center h-12 px-4">
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="hover:bg-accent"
-          >
-            {isMenuOpen ? (
-              <ChevronRightIcon className="h-4 w-4" />
-            ) : (
-              <ChevronLeftIcon className="h-4 w-4" />
-            )}
-          </Button>
-          <span className="text-sm font-medium">{currentPage}</span>
-        </div>
-
-        {isMenuOpen && (
-          <>
-            <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-              onClick={() => setIsMenuOpen(false)}
-            />
-            <div className="fixed left-0 top-0 h-screen w-64 bg-background z-50 flex flex-col border-r">
-              <div className="h-12 border-b flex items-center px-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="hover:bg-accent"
-                >
-                  <ChevronRightIcon className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium ml-2">{currentPage}</span>
-              </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent"
+              >
+                <ChevronLeftIcon className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <SheetHeader className="h-12 border-b px-4 flex items-center">
+                <SheetTitle className="text-sm font-medium">{currentPage}</SheetTitle>
+              </SheetHeader>
 
               <div className="p-4 border-b">
-                <WorkspaceSwitcher onAction={() => setIsMenuOpen(false)} />
+                <WorkspaceSwitcher />
               </div>
 
-              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              <nav className="flex-1 p-4 space-y-1">
                 {navigationItems.map((item, index) => (
                   <Link 
                     key={index} 
                     href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
                   >
                     <Button
                       variant={item.isActive ? "secondary" : "ghost"}
@@ -109,9 +95,10 @@ export function NavigationBar() {
                   </Link>
                 ))}
               </nav>
-            </div>
-          </>
-        )}
+            </SheetContent>
+          </Sheet>
+          <span className="text-sm font-medium">{currentPage}</span>
+        </div>
       </div>
     </div>
   );
