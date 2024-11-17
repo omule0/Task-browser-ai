@@ -3,24 +3,56 @@ import { useState } from "react";
 import { SearchIcon, BarChartIcon, UploadIcon, FileIcon } from "lucide-react";
 import { UploadSidebar } from "./UploadSidebar";
 import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
-function ActionCard({ icon, title, description, bgColor, iconColor, hoverColor, disabled, onClick }) {
+function ActionCard({ icon, title, description, variant = "default", disabled, onClick }) {
+  // Define variant styles
+  const variants = {
+    default: {
+      icon: "text-indigo-500 bg-indigo-50",
+      hover: "hover:bg-indigo-50",
+    },
+    upload: {
+      icon: "text-pink-500 bg-pink-50",
+      hover: "hover:bg-pink-50",
+    },
+    visualize: {
+      icon: "text-emerald-500 bg-emerald-50",
+      hover: "hover:bg-emerald-50",
+    },
+    document: {
+      icon: "text-orange-500 bg-orange-50",
+      hover: "hover:bg-orange-50",
+    },
+  };
+
+  const style = variants[variant];
+
   return (
-    <div 
-      className={`${bgColor} rounded-xl p-4 flex items-start space-x-3 border border-gray-200 transition-all duration-200 
-      ${disabled ? 'opacity-50 cursor-not-allowed' : `${hoverColor} hover:shadow-lg hover:scale-[1.02] cursor-pointer`}
-      border border-gray-100`}
+    <Card
+      className={cn(
+        "relative overflow-hidden transition-all duration-200",
+        disabled ? "opacity-50 cursor-not-allowed" : cn(
+          style.hover,
+          "cursor-pointer hover:shadow-lg hover:scale-[1.02]"
+        )
+      )}
       onClick={disabled ? undefined : onClick}
     >
-        <div className={`p-2 ${iconColor} w-12 h-12 
-          rounded-lg 
-          flex items-center justify-center 
-          bg-opacity-10`}>{icon}</div>
-      <div>
-        <h4 className="font-semibold text-gray-900">{title}</h4>
-        <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+      <div className="p-6 flex items-start space-x-4">
+        <div className={cn(
+          "p-3 rounded-lg flex items-center justify-center",
+          style.icon
+        )}>
+          {icon}
+        </div>
+        <div className="space-y-1">
+          <h4 className="font-semibold tracking-tight">{title}</h4>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -28,45 +60,43 @@ export function ActionCards({ onUploadSuccess }) {
   const [isUploadSidebarOpen, setIsUploadSidebarOpen] = useState(false);
   const router = useRouter();
 
+  const actions = [
+    {
+      icon: <SearchIcon className="w-6 h-6" />,
+      title: "New Search Query",
+      description: "Start with a blank file",
+      variant: "default",
+      disabled: true,
+    },
+    {
+      icon: <UploadIcon className="w-6 h-6" />,
+      title: "Upload Data",
+      description: "Upload your data",
+      variant: "upload",
+      onClick: () => setIsUploadSidebarOpen(true),
+    },
+    {
+      icon: <BarChartIcon className="w-6 h-6" />,
+      title: "Data Visualization",
+      description: "View your data",
+      variant: "visualize",
+      disabled: true,
+    },
+    {
+      icon: <FileIcon className="w-6 h-6" />,
+      title: "Create Document",
+      description: "Create a document",
+      variant: "document",
+      onClick: () => router.push('/create-document'),
+    },
+  ];
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <ActionCard
-          icon={<SearchIcon className="w-6 h-6" />}
-          title="New Search Query"
-          description="Start with a blank file"
-          bgColor="bg-white"
-          hoverColor="hover:bg-indigo-50"
-          iconColor="text-indigo-500"
-          disabled={true}
-        />
-        <ActionCard
-          icon={<UploadIcon className="w-6 h-6" />}
-          title="Upload Data"
-          description="Upload your data"
-          bgColor="bg-white"
-          hoverColor="hover:bg-pink-50"
-          iconColor="text-pink-500"
-          onClick={() => setIsUploadSidebarOpen(true)}
-        />
-        <ActionCard
-          icon={<BarChartIcon className="w-6 h-6" />}
-          title="Data Visualization"
-          description="View your data"
-          bgColor="bg-white"
-          hoverColor="hover:bg-emerald-50"
-          iconColor="text-emerald-500"
-          disabled={true}
-        />
-        <ActionCard
-          icon={<FileIcon className="w-6 h-6" />}
-          title="Create Document"
-          description="Create a document"
-          bgColor="bg-white"
-          hoverColor="hover:bg-orange-50"
-          iconColor="text-orange-500"
-          onClick={() => router.push('/create-document')}
-        />
+        {actions.map((action, index) => (
+          <ActionCard key={index} {...action} />
+        ))}
       </div>
 
       <UploadSidebar 
