@@ -27,7 +27,7 @@ export default async function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Toaster/>
         <WorkspaceProvider>
-          <div className="bg-gray-100 min-h-screen flex flex-col">
+          <div className="bg-background min-h-screen flex flex-col">
             <div className="fixed top-0 left-0 right-0 z-50">
               <Header/>
               {user && <NavigationBar />}
