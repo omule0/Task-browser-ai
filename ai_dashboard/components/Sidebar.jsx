@@ -130,7 +130,7 @@ export function Sidebar() {
           h-full
           border-r
           transition-all duration-300
-          ${isCollapsed ? "w-20" : "w-64"}
+          ${isCollapsed ? "w-20" : "w-56"}
         `}
       >
         <div className="flex items-center mb-6">
