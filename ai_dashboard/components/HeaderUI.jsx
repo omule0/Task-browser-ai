@@ -5,16 +5,26 @@ import {
   LogOutIcon,
   SettingsIcon,
   MenuIcon,
-  XIcon,
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function HeaderUI({ user, logout }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleMenuItemClick = () => {
-    setIsMobileMenuOpen(false);
+    setIsOpen(false);
   };
 
   const handleSignOut = async (formData) => {
@@ -23,162 +33,157 @@ export function HeaderUI({ user, logout }) {
   };
 
   return (
-    <header className="bg-purple-700 text-white z-10 relative">
-      <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between h-12">
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="text-lg font-bold">
-              Digest.ai
-            </Link>
-          </div>
+    <header className="border-b bg-background">
+      <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl font-bold">Digest.ai</span>
+          </Link>
+          {user && (
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/integrations" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                Integrations
+              </Link>
+              <Link href="/templates" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                Templates
+              </Link>
+            </nav>
+          )}
+        </div>
+
+        <div className="flex items-center">
           {user ? (
-            <div className="flex items-center space-x-6">
-              <div className="hidden md:flex items-center space-x-6">
-                <Link href="/integrations" className="hover:text-purple-200 text-sm">
-                  Integrations
-                </Link>
-                <Link href="/templates" className="hover:text-purple-200 text-sm">
-                  Templates
-                </Link>
+            <>
+              <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
+              <div className="hidden md:flex items-center gap-4">
+                <Button variant="ghost" size="icon">
+                  <GiftIcon className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <HelpCircleIcon className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Share2 className="h-5 w-5" />
+                </Button>
               </div>
-              <div className="flex items-center space-x-4">
-                <GiftIcon className="w-6 h-6 cursor-pointer" />
-                <HelpCircleIcon className="w-6 h-6 cursor-pointer" />
-                <div className="hidden md:block relative group">
-                  <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
-                    {user.user_metadata.avatar_url ? (
-                      <img
-                        src={user.user_metadata.avatar_url}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="font-semibold">
-                        {user.user_metadata.full_name?.[0] ||
-                          user.email[0].toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible
-                before:absolute before:h-2 before:w-full before:-top-2 before:right-0"
-                  >
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {user.user_metadata.full_name || "Profile"}
-                        </div>
-                        <div className="text-gray-500 text-xs">
-                          {user.email}
-                        </div>
-                      </div>
-                    </Link>
-                    <Link
-                      href="/workspacesettings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <div className="flex items-center gap-2">
-                        <SettingsIcon className="w-4 h-4" />
-                        Workspace Settings
-                      </div>
-                    </Link>
-                    <form action={handleSignOut}>
-                      <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                        <LogOutIcon className="w-4 h-4" />
-                        <span>Sign out</span>
-                      </button>
-                    </form>
-                  </div>
-                </div>
-                <button
-                  className="md:hidden"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                  {isMobileMenuOpen ? (
-                    <XIcon className="w-6 h-6" />
+              <div className="hidden md:block relative group">
+                <Avatar>
+                  {user.user_metadata.avatar_url ? (
+                    <AvatarImage src={user.user_metadata.avatar_url} alt="Profile" />
                   ) : (
-                    <MenuIcon className="w-6 h-6" />
+                    <AvatarFallback>
+                      {user.user_metadata.full_name?.[0] || user.email[0].toUpperCase()}
+                    </AvatarFallback>
                   )}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <Link href="/login" className="hover:text-purple-200 text-sm">
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-md text-sm"
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
-          {user && isMobileMenuOpen && (
-            <div className="absolute top-12 left-0 right-0 bg-purple-900 p-4 md:hidden">
-              <div className="flex flex-col space-y-4">
-                <Link
-                  href="/integrations"
-                  className="hover:text-purple-200 text-sm"
-                  onClick={handleMenuItemClick}
+                </Avatar>
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 invisible group-hover:visible
+                before:absolute before:h-2 before:w-full before:-top-2 before:right-0"
                 >
-                  Integrations
-                </Link>
-                <Link
-                  href="/templates"
-                  className="hover:text-purple-200 text-sm"
-                  onClick={handleMenuItemClick}
-                >
-                  Templates
-                </Link>
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-2"
-                  onClick={handleMenuItemClick}
-                >
-                  <div className="w-8 h-8 bg-purple-700 rounded-full flex items-center justify-center">
-                    {user.user_metadata.avatar_url ? (
-                      <img
-                        src={user.user_metadata.avatar_url}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="font-semibold">
-                        {user.user_metadata.full_name?.[0] ||
-                          user.email[0].toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {user.user_metadata.full_name || "Profile"}
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <div>
+                      <div className="font-medium">
+                        {user.user_metadata.full_name || "Profile"}
+                      </div>
+                      <div className="text-gray-500 text-xs">
+                        {user.email}
+                      </div>
                     </div>
-                    <div className="text-sm opacity-75">{user.email}</div>
-                  </div>
-                </Link>
-                <Link
-                  href="/workspacesettings"
-                  className="flex items-center space-x-2"
-                  onClick={handleMenuItemClick}
-                >
-                  <SettingsIcon className="w-4 h-4" />
-                  <span>Workspace Settings</span>
-                </Link>
-                <form action={handleSignOut}>
-                  <button className="flex items-center space-x-2 text-white">
-                    <LogOutIcon className="w-4 h-4" />
-                    <span>Sign out</span>
-                  </button>
-                </form>
+                  </Link>
+                  <Link
+                    href="/workspacesettings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <div className="flex items-center gap-2">
+                      <SettingsIcon className="w-4 h-4" />
+                      Workspace Settings
+                    </div>
+                  </Link>
+                  <form action={handleSignOut}>
+                    <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                      <LogOutIcon className="w-4 h-4" />
+                      <span>Sign out</span>
+                    </button>
+                  </form>
+                </div>
               </div>
+
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <MenuIcon className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-4">
+                    <Link href="/integrations" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                      Integrations
+                    </Link>
+                    <Link href="/templates" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                      Templates
+                    </Link>
+                  </nav>
+                  <Separator className="my-4" />
+                  <div className="flex flex-col gap-4">
+                    <Button variant="ghost" className="justify-start">
+                      <GiftIcon className="mr-2 h-5 w-5" />
+                      New
+                    </Button>
+                    <Button variant="ghost" className="justify-start">
+                      <HelpCircleIcon className="mr-2 h-5 w-5" />
+                      Help
+                    </Button>
+                    <Link href="/workspacesettings" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="justify-start w-full">
+                        <SettingsIcon className="mr-2 h-5 w-5" />
+                        Workspace Settings
+                      </Button>
+                    </Link>
+                  </div>
+                  <Separator className="my-4" />
+                  <div className="flex items-center gap-4">
+                    <Avatar>
+                      {user.user_metadata.avatar_url ? (
+                        <AvatarImage src={user.user_metadata.avatar_url} alt="Profile" />
+                      ) : (
+                        <AvatarFallback>
+                          {user.user_metadata.full_name?.[0] || user.email[0].toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium">
+                        {user.user_metadata.full_name || "Profile"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">{user.email}</div>
+                    </div>
+                  </div>
+                  <form action={handleSignOut} className="mt-4">
+                    <Button variant="ghost" className="w-full justify-start">
+                      <LogOutIcon className="mr-2 h-5 w-5" />
+                      Sign out
+                    </Button>
+                  </form>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Sign Up</Link>
+              </Button>
             </div>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
