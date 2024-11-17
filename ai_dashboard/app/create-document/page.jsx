@@ -19,8 +19,8 @@ import DocumentCards from "./components/DocumentCards";
 import SelectFiles from "./components/SelectFiles";
 import ContentDetails from "./components/ContentDetails";
 
-// Update the shimmer class with more contrasting colors
-const shimmerClass = "animate-pulse bg-gradient-to-r from-purple-300 via-purple-500 to-purple-300 bg-clip-text text-transparent font-semibold";
+// Update the shimmer class for better visibility
+const shimmerClass = "animate-pulse bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent font-semibold";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -36,17 +36,10 @@ export default function CreateDocument() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [files, setFiles] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedReport, setGeneratedReport] = useState(null);
   const [generationError, setGenerationError] = useState(null);
   const { currentWorkspace } = useWorkspace();
-  const [progress, setProgress] = useState({
-    setup: 0,
-    analysis: 0,
-    generation: 0,
-    optimization: 0,
-    isComplete: false
-  });
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -168,13 +161,14 @@ export default function CreateDocument() {
 
   const generateReport = async () => {
     try {
+      setIsGenerating(true);
+      setGenerationError(null);
+      setProgress(0);
+
       if (!currentWorkspace) {
         customToast.error("Please select a workspace first");
         return;
       }
-
-      setIsGenerating(true);
-      setGenerationError(null);
 
       // Get content from selected files
       const supabase = createClient();
@@ -213,72 +207,35 @@ export default function CreateDocument() {
 
       const report = await response.json();
       
-      // First ensure all progress bars reach 100%
-      setProgress({
-        setup: 100,
-        analysis: 100,
-        generation: 100,
-        optimization: 100,
-        isComplete: true
-      });
-
-      // Wait for a brief moment to ensure animations complete
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setGeneratedReport(report);
+      setProgress(100);
       customToast.success(`${selectedSubType || selectedType} generated successfully!`);
       
-      // Delay navigation slightly longer to show completion state
       setTimeout(() => {
         router.push("/documents");
       }, 1000);
     } catch (error) {
       console.error(`Error generating ${selectedSubType || selectedType}:`, error);
       setGenerationError(error.message);
+      setProgress(0);
+      setIsGenerating(false);
       
-      // Show more specific error toast
       customToast.error(
         error.message.includes('Try adjusting your description') 
           ? 'Please provide more specific requirements for better results'
           : `Failed to generate ${selectedSubType || selectedType}`
       );
-      
-      // Reset progress if there's an error
-      setProgress({
-        setup: 0,
-        analysis: 0,
-        generation: 0,
-        optimization: 0,
-        isComplete: false
-      });
-      setIsGenerating(false);
     }
   };
 
   useEffect(() => {
     let interval;
-    if (isGenerating && !progress.isComplete) {
+    if (isGenerating && progress < 95) {
       interval = setInterval(() => {
-        setProgress(prev => {
-          // Faster progression for first three bars
-          const newSetup = Math.min(prev.setup + 4, 95);
-          const newAnalysis = prev.setup > 50 ? Math.min(prev.analysis + 3, 95) : prev.analysis;
-          const newGeneration = prev.analysis > 70 ? Math.min(prev.generation + 2, 95) : prev.generation;
-          // Slower progression for optimization
-          const newOptimization = prev.generation > 90 ? Math.min(prev.optimization + 1, 90) : prev.optimization;
-
-          return {
-            setup: newSetup,
-            analysis: newAnalysis,
-            generation: newGeneration,
-            optimization: newOptimization,
-            isComplete: false
-          };
-        });
-      }, 100);
+        setProgress(prev => Math.min(prev + 1, 95));
+      }, 150);
     }
     return () => clearInterval(interval);
-  }, [isGenerating, progress.isComplete]);
+  }, [isGenerating, progress]);
 
   const handleFileSelect = (filePath, isChecked) => {
     setSelectedFiles((prev) =>
@@ -423,8 +380,8 @@ export default function CreateDocument() {
                   <h1 className="text-2xl font-bold">
                     {isGenerating ? (
                       <>
-                        We're generating your{' '}
-                        <span className="text-purple-600">{selectedSubType || selectedType}</span> now
+                        Generating your{' '}
+                        <span className="text-purple-600">{selectedSubType || selectedType}</span>
                       </>
                     ) : (
                       'Review and Generate'
@@ -439,8 +396,7 @@ export default function CreateDocument() {
                       <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
                       <div className="mt-1 space-y-1">
                         {selectedFiles.map((file, index) => {
-                          const parts = file.split("/").pop().split("-");
-                          const originalName = parts.slice(2).join("-");
+                          const originalName = file.split("/").pop().split("-").slice(2).join("-");
                           return (
                             <div key={index} className="text-sm">{originalName}</div>
                           );
@@ -455,39 +411,33 @@ export default function CreateDocument() {
                 </div>
               </div>
 
-              {isGenerating ? (
-                <div className="space-y-4">
-                  <Card className="p-4 flex justify-between items-center">
-                    <span className="font-medium">Initial setup</span>
-                    <Progress value={progress.setup} className="w-32 h-2" />
-                  </Card>
-                  <Card className="p-4 flex justify-between items-center">
-                    <span className="font-medium">Content analysis</span>
-                    <Progress value={progress.analysis} className="w-32 h-2" />
-                  </Card>
-                  <Card className="p-4 flex justify-between items-center">
-                    <span className="font-medium">{selectedSubType || selectedType} generation</span>
-                    <Progress value={progress.generation} className="w-32 h-2" />
-                  </Card>
-                  <Card className="p-4 flex justify-between items-center">
-                    <span className="font-medium">Final optimization</span>
-                    <Progress value={progress.optimization} className="w-32 h-2" />
-                  </Card>
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    {progress.isComplete 
-                      ? `${selectedSubType || selectedType} generated successfully!` 
-                      : <span className={shimmerClass}>Please wait while we generate your {selectedSubType || selectedType}...</span>}
-                  </p>
-                </div>
-              ) : (
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white w-full h-12 text-lg mx-auto"
-                  onClick={generateReport}
-                  disabled={isGenerating}
-                >
-                  Generate {selectedSubType || selectedType}
-                </Button>
-              )}
+              <div className="flex flex-col justify-center">
+                {isGenerating ? (
+                  <div className="space-y-6">
+                    <Card className="p-6">
+                      <div className="space-y-4">
+                        <Progress value={progress} className="h-2" />
+                        <p className="text-center">
+                          <span className={shimmerClass}>
+                            Generating your {selectedSubType || selectedType}...
+                          </span>
+                        </p>
+                      </div>
+                    </Card>
+                    <p className="text-sm text-gray-500 text-center">
+                      This might take a few minutes
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 text-white w-full h-12 text-lg"
+                    onClick={generateReport}
+                    disabled={isGenerating}
+                  >
+                    Generate {selectedSubType || selectedType}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Error message */}
