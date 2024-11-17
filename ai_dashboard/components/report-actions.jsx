@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { customToast } from "@/components/ui/toast-theme";
 
 export default function ReportActions({ sections }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +35,12 @@ export default function ReportActions({ sections }) {
   const handleDownloadPDF = async () => {
     try {
       setDownloading(true);
-      setIsOpen(false); // Close the menu first
+      setIsOpen(false);
+      
+      // Add toast notification
+      customToast.info('Preparing your report for download...', {
+        description: 'This may take a few moments depending on the report size.'
+      });
       
       const reportElement = document.querySelector('.printable-report');
       
