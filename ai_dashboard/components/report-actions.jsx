@@ -1,9 +1,12 @@
 import { List, Download, Printer, Share2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function ReportActions({ sections }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handlePrint = () => {
     // Store current scroll position
@@ -28,8 +31,91 @@ export default function ReportActions({ sections }) {
     setIsOpen(false);
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      setDownloading(true);
+      setIsOpen(false); // Close the menu first
+      
+      const reportElement = document.querySelector('.printable-report');
+      
+      // Hide the floating action button during capture
+      const actionButton = document.querySelector('.floating-actions');
+      if (actionButton) {
+        actionButton.style.display = 'none';
+      }
+      
+      // Add printing class to apply print styles
+      document.body.classList.add('printing');
+      
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        windowWidth: 1200,
+        onclone: (clonedDoc) => {
+          // Remove any floating/fixed elements from the clone
+          const floatingElements = clonedDoc.querySelectorAll('.floating-actions, .fixed');
+          floatingElements.forEach(el => el.remove());
+        }
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'pt',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      
+      const scaledWidth = imgWidth * ratio;
+      const scaledHeight = imgHeight * ratio;
+      const xOffset = (pdfWidth - scaledWidth) / 2;
+      
+      let remainingHeight = scaledHeight;
+      let yOffset = 0;
+      
+      while (remainingHeight > 0) {
+        // Add new page if not the first page
+        if (yOffset > 0) {
+          pdf.addPage();
+        }
+        
+        pdf.addImage(
+          imgData,
+          'JPEG',
+          xOffset,
+          yOffset < 0 ? yOffset : 0, // Adjust y-position for subsequent pages
+          scaledWidth,
+          scaledHeight
+        );
+        
+        remainingHeight -= pdfHeight;
+        yOffset -= pdfHeight;
+      }
+      
+      pdf.save('report.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      // Restore the floating action button
+      const actionButton = document.querySelector('.floating-actions');
+      if (actionButton) {
+        actionButton.style.display = '';
+      }
+      
+      document.body.classList.remove('printing');
+      setDownloading(false);
+    }
+  };
+
   return (
-    <div className="fixed right-8 top-24 print:hidden">
+    <div className="fixed right-8 top-24 print:hidden floating-actions">
       {/* Floating Action Button */}
       <Button
         size="icon"
@@ -72,10 +158,11 @@ export default function ReportActions({ sections }) {
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => {/* TODO: Implement PDF download */}}
+              onClick={handleDownloadPDF}
+              disabled={downloading}
             >
               <Download className="w-4 h-4 mr-2" />
-              Download PDF
+              {downloading ? 'Generating PDF...' : 'Download PDF'}
             </Button>
             <Button
               variant="ghost"
