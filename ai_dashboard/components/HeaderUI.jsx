@@ -65,9 +65,6 @@ export function HeaderUI({ user, logout }) {
                 <Button variant="ghost" size="icon">
                   <HelpCircleIcon className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <Share2 className="h-5 w-5" />
-                </Button>
               </div>
               <div className="hidden md:block">
                 <HoverCard>
