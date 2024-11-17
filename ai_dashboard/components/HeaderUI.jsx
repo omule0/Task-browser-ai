@@ -39,21 +39,19 @@ export function HeaderUI({ user, logout }) {
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold">Digest.ai</span>
           </Link>
-          {user && (
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/integrations" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                Integrations
-              </Link>
-              <Link href="/templates" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                Templates
-              </Link>
-            </nav>
-          )}
         </div>
 
         <div className="flex items-center">
           {user ? (
             <>
+              <nav className="hidden md:flex items-center gap-6 mr-4">
+                <Link href="/integrations" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  Integrations
+                </Link>
+                <Link href="/templates" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  Templates
+                </Link>
+              </nav>
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
               <div className="hidden md:flex items-center gap-4">
                 <Button variant="ghost" size="icon">
