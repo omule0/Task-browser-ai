@@ -88,85 +88,92 @@ export function Sidebar() {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  // Only render if on desktop
-  if (isMobile) return null;
-
-  const navigationItems = [
+  const generalNavItems = [
     {
-      icon: <HomeIcon className="w-5 h-5" />,
+      icon: <LayoutDashboard className="h-4 w-4" />,
       label: "Dashboard",
       href: "/",
       isActive: pathname === "/",
     },
     {
-      icon: <FileIcon className="w-5 h-5" />,
+      icon: <FileIcon className="h-4 w-4" />,
       label: "Files",
       href: "/files",
       isActive: pathname === "/files",
     },
-    // {
-    //   icon: <LayoutDashboard className="w-5 h-5" />,
-    //   label: "Canvas",
-    //   href: "/canvas",
-    //   isActive: pathname === "/canvas",
-    // },
     {
-      icon: <FileText className="w-5 h-5" />,
+      icon: <FileText className="h-4 w-4" />,
       label: "Documents",
       href: "/documents",
       isActive: pathname === "/documents",
     },
+  ];
+
+  const settingsNavItems = [
     {
-      icon: <SettingsIcon className="w-5 h-5" />,
+      icon: <SettingsIcon className="h-4 w-4" />,
       label: "Settings",
       href: "/#",
       isActive: pathname === "/#",
     },
   ];
 
+  if (isMobile) return null;
+
   return (
     <div className="relative flex">
       <aside
         className={`
           flex-col
-          bg-white
+          bg-background
           p-4
           transition-all duration-300
           border-r
           ${isCollapsed ? "w-20" : "w-64"}
         `}
       >
-        <div className="flex items-center mb-4">
+        <div className="flex items-center mb-6">
           <div className="flex-1">
             <WorkspaceSwitcher isCollapsed={isCollapsed} />
           </div>
         </div>
 
-        {/* {!isCollapsed && (
-          <div className="relative mb-4">
-            <Input
-              type="text"
-              placeholder="Search"
-              className="p-2 rounded-lg border border-gray-300 focus:ring-purple-500"
-            />
+        <div className="flex flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-1">
+            {!isCollapsed && (
+              <span className="px-2 text-xs font-medium text-muted-foreground">GENERAL</span>
+            )}
+            <nav className="flex flex-col gap-1">
+              {generalNavItems.map((item, index) => (
+                <SidebarItem
+                  key={index}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={item.isActive}
+                  href={item.href}
+                  isCollapsed={isCollapsed}
+                />
+              ))}
+            </nav>
           </div>
-        )} */}
 
-        <nav className="space-y-2">
-          {navigationItems.map((item, index) => (
-            <SidebarItem
-              key={index}
-              icon={item.icon}
-              label={item.label}
-              isActive={item.isActive}
-              href={item.href}
-              isCollapsed={isCollapsed}
-            />
-          ))}
-        </nav>
-
-        <div className="mt-auto">
-          {/* Additional footer items can go here */}
+          <div className="flex flex-col gap-1">
+            {!isCollapsed && (
+              <span className="px-2 text-xs font-medium text-muted-foreground">SETTINGS</span>
+            )}
+            <nav className="flex flex-col gap-1">
+              {settingsNavItems.map((item, index) => (
+                <SidebarItem
+                  key={index}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={item.isActive}
+                  href={item.href}
+                  isCollapsed={isCollapsed}
+                />
+              ))}
+            </nav>
+          </div>
         </div>
       </aside>
 

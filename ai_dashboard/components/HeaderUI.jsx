@@ -34,7 +34,7 @@ export function HeaderUI({ user, logout }) {
 
   return (
     <header className="border-b bg-background">
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold">Digest.ai</span>
