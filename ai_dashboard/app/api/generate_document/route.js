@@ -37,16 +37,12 @@ export async function POST(req) {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       const result = await model.invoke(
-        `You are an expert in ${documentType} and ${subType} generation. Your task is to create a ${subType} based on the following content and requirements: ${content}
+        `Generate a ${subType} based on the following content and requirements: ${content}
          
-         Source document content to analyze:
+         Source document content:
          ${chunk}
          
-         Ensure the ${documentType} follows the required structure and incorporates relevant information from the source document.
-         
-         Important: Your response must strictly follow the required schema structure. Ensure all fields are properly filled 
-         and all arrays contain at least one item. For any field where information is not available, provide a reasonable 
-         inference based on context rather than leaving it empty.`
+         Ensure the ${documentType} follows the required structure and incorporates relevant information from the source document.`
       );
 
       // Add the source text to the result

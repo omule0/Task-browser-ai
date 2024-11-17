@@ -218,7 +218,7 @@ export default function CreateDocument() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || `Failed to generate ${selectedSubType || selectedType}. Please try adjusting your prompt to be more specific and detailed.`);
+        throw new Error(errorData.details || `Failed to generate ${selectedSubType || selectedType}`);
       }
 
       const report = await response.json();
@@ -244,14 +244,8 @@ export default function CreateDocument() {
       }, 1000);
     } catch (error) {
       console.error(`Error generating ${selectedSubType || selectedType}:`, error);
-      setGenerationError(
-        `${error.message}. Try to:\n` +
-        "• Be more specific about your requirements\n" +
-        "• Provide clearer context about the document's purpose\n" +
-        "• Include key points you want to be covered\n" +
-        "• Specify your target audience"
-      );
-      customToast.error("Generation failed. Please adjust your prompt and try again.");
+      setGenerationError(error.message);
+      customToast.error(`Failed to generate ${selectedSubType || selectedType}`);
     } finally {
       setIsGenerating(false);
     }
@@ -680,7 +674,7 @@ export default function CreateDocument() {
 
             {/* Error message */}
             {generationError && (
-              <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md whitespace-pre-line">
+              <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
                 {generationError}
               </div>
             )}
