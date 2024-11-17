@@ -16,6 +16,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }) {
   const ButtonContent = () => (
@@ -31,7 +36,7 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
     </>
   );
 
-  return (
+  const button = (
     <Button
       variant={isActive ? "secondary" : "ghost"}
       className={`w-full justify-start hover:bg-gray-100 transition-all ${
@@ -48,6 +53,18 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
       )}
     </Button>
   );
+
+  // Only wrap with HoverCard if sidebar is collapsed
+  return isCollapsed ? (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        {button}
+      </HoverCardTrigger>
+      <HoverCardContent side="right" align="start" className="w-auto">
+        {label}
+      </HoverCardContent>
+    </HoverCard>
+  ) : button;
 }
 
 export function Sidebar() {
