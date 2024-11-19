@@ -170,3 +170,26 @@ body {
     display: none !important;
   }
 }
+
+/* Add to your global CSS if needed */
+.tabs-content-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.tabs-content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.tabs-content-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tabs-content-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 300ms, transform 300ms;
+}
