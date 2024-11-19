@@ -67,14 +67,30 @@ export async function POST(req) {
       throw new Error("Invalid document type or subtype");
     }
 
-    // Initialize ChatOpenAI with structured output
+    // Initialize ChatOpenAI with structured output and callbacks
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
       temperature: 0,
+      callbacks: [{
+        handleLLMEnd(output) {
+          // Update totalTokens directly from the callback
+          if (output.llmOutput?.tokenUsage) {
+            totalTokens.promptTokens += output.llmOutput.tokenUsage.promptTokens || 0;
+            totalTokens.completionTokens += output.llmOutput.tokenUsage.completionTokens || 0;
+            totalTokens.totalTokens += output.llmOutput.tokenUsage.totalTokens || 0;
+          }
+        },
+      }]
     }).withStructuredOutput(schema);
 
     // Process chunks and generate report
     const processedChunks = [];
+    let totalTokens = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0
+    };
+
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       try {
@@ -88,7 +104,7 @@ export async function POST(req) {
            Incorporate relevant information from the source document.`
         );
 
-        // Add the source text to the result
+        // No need to track tokens here anymore since we're doing it in the callback
         processedChunks.push({
           ...result,
           sourceText: chunk
@@ -110,6 +126,10 @@ export async function POST(req) {
       throw new Error("Unauthorized");
     }
 
+    // Add a log before database insertion to verify the values
+    console.log("Token usage before DB insert:", totalTokens);
+
+    // When storing in the database, ensure token_usage is not null
     const { error: insertError } = await supabase
       .from('generated_reports')
       .insert({
@@ -119,7 +139,8 @@ export async function POST(req) {
         sub_type: subType,
         content: content,
         report_data: combinedReport,
-        source_files: selectedFiles
+        source_files: selectedFiles,
+        token_usage: totalTokens.totalTokens > 0 ? totalTokens : null  // Only save if we have actual usage
       });
 
     if (insertError) throw insertError;
