@@ -87,16 +87,15 @@ export default function GeneratedReports() {
     
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from('generated_reports')
-        .delete()
-        .match({ 
-          id: reportId,
-          user_id: (await supabase.auth.getUser()).data.user.id 
-        });
+      
+      // Start a transaction to handle the deletion properly
+      const { error: deleteError } = await supabase.rpc('delete_report_safely', {
+        report_id: reportId,
+        user_id: (await supabase.auth.getUser()).data.user.id
+      });
 
-      if (error) {
-        throw error;
+      if (deleteError) {
+        throw deleteError;
       }
       
       customToast.success('Report deleted successfully');
