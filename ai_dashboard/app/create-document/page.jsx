@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import {
@@ -251,53 +250,29 @@ export default function CreateDocument() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Progress bar and steps */}
+      {/* Simplified step indicator */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          {steps.map((step, index) => (
-            <div
-              key={step}
-              className={`flex items-center ${
-                index + 1 === currentStep
-                  ? "text-purple-600 font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-sm mr-2 
-                ${
-                  index + 1 === currentStep
-                    ? "bg-purple-100 text-purple-600"
-                    : "bg-gray-100"
-                }`}
-              >
-                {index + 1 <= currentStep ? "✓" : index + 1}
-              </div>
-              {step}
-            </div>
-          ))}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">
+            Step {currentStep} of {totalSteps}
+          </span>
+          <span className="text-sm font-medium text-purple-600">
+            {steps[currentStep - 1]}
+          </span>
         </div>
-        <Progress
-          value={(currentStep / totalSteps) * 100}
-          className="h-1 bg-gray-100"
-        />
       </div>
 
       {/* Step content */}
       <div className="space-y-6">
         {currentStep === 1 && (
           <>
-            <h2 className="text-2xl font-semibold">Select Document Type</h2>
             <DocumentCards
               selectedType={selectedType}
               onCardClick={handleCardClick}
               onSubTypeClick={handleSubTypeClick}
             />
 
-            <div className="flex justify-between items-center mt-8">
-              <span className="text-sm text-gray-500">
-                Step {currentStep} of {totalSteps}
-              </span>
+            <div className="flex justify-end items-center mt-8">
               <Button
                 className="bg-purple-600 hover:bg-purple-700 text-white"
                 onClick={() => setCurrentStep(2)}

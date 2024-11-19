@@ -1,66 +1,55 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { documentTypes, subTypes } from "../constants/constants";
+import { Check } from 'lucide-react';
 
-export default function DocumentCards({ 
-  selectedType, 
-  onCardClick, 
-  onSubTypeClick 
-}) {
+export default function DocumentCards({ selectedType, onCardClick, onSubTypeClick }) {
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="mb-8 text-center">
+        <div className="mx-auto mb-6 h-20 w-20 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">What type of document do you need?</h1>
+        <p className="text-muted-foreground">Select a document type to get started with AI-powered generation.</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
         {documentTypes.map((doc) => (
           <Card
             key={doc.title}
-            className={`cursor-pointer transition-colors ${
-              selectedType === doc.title ? "bg-purple-600 text-white" : ""
+            className={`relative p-6 hover:bg-muted/50 cursor-pointer ${
+              selectedType === doc.title ? "bg-muted/50" : ""
             }`}
             onClick={() => onCardClick(doc.title)}
           >
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    selectedType === doc.title
-                      ? "bg-purple-500"
-                      : "bg-purple-100"
-                  }`}
-                >
-                  {doc.icon}
-                </div>
-                <h3 className="text-sm font-medium">{doc.title}</h3>
+            {selectedType === doc.title && (
+              <div className="absolute right-4 top-4">
+                <Check className="h-5 w-5 text-primary" />
               </div>
-            </CardContent>
+            )}
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+              {doc.icon}
+            </div>
+            <h3 className="mb-2 font-semibold">{doc.title}</h3>
+            <p className="text-sm text-muted-foreground">{doc.description}</p>
           </Card>
         ))}
       </div>
 
       {/* Sub Types */}
       {selectedType && subTypes[selectedType] && (
-        <div className="mt-6 space-y-3">
-          <h3 className="text-lg font-medium">
-            Select type of {selectedType.toLowerCase()}
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="mt-8">
+          <h3 className="mb-4 text-lg font-medium">Select type of {selectedType.toLowerCase()}</h3>
+          <div className="grid gap-4 sm:grid-cols-2">
             {subTypes[selectedType].map((subType) => (
               <Card
                 key={subType.title}
-                className="hover:border-purple-400 cursor-pointer transition-colors"
+                className="relative p-6 hover:bg-muted/50 cursor-pointer"
                 onClick={() => onSubTypeClick(subType.title)}
               >
-                <CardContent className="p-4">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                        {subType.icon}
-                      </div>
-                      <h4 className="text-sm font-medium">{subType.title}</h4>
-                    </div>
-                    <p className="text-xs text-gray-500 line-clamp-2">
-                      {subType.description}
-                    </p>
-                  </div>
-                </CardContent>
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+                  {subType.icon}
+                </div>
+                <h3 className="mb-2 font-semibold">{subType.title}</h3>
+                <p className="text-sm text-muted-foreground">{subType.description}</p>
               </Card>
             ))}
           </div>
