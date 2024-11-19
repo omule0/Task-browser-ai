@@ -18,9 +18,6 @@ import DocumentCards from "./components/DocumentCards";
 import SelectFiles from "./components/SelectFiles";
 import ContentDetails from "./components/ContentDetails";
 
-// Update the shimmer class for better visibility
-const shimmerClass = "animate-pulse bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent font-semibold";
-
 export default function CreateDocument() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -388,7 +385,7 @@ export default function CreateDocument() {
                       <div className="space-y-4">
                         <Progress value={progress} className="h-2" />
                         <p className="text-center">
-                          <span className={shimmerClass}>
+                          <span>
                             Generating your {selectedSubType || selectedType}...
                           </span>
                         </p>
@@ -424,6 +421,7 @@ export default function CreateDocument() {
                 onClick={() => setCurrentStep(3)}
                 disabled={isGenerating}
               >
+                <ChevronLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
             </div>
