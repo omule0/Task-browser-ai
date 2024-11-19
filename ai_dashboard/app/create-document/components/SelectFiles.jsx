@@ -2,9 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Upload, Grid, List } from "lucide-react";
+import { FileText, Upload, Grid, List, Info } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function SelectFiles({
   isLoadingFiles,
@@ -57,7 +63,28 @@ export default function SelectFiles({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-gray-900">Select Files</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-medium text-gray-900">Select Files</h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[300px] p-3">
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    Select the files you want the AI to analyze. These files will be used as reference material to generate your document.
+                  </p>
+                  <ul className="text-sm list-disc pl-4 space-y-1">
+                    <li>You can select multiple files</li>
+                    <li>Supported formats: PDF, DOCX, TXT</li>
+                    <li>The more relevant your files, the better the output</li>
+                  </ul>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 

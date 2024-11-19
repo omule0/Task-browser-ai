@@ -9,6 +9,7 @@ import {
   FileText,
   AlertCircle,
   Clock,
+  Info,
 } from "lucide-react";
 import { useCompletion } from "ai/react";
 import {
@@ -21,6 +22,12 @@ import DocumentCards from "./components/DocumentCards";
 import SelectFiles from "./components/SelectFiles";
 import ContentDetails from "./components/ContentDetails";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -382,9 +389,25 @@ export default function CreateDocument() {
 
                   {/* Selected Files */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">
-                      Selected Files ({selectedFiles.length})
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Selected Files ({selectedFiles.length})
+                      </h3>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px] p-3">
+                            <p className="text-sm">
+                              These files will be analyzed to generate your {selectedSubType || selectedType}. 
+                              The AI will use their content as reference material to create a more accurate 
+                              and relevant document.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Card className="p-4 max-h-[120px] overflow-y-auto">
                       <div className="space-y-2">
                         {selectedFiles.map((file, index) => {
