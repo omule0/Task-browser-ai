@@ -47,7 +47,7 @@ export function HeaderUI({ user, logout }) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           {user ? (
             <>
               <nav className="hidden md:flex items-center gap-6 mr-4">
