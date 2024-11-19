@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Sparkles, 
+import {  
   ChevronUp, 
   ChevronDown, 
   Wand2, 
@@ -29,11 +28,6 @@ export default function ContentDetails({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
-          <Sparkles className="w-6 h-6 text-purple-600" />
-        </div>
-      </div>
 
       <div className="space-y-2">
         <h1 className="text-lg font-bold">

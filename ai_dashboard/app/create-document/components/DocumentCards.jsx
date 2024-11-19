@@ -1,12 +1,12 @@
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { documentTypes, subTypes } from "../constants/constants";
-import { Check } from 'lucide-react';
 
 export default function DocumentCards({ selectedType, onCardClick, onSubTypeClick }) {
   return (
     <>
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
+        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
         <h1 className="mb-2 text-2xl font-bold tracking-tight">What type of document do you need?</h1>
         <p className="text-sm text-muted-foreground">Select a document type to get started with AI-powered generation.</p>
       </div>
@@ -20,11 +20,14 @@ export default function DocumentCards({ selectedType, onCardClick, onSubTypeClic
             }`}
             onClick={() => onCardClick(doc.title)}
           >
-            {selectedType === doc.title && (
-              <div className="absolute right-3 top-3">
-                <Check className="h-4 w-4 text-primary" />
-              </div>
-            )}
+            <div className="absolute right-3 top-3">
+              <Checkbox
+                checked={selectedType === doc.title}
+                onCheckedChange={() => onCardClick(doc.title)}
+                onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4"
+              />
+            </div>
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
               {doc.icon}
             </div>
@@ -41,9 +44,19 @@ export default function DocumentCards({ selectedType, onCardClick, onSubTypeClic
             {subTypes[selectedType].map((subType) => (
               <Card
                 key={subType.title}
-                className="relative p-4 hover:bg-muted/50 cursor-pointer"
+                className={`relative p-4 hover:bg-muted/50 cursor-pointer ${
+                  selectedType === subType.title ? "bg-muted/50" : ""
+                }`}
                 onClick={() => onSubTypeClick(subType.title)}
               >
+                <div className="absolute right-3 top-3">
+                  <Checkbox
+                    checked={selectedType === subType.title}
+                    onCheckedChange={() => onSubTypeClick(subType.title)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4"
+                  />
+                </div>
                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                   {subType.icon}
                 </div>

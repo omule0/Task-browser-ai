@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import {
   Sparkles,
+  ChevronLeft,
 } from "lucide-react";
 import { useCompletion } from "ai/react";
 import {
@@ -299,6 +300,7 @@ export default function CreateDocument() {
 
             <div className="flex justify-between items-center mt-8">
               <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                <ChevronLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
               <Button
