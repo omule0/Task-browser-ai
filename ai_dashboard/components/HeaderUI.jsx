@@ -42,7 +42,7 @@ export function HeaderUI({ user, logout }) {
       <div className="container flex h-12 items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold">Digest.ai</span>
+            <span className="text-xl font-bold bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">Digest.ai</span>
           </Link>
         </div>
 
