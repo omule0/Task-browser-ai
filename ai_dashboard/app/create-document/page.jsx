@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { isTokenLimitExceeded } from "@/utils/tokenLimits";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -47,6 +48,8 @@ export default function CreateDocument() {
   const { currentWorkspace } = useWorkspace();
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [tokenStats, setTokenStats] = useState({ totalTokens: 0 });
+  const TOKEN_LIMIT = 1000000;
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
@@ -166,8 +169,37 @@ export default function CreateDocument() {
     }
   }, [currentWorkspace?.id]);
 
+  useEffect(() => {
+    async function fetchTokenUsage() {
+      const supabase = createClient();
+      
+      const { data: reports, error } = await supabase
+        .from('generated_reports')
+        .select('token_usage');
+
+      if (error) {
+        console.error('Error fetching token usage:', error);
+        return;
+      }
+
+      const totalTokens = reports.reduce((acc, report) => {
+        const usage = report.token_usage || { totalTokens: 0 };
+        return acc + (usage.totalTokens || 0);
+      }, 0);
+
+      setTokenStats({ totalTokens });
+    }
+
+    fetchTokenUsage();
+  }, []);
+
   const generateReport = async () => {
     try {
+      if (isTokenLimitExceeded(tokenStats, TOKEN_LIMIT)) {
+        customToast.error("Token limit exceeded. Please contact support to increase your limit.");
+        return;
+      }
+
       setIsGenerating(true);
       setGenerationError(null);
       setProgress(0);
@@ -352,6 +384,22 @@ export default function CreateDocument() {
 
         {currentStep === 4 && (
           <div className="space-y-8">
+            {/* Add token usage warning if close to limit */}
+            {tokenStats.totalTokens > TOKEN_LIMIT * 0.9 && (
+              <Card className="p-4 border-yellow-200 bg-yellow-50">
+                <div className="flex gap-2 text-yellow-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <div className="space-y-1">
+                    <p className="font-medium">Approaching Token Limit</p>
+                    <p className="text-sm">
+                      You have used {((tokenStats.totalTokens / TOKEN_LIMIT) * 100).toFixed(1)}% of your token limit.
+                      Contact support to increase your limit.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Summary Card */}
             <Card className="p-6">
               <div className="space-y-6">

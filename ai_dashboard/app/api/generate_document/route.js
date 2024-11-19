@@ -2,6 +2,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
 import { createClient } from "@/utils/supabase/server";
+import { isTokenLimitExceeded } from "@/utils/tokenLimits";
 
 // Add this helper function at the top
 function getHumanFriendlyError(error) {
@@ -124,6 +125,33 @@ export async function POST(req) {
 
     if (!user) {
       throw new Error("Unauthorized");
+    }
+
+    // Fetch current token usage
+    const { data: reports, error: tokenError } = await supabase
+      .from('generated_reports')
+      .select('token_usage');
+
+    if (tokenError) throw tokenError;
+
+    const currentTokens = reports.reduce((acc, report) => {
+      const usage = report.token_usage || { totalTokens: 0 };
+      return acc + (usage.totalTokens || 0);
+    }, 0);
+
+    // Check if token limit is exceeded
+    if (isTokenLimitExceeded({ totalTokens: currentTokens })) {
+      return new Response(
+        JSON.stringify({
+          error: "Token limit exceeded",
+          details: "You have reached your token usage limit. Please contact support to increase your limit.",
+          errorType: 'TokenLimitError'
+        }),
+        { 
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
     }
 
     // Add a log before database insertion to verify the values
