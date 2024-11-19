@@ -5,7 +5,7 @@ import {
   LogOutIcon,
   SettingsIcon,
   MenuIcon,
-  Share2,
+  MegaphoneIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -60,7 +60,7 @@ export function HeaderUI({ user, logout }) {
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
               <div className="hidden md:flex items-center gap-4">
                 <Button variant="ghost" size="icon">
-                  <GiftIcon className="h-5 w-5" />
+                  <MegaphoneIcon className="h-5 w-5" />
                 </Button>
                 <Link href="/help">
                   <Button variant="ghost" size="icon">
@@ -131,8 +131,8 @@ export function HeaderUI({ user, logout }) {
                   <Separator className="my-4" />
                   <div className="flex flex-col gap-4">
                     <Button variant="ghost" className="justify-start">
-                      <GiftIcon className="mr-2 h-5 w-5" />
-                      New
+                      <MegaphoneIcon className="mr-2 h-5 w-5" />
+                      Announcements
                     </Button>
                     <Link href="/help" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full">

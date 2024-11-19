@@ -45,7 +45,7 @@ export default function Dashboard() {
       <title>Dashboard</title>
       <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-xl md:text-xl font-bold text-gray-900 dark:text-gray-100">
             Welcome back, {user.user_metadata.full_name || user.email}
           </h1>
           {/* <p className="mt-2 text-gray-600 dark:text-gray-400">
