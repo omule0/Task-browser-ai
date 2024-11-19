@@ -121,7 +121,7 @@ export default function ContentDetails({
                 <Button
                   className="flex-1 h-10 bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={onWriteForMe}
-                  disabled={isLoading || !isMinimumMet || isMaximumExceeded}
+                  disabled={isLoading}
                 >
                   <Wand2
                     className={`mr-2 h-4 w-4 ${
