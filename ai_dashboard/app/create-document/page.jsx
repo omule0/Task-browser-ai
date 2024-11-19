@@ -6,6 +6,9 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import {
   ChevronLeft,
+  FileText,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
 import { useCompletion } from "ai/react";
 import {
@@ -17,6 +20,7 @@ import { customToast } from "@/components/ui/toast-theme";
 import DocumentCards from "./components/DocumentCards";
 import SelectFiles from "./components/SelectFiles";
 import ContentDetails from "./components/ContentDetails";
+import { Progress } from "@/components/ui/progress";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -340,82 +344,121 @@ export default function CreateDocument() {
         )}
 
         {currentStep === 4 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="space-y-8">
+            {/* Summary Card */}
+            <Card className="p-6">
               <div className="space-y-6">
-                <div className="space-y-4">
+                <div className="flex items-center justify-between">
                   <h1 className="text-2xl font-bold">
                     {isGenerating ? (
-                      <>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-purple-600 animate-pulse" />
                         Generating your{' '}
                         <span className="text-purple-600">{selectedSubType || selectedType}</span>
-                      </>
+                      </span>
                     ) : (
-                      'Review and Generate'
+                      'Review Details'
                     )}
                   </h1>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
-                      <p className="mt-1">{selectedSubType || selectedType}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Selected Files</h3>
-                      <div className="mt-1 space-y-1">
+                  {!isGenerating && (
+                    <Button
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={generateReport}
+                      disabled={isGenerating}
+                    >
+                      Generate {selectedSubType || selectedType}
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-3">
+                  {/* Document Type */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
+                    <Card className="p-4 bg-purple-50 border-purple-100">
+                      <p className="font-medium text-purple-900">{selectedSubType || selectedType}</p>
+                    </Card>
+                  </div>
+
+                  {/* Selected Files */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Selected Files ({selectedFiles.length})
+                    </h3>
+                    <Card className="p-4 max-h-[120px] overflow-y-auto">
+                      <div className="space-y-2">
                         {selectedFiles.map((file, index) => {
                           const originalName = file.split("/").pop().split("-").slice(2).join("-");
                           return (
-                            <div key={index} className="text-sm">{originalName}</div>
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                              <FileText className="h-4 w-4 text-gray-400" />
+                              <span className="truncate">{originalName}</span>
+                            </div>
                           );
                         })}
                       </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
-                      <p className="mt-1 text-sm">{inputValue}</p>
-                    </div>
+                    </Card>
+                  </div>
+
+                  {/* Requirements */}
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                    <Card className="p-4 max-h-[120px] overflow-y-auto">
+                      <p className="text-sm whitespace-pre-wrap">{inputValue}</p>
+                    </Card>
                   </div>
                 </div>
               </div>
+            </Card>
 
-              <div className="flex flex-col justify-center">
-                {isGenerating ? (
-                  <div className="space-y-6">
-                    <Card className="p-6">
-                      <div className="space-y-4">
-                        <Progress value={progress} className="h-2" />
-                        <p className="text-center">
-                          <span>
-                            Generating your {selectedSubType || selectedType}...
-                          </span>
-                        </p>
-                      </div>
-                    </Card>
-                    <p className="text-sm text-gray-500 text-center">
-                      This might take a few minutes
-                    </p>
+            {/* Generation Progress */}
+            {isGenerating && (
+              <Card className="p-6">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Generation Progress</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
                   </div>
-                ) : (
-                  <Button
-                    className="bg-purple-600 hover:bg-purple-700 text-white w-full h-12 text-lg"
-                    onClick={generateReport}
-                    disabled={isGenerating}
-                  >
-                    Generate {selectedSubType || selectedType}
-                  </Button>
-                )}
-              </div>
-            </div>
+                  
+                  <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                    <Clock className="h-4 w-4" />
+                    <span>Estimated time: 2-3 minutes</span>
+                  </div>
+
+                  {/* Generation Steps */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { label: 'Analyzing Files', progress: progress > 30 },
+                      { label: 'Generating Content', progress: progress > 60 },
+                      { label: 'Finalizing Document', progress: progress > 90 }
+                    ].map((step, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div className={`h-2 w-2 rounded-full ${
+                          step.progress ? 'bg-green-500' : 'bg-gray-300'
+                        }`} />
+                        <span className="text-sm">{step.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Error message */}
             {generationError && (
-              <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
-                {generationError}
-              </div>
+              <Card className="p-4 border-red-200 bg-red-50">
+                <div className="flex gap-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <p>{generationError}</p>
+                </div>
+              </Card>
             )}
 
-            {/* Navigation buttons */}
-            <div className="flex justify-between items-center mt-8">
+            {/* Navigation */}
+            <div className="flex justify-between items-center">
               <Button 
                 variant="outline" 
                 onClick={() => setCurrentStep(3)}
