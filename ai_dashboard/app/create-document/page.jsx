@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { isTokenLimitExceeded } from "@/utils/tokenLimits";
+import { isTokenLimitExceeded, isApproachingTokenLimit } from "@/utils/tokenLimits";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -195,8 +195,15 @@ export default function CreateDocument() {
 
   const generateReport = async () => {
     try {
+      // Check for token limit exceeded
       if (isTokenLimitExceeded(tokenStats, TOKEN_LIMIT)) {
         customToast.error("Token limit exceeded. Please contact support to increase your limit.");
+        return;
+      }
+
+      // Check for approaching token limit
+      if (isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)) {
+        customToast.error("Insufficient tokens remaining to generate this document. Please contact support to increase your limit.");
         return;
       }
 
@@ -384,21 +391,33 @@ export default function CreateDocument() {
 
         {currentStep === 4 && (
           <div className="space-y-8">
-            {/* Add token usage warning if close to limit */}
-            {tokenStats.totalTokens > TOKEN_LIMIT * 0.9 && (
+            {/* Token limit warning */}
+            {isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) ? (
+              <Card className="p-4 border-red-200 bg-red-50">
+                <div className="flex gap-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <div className="space-y-1">
+                    <p className="font-medium">Token Limit Exceeded</p>
+                    <p className="text-sm">
+                      You have reached your token limit. Contact support to increase your limit.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ) : isApproachingTokenLimit(tokenStats, TOKEN_LIMIT) ? (
               <Card className="p-4 border-yellow-200 bg-yellow-50">
                 <div className="flex gap-2 text-yellow-600">
                   <AlertCircle className="h-5 w-5" />
                   <div className="space-y-1">
-                    <p className="font-medium">Approaching Token Limit</p>
+                    <p className="font-medium">Insufficient Tokens</p>
                     <p className="text-sm">
-                      You have used {((tokenStats.totalTokens / TOKEN_LIMIT) * 100).toFixed(1)}% of your token limit.
+                      You don't have enough tokens remaining to generate this document. 
                       Contact support to increase your limit.
                     </p>
                   </div>
                 </div>
               </Card>
-            )}
+            ) : null}
 
             {/* Summary Card */}
             <Card className="p-6">
@@ -419,9 +438,17 @@ export default function CreateDocument() {
                     <Button
                       className="bg-purple-600 hover:bg-purple-700 text-white"
                       onClick={generateReport}
-                      disabled={isGenerating}
+                      disabled={
+                        isGenerating || 
+                        isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) || 
+                        isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)
+                      }
                     >
-                      Generate {selectedSubType || selectedType}
+                      {isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) 
+                        ? "Token Limit Exceeded" 
+                        : isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)
+                        ? "Insufficient Tokens"
+                        : `Generate ${selectedSubType || selectedType}`}
                     </Button>
                   )}
                 </div>

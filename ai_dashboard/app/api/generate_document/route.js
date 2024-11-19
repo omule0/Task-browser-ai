@@ -2,7 +2,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
 import { createClient } from "@/utils/supabase/server";
-import { isTokenLimitExceeded } from "@/utils/tokenLimits";
+import { isTokenLimitExceeded, isApproachingTokenLimit } from "@/utils/tokenLimits";
 
 // Add this helper function at the top
 function getHumanFriendlyError(error) {
@@ -139,13 +139,27 @@ export async function POST(req) {
       return acc + (usage.totalTokens || 0);
     }, 0);
 
-    // Check if token limit is exceeded
+    // Check if token limit is exceeded or approaching
     if (isTokenLimitExceeded({ totalTokens: currentTokens })) {
       return new Response(
         JSON.stringify({
           error: "Token limit exceeded",
           details: "You have reached your token usage limit. Please contact support to increase your limit.",
           errorType: 'TokenLimitError'
+        }),
+        { 
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    if (isApproachingTokenLimit({ totalTokens: currentTokens })) {
+      return new Response(
+        JSON.stringify({
+          error: "Insufficient tokens",
+          details: "You don't have enough tokens remaining to generate this document. Please contact support to increase your limit.",
+          errorType: 'InsufficientTokensError'
         }),
         { 
           status: 403,
