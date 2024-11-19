@@ -79,7 +79,7 @@ export function WorkspaceSwitcher({ onAction, isCollapsed }) {
               router.push('/create-workspace');
               onAction?.();
             }}
-            className="gap-2 text-primary bg-purple-100"
+            className="gap-2 text-primary"
           >
             <PlusCircle className="h-4 w-4" />
             Create Workspace
