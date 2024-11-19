@@ -288,7 +288,6 @@ export default function CreateDocument() {
 
         {currentStep === 2 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Select Files</h2>
             <div className="bg-white rounded-lg shadow p-6">
               <SelectFiles
                 isLoadingFiles={isLoadingFiles}

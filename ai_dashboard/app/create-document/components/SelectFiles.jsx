@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Upload, Grid, List } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function SelectFiles({
   isLoadingFiles,
@@ -9,18 +12,19 @@ export default function SelectFiles({
   selectedFiles,
   onFileSelect
 }) {
+  const [viewMode, setViewMode] = useState('grid');
+
   if (isLoadingFiles) {
     return (
-      <div className="space-y-4">
-        {Array(3).fill(0).map((_, index) => (
-          <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border">
-            <Skeleton className="h-4 w-4" />
-            <Skeleton className="h-5 w-5" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-4 w-[200px]" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array(6).fill(0).map((_, index) => (
+          <Card key={index} className="p-4">
+            <Skeleton className="h-12 w-12 rounded" />
+            <div className="mt-4 space-y-2">
+              <Skeleton className="h-4 w-[150px]" />
               <Skeleton className="h-3 w-[100px]" />
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     );
@@ -52,28 +56,95 @@ export default function SelectFiles({
 
   return (
     <div className="space-y-4">
-      {files.map((file) => (
-        <div
-          key={file.file_path}
-          className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50"
-        >
-          <input
-            type="checkbox"
-            checked={selectedFiles.includes(file.file_path)}
-            onChange={(e) => {
-              onFileSelect(file.file_path, e.target.checked);
-            }}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-          <FileText className="h-5 w-5 text-gray-400" />
-          <div>
-            <div className="font-medium">{file.originalName}</div>
-            <div className="text-sm text-gray-500">
-              {new Date(file.created_at).toLocaleDateString()}
-            </div>
-          </div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-medium text-gray-900">Select Files</h2>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setViewMode('list')}
+            className={viewMode === 'list' ? 'text-purple-600' : 'text-gray-600'}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setViewMode('grid')}
+            className={viewMode === 'grid' ? 'text-purple-600' : 'text-gray-600'}
+          >
+            <Grid className="h-4 w-4" />
+          </Button>
         </div>
-      ))}
+      </div>
+
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {files.map((file) => (
+            <Card
+              key={file.file_path}
+              className={`bg-white border-gray-200 cursor-pointer hover:bg-muted/50 ${
+                selectedFiles.includes(file.file_path) ? 'ring-2 ring-purple-500' : ''
+              }`}
+              onClick={() => onFileSelect(file.file_path, !selectedFiles.includes(file.file_path))}
+            >
+              <div className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <Checkbox
+                    checked={selectedFiles.includes(file.file_path)}
+                    onCheckedChange={(checked) => {
+                      onFileSelect(file.file_path, checked);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4"
+                  />
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-gray-900">{file.originalName}</h3>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {files.map((file) => (
+            <Card
+              key={file.file_path}
+              className={`bg-white border-gray-200 cursor-pointer hover:bg-muted/50 ${
+                selectedFiles.includes(file.file_path) ? 'ring-2 ring-purple-500' : ''
+              }`}
+              onClick={() => onFileSelect(file.file_path, !selectedFiles.includes(file.file_path))}
+            >
+              <div className="p-3 flex items-center space-x-3">
+                <Checkbox
+                  checked={selectedFiles.includes(file.file_path)}
+                  onCheckedChange={(checked) => {
+                    onFileSelect(file.file_path, checked);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-4 w-4"
+                />
+                <div className="h-10 w-10 bg-gray-100 rounded flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">{file.originalName}</h3>
+                  <p className="text-xs text-gray-600">
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 } 
