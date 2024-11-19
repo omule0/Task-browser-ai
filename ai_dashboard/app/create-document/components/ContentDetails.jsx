@@ -7,9 +7,11 @@ import {
   ChevronDown,
   Wand2,
   Pencil,
-  AlertCircle
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { documentExamples } from "../constants/constants";
+import { customToast } from "@/components/ui/toast-theme";
 
 export default function ContentDetails({
   selectedType,
@@ -18,15 +20,49 @@ export default function ContentDetails({
   onInputChange,
   onWriteForMe,
   isLoading,
-  MINIMUM_CHARACTERS = 30
+  MINIMUM_WORDS = 3,
+  MAXIMUM_WORDS = 12
 }) {
   const [showExamples, setShowExamples] = useState(false);
-  const characterCount = inputValue.length;
-  const isMinimumMet = characterCount >= MINIMUM_CHARACTERS;
+  const [lastWarningTime, setLastWarningTime] = useState(0);
+  
+  const getWordCount = (text) => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const wordCount = getWordCount(inputValue);
+  const isMinimumMet = wordCount >= MINIMUM_WORDS;
+  const isMaximumExceeded = wordCount > MAXIMUM_WORDS;
+
+  const handleInputChange = (e) => {
+    const newText = e.target.value;
+    const newWordCount = getWordCount(newText);
+    
+    // Allow deletion always
+    if (newText.length < inputValue.length) {
+      onInputChange(e);
+      return;
+    }
+
+    // Check if exceeding word limit
+    if (newWordCount > MAXIMUM_WORDS) {
+      // Show warning toast max once every 2 seconds
+      const now = Date.now();
+      if (now - lastWarningTime > 2000) {
+        customToast.warning(`Please keep your description under ${MAXIMUM_WORDS} words`);
+        setLastWarningTime(now);
+      }
+      return;
+    }
+
+    onInputChange(e);
+  };
 
   const handleExampleSelect = (exampleText) => {
-    onInputChange({ target: { value: exampleText } });
-    setShowExamples(false); // Auto-hide examples after selection
+    if (getWordCount(exampleText) <= MAXIMUM_WORDS) {
+      onInputChange({ target: { value: exampleText } });
+      setShowExamples(false);
+    }
   };
 
   return (
@@ -36,32 +72,35 @@ export default function ContentDetails({
           <h1 className="text-2xl font-semibold tracking-tight">
             Write what your {selectedSubType || selectedType} should be about
           </h1>
-          <p className="text-muted-foreground">
-            With this information, we will craft an exceptional{" "}
-            {selectedSubType || selectedType} for you.
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Info className="h-4 w-4" />
+            Keep it concise - between {MINIMUM_WORDS} and {MAXIMUM_WORDS} words
           </p>
         </div>
       </CardHeader>
 
-      <Card className="border-2">
+      <Card className={`border-2 ${isMaximumExceeded ? 'border-red-200' : ''}`}>
         <CardContent className="pt-6">
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="relative">
                 <Textarea
-                  placeholder={`Describe your ${selectedSubType || selectedType} in detail...`}
+                  placeholder={`Describe your ${selectedSubType || selectedType} in ${MINIMUM_WORDS}-${MAXIMUM_WORDS} words...`}
                   className="min-h-[200px] p-4 resize-none text-base"
                   value={inputValue}
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                 />
                 <div 
                   className={`absolute bottom-3 right-3 text-sm flex items-center gap-2 
-                    ${isMinimumMet ? 'text-green-600' : 'text-amber-600'}`}
+                    ${isMaximumExceeded ? 'text-red-600' : 
+                      isMinimumMet ? 'text-green-600' : 'text-amber-600'}`}
                 >
                   {!isMinimumMet && <AlertCircle className="h-4 w-4" />}
+                  {isMaximumExceeded && <AlertCircle className="h-4 w-4" />}
                   <span>
-                    {characterCount} / {MINIMUM_CHARACTERS} characters
-                    {!isMinimumMet && " required"}
+                    {wordCount} / {MAXIMUM_WORDS} words
+                    {!isMinimumMet && ` (minimum ${MINIMUM_WORDS})`}
+                    {isMaximumExceeded && " (maximum exceeded)"}
                   </span>
                 </div>
               </div>
@@ -82,7 +121,7 @@ export default function ContentDetails({
                 <Button
                   className="flex-1 h-10 bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={onWriteForMe}
-                  disabled={isLoading || !isMinimumMet}
+                  disabled={isLoading || !isMinimumMet || isMaximumExceeded}
                 >
                   <Wand2
                     className={`mr-2 h-4 w-4 ${
