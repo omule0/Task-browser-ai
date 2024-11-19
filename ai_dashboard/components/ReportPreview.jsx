@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { FileText, ChevronRight, Calendar, Clock, Tag, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -118,7 +118,7 @@ export function ReportPreview() {
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Recent Documents</h2>
+            <CardTitle>Recent Documents</CardTitle>
             <Badge variant="secondary">{recentReports.length}</Badge>
           </div>
           <Link 

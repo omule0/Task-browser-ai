@@ -32,25 +32,34 @@ export default function Dashboard() {
     setRefreshFiles(prev => prev + 1);
   };
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (!user) {
-    return <Loading />;
+  if (loading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loading />
+      </div>
+    );
   }
 
   return (
     <>
       <title>Dashboard</title>
-      <main className="flex-1 p-0">
-        <h2 className="text-lg font-semibold mb-6">
-          Welcome back, {user.user_metadata.full_name || user.email}
-        </h2>
-        <ActionCards onUploadSuccess={handleUploadSuccess} />
-        <div className="grid gap-4">
-          <DashboardTabs refresh={refreshFiles} />
+      <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Welcome back, {user.user_metadata.full_name || user.email}
+          </h1>
+          {/* <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Manage your AI interactions and files
+          </p> */}
         </div>
+
+        <section className="mb-8">
+          <ActionCards onUploadSuccess={handleUploadSuccess} />
+        </section>
+
+        <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <DashboardTabs refresh={refreshFiles} />
+        </section>
       </main>
     </>
   );
