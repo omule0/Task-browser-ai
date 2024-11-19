@@ -1,50 +1,25 @@
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { fetchTotalTokenUsage } from "@/utils/tokenLimits";
 
 export default function TokenUsage() {
   const [tokenStats, setTokenStats] = useState({
-    totalTokens: 0,
-    promptTokens: 0,
-    completionTokens: 0
+    totalTokensUsed: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
   
-  // You can adjust these limits based on your needs
-  const TOKEN_LIMITS = {
-    total: 1000000,    // 1 million tokens
-    prompt: 500000,    // 500k tokens
-    completion: 500000 // 500k tokens
-  };
-
   useEffect(() => {
-    async function fetchTokenUsage() {
+    async function fetchUsage() {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      const { data: reports, error } = await supabase
-        .from('generated_reports')
-        .select('token_usage');
+      if (!user) return;
 
-      if (error) {
-        console.error('Error fetching token usage:', error);
-        return;
-      }
-
-      // Calculate total tokens from all reports
-      const totals = reports.reduce((acc, report) => {
-        const usage = report.token_usage || { totalTokens: 0, promptTokens: 0, completionTokens: 0 };
-        return {
-          totalTokens: acc.totalTokens + (usage.totalTokens || 0),
-          promptTokens: acc.promptTokens + (usage.promptTokens || 0),
-          completionTokens: acc.completionTokens + (usage.completionTokens || 0)
-        };
-      }, { totalTokens: 0, promptTokens: 0, completionTokens: 0 });
-
-      setTokenStats(totals);
-      setIsLoading(false);
+      const usage = await fetchTotalTokenUsage(supabase, user.id);
+      setTokenStats(usage);
     }
 
-    fetchTokenUsage();
+    fetchUsage();
   }, []);
 
   if (isLoading) {
@@ -62,11 +37,11 @@ export default function TokenUsage() {
         <div className="flex justify-between text-sm">
           <span>Total Tokens</span>
           <span className="text-muted-foreground">
-            {tokenStats.totalTokens.toLocaleString()}/{TOKEN_LIMITS.total.toLocaleString()}
+            {tokenStats.totalTokensUsed.toLocaleString()}/{TOKEN_LIMITS.total.toLocaleString()}
           </span>
         </div>
         <Progress 
-          value={calculatePercentage(tokenStats.totalTokens, TOKEN_LIMITS.total)}
+          value={calculatePercentage(tokenStats.totalTokensUsed, TOKEN_LIMITS.total)}
           className="h-2"
           aria-label="Total tokens progress"
         />

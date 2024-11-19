@@ -3,42 +3,33 @@ import { createClient } from "@/utils/supabase/client";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Progress } from "@/components/ui/progress";
 import { Coins } from "lucide-react";
+import { fetchTotalTokenUsage } from "@/utils/tokenLimits";
 
 export function HeaderTokenUsage() {
   const [tokenStats, setTokenStats] = useState({
-    totalTokens: 0
+    totalTokensUsed: 0
   });
   const [mounted, setMounted] = useState(false);
   
-  const TOKEN_LIMIT = 1000000; // 1 million tokens
+  const TOKEN_LIMIT = 1000000;
 
   useEffect(() => {
     setMounted(true);
     async function fetchTokenUsage() {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      const { data: reports, error } = await supabase
-        .from('generated_reports')
-        .select('token_usage');
+      if (!user) return;
 
-      if (error) {
-        console.error('Error fetching token usage:', error);
-        return;
-      }
-
-      const totalTokens = reports.reduce((acc, report) => {
-        const usage = report.token_usage || { totalTokens: 0 };
-        return acc + (usage.totalTokens || 0);
-      }, 0);
-
-      setTokenStats({ totalTokens });
+      const usage = await fetchTotalTokenUsage(supabase, user.id);
+      setTokenStats(usage);
     }
 
     fetchTokenUsage();
   }, []);
 
   // Calculate these values only after mounting
-  const percentage = mounted ? Math.round((tokenStats.totalTokens / TOKEN_LIMIT) * 100) : 0;
+  const percentage = mounted ? Math.round((tokenStats.totalTokensUsed / TOKEN_LIMIT) * 100) : 0;
   const isNearLimit = mounted && percentage > 90;
   const isAtLimit = mounted && percentage >= 100;
 
@@ -67,7 +58,7 @@ export function HeaderTokenUsage() {
               'text-muted-foreground'
             ) : 'text-muted-foreground'
           }`}>
-            {mounted ? `${(tokenStats.totalTokens / 1000).toFixed(1)}k` : '0.0k'}
+            {mounted ? `${(tokenStats.totalTokensUsed / 1000).toFixed(1)}k` : '0.0k'}
           </span>
         </div>
       </HoverCardTrigger>
@@ -79,7 +70,7 @@ export function HeaderTokenUsage() {
               <span>Total Tokens Used</span>
               <span className={mounted && isAtLimit ? 'text-red-500' : 'text-muted-foreground'}>
                 {mounted ? (
-                  `${tokenStats.totalTokens.toLocaleString()}/${TOKEN_LIMIT.toLocaleString()}`
+                  `${tokenStats.totalTokensUsed.toLocaleString()}/${TOKEN_LIMIT.toLocaleString()}`
                 ) : '0/1,000,000'}
               </span>
             </div>

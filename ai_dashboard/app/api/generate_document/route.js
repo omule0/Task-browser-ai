@@ -2,7 +2,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
 import { createClient } from "@/utils/supabase/server";
-import { isTokenLimitExceeded, isApproachingTokenLimit } from "@/utils/tokenLimits";
+import { isTokenLimitExceeded, isApproachingTokenLimit, fetchTotalTokenUsage } from "@/utils/tokenLimits";
 
 // Add this helper function at the top
 function getHumanFriendlyError(error) {
@@ -47,7 +47,34 @@ function getHumanFriendlyError(error) {
 
 export async function POST(req) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
     const { documentType, subType, content, fileContents, selectedFiles, workspaceId } = await req.json();
+
+    // Check token limits first
+    const tokenUsage = await fetchTotalTokenUsage(supabase, user.id);
+    if (isTokenLimitExceeded(tokenUsage)) {
+      return new Response(
+        JSON.stringify({
+          error: "Token limit exceeded",
+          details: "You have reached your token usage limit. Please contact support to increase your limit.",
+          errorType: 'TokenLimitError'
+        }),
+        { status: 403 }
+      );
+    }
+
+    // Track token usage during generation
+    let totalTokens = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0
+    };
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -86,11 +113,6 @@ export async function POST(req) {
 
     // Process chunks and generate report
     const processedChunks = [];
-    let totalTokens = {
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0
-    };
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
@@ -119,60 +141,8 @@ export async function POST(req) {
     // Combine the results
     const combinedReport = combineReports(processedChunks, documentType, subType);
 
-    // After generating the report, store it in the database
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("Unauthorized");
-    }
-
-    // Fetch current token usage
-    const { data: reports, error: tokenError } = await supabase
-      .from('generated_reports')
-      .select('token_usage');
-
-    if (tokenError) throw tokenError;
-
-    const currentTokens = reports.reduce((acc, report) => {
-      const usage = report.token_usage || { totalTokens: 0 };
-      return acc + (usage.totalTokens || 0);
-    }, 0);
-
-    // Check if token limit is exceeded or approaching
-    if (isTokenLimitExceeded({ totalTokens: currentTokens })) {
-      return new Response(
-        JSON.stringify({
-          error: "Token limit exceeded",
-          details: "You have reached your token usage limit. Please contact support to increase your limit.",
-          errorType: 'TokenLimitError'
-        }),
-        { 
-          status: 403,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    if (isApproachingTokenLimit({ totalTokens: currentTokens })) {
-      return new Response(
-        JSON.stringify({
-          error: "Insufficient tokens",
-          details: "You don't have enough tokens remaining to generate this document. Please contact support to increase your limit.",
-          errorType: 'InsufficientTokensError'
-        }),
-        { 
-          status: 403,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    // Add a log before database insertion to verify the values
-    console.log("Token usage before DB insert:", totalTokens);
-
-    // When storing in the database, ensure token_usage is not null
-    const { error: insertError } = await supabase
+    // After generating the report, first insert it into the database
+    const { data: report, error: insertError } = await supabase
       .from('generated_reports')
       .insert({
         user_id: user.id,
@@ -182,10 +152,33 @@ export async function POST(req) {
         content: content,
         report_data: combinedReport,
         source_files: selectedFiles,
-        token_usage: totalTokens.totalTokens > 0 ? totalTokens : null  // Only save if we have actual usage
-      });
+        token_usage: totalTokens.totalTokens > 0 ? totalTokens : null
+      })
+      .select()
+      .single();
 
     if (insertError) throw insertError;
+
+    // Now we have the report ID, we can log the token usage
+    const { error: logError } = await supabase
+      .from('token_usage_logs')
+      .insert({
+        user_id: user.id,
+        workspace_id: workspaceId,
+        tokens_used: totalTokens.totalTokens,
+        usage_type: 'document_generation',
+        document_id: report.id  // Use the ID from the inserted report
+      });
+
+    if (logError) throw logError;
+
+    // Log the token usage for debugging
+    console.log("Token usage logged:", {
+      reportId: report.id,
+      totalTokens,
+      userId: user.id,
+      workspaceId
+    });
 
     return new Response(JSON.stringify(combinedReport), {
       headers: { "Content-Type": "application/json" },
@@ -194,13 +187,10 @@ export async function POST(req) {
   } catch (error) {
     console.error("Error generating report:", error);
     
-    // Get user-friendly error message
-    const friendlyMessage = getHumanFriendlyError(error);
-    
     return new Response(
       JSON.stringify({ 
         error: "Failed to generate report", 
-        details: friendlyMessage,
+        details: getHumanFriendlyError(error),
         technicalDetails: error.message,
         errorType: error.name || 'UnknownError'
       }),
