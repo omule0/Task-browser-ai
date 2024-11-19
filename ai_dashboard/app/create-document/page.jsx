@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import {
-  Sparkles,
   ChevronLeft,
 } from "lucide-react";
 import { useCompletion } from "ai/react";
@@ -329,6 +328,7 @@ export default function CreateDocument() {
             {/* Navigation buttons */}
             <div className="flex justify-between items-center mt-8">
               <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                <ChevronLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
               <Button
@@ -346,12 +346,6 @@ export default function CreateDocument() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-
                 <div className="space-y-4">
                   <h1 className="text-2xl font-bold">
                     {isGenerating ? (
