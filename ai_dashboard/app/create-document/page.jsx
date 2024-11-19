@@ -425,7 +425,24 @@ export default function CreateDocument() {
 
                   {/* Requirements */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-gray-500">Requirements</h3>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px] p-3">
+                            <div className="space-y-2">
+                              <p className="text-sm">
+                                These requirements guide the AI in generating your {selectedSubType || selectedType}. 
+                                The more specific and clear your requirements, the better the final output will match your needs.
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <Card className="p-4 max-h-[120px] overflow-y-auto">
                       <p className="text-sm whitespace-pre-wrap">{inputValue}</p>
                     </Card>
@@ -446,9 +463,32 @@ export default function CreateDocument() {
                     <Progress value={progress} className="h-2" />
                   </div>
                   
-                  <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                     <Clock className="h-4 w-4" />
                     <span>Estimated time: 2-3 minutes</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[300px] p-3">
+                          <div className="space-y-2">
+                            <p className="text-sm">
+                              Generation time may vary based on several factors:
+                            </p>
+                            <ul className="text-sm list-disc pl-4 space-y-1">
+                              <li>Your internet connection speed</li>
+                              <li>Number of files being analyzed</li>
+                              <li>Size of each uploaded file</li>
+                              <li>Length and complexity of the content</li>
+                            </ul>
+                            <p className="text-sm mt-2 text-muted-foreground">
+                              Larger files and more complex requirements may take longer to process.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   {/* Generation Steps */}

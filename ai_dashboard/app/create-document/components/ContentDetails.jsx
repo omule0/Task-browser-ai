@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { documentExamples } from "../constants/constants";
 import { customToast } from "@/components/ui/toast-theme";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function ContentDetails({
   selectedType,
@@ -69,13 +70,40 @@ export default function ContentDetails({
     <div className="max-w-3xl mx-auto space-y-6">
       <CardHeader className="px-0">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Write what your {selectedSubType || selectedType} should be about
-          </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            Keep it concise - between {MINIMUM_WORDS} and {MAXIMUM_WORDS} words
-          </p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Write what your {selectedSubType || selectedType} should be about
+            </h1>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[300px] p-3">
+                  <div className="space-y-2">
+                    <p className="text-sm">
+                      Describe your requirements for the {selectedSubType || selectedType}. For best results:
+                    </p>
+                    <ul className="text-sm list-disc pl-4 space-y-1">
+                      <li>Be specific about what you want to achieve</li>
+                      <li>Include key points you want to be covered</li>
+                      <li>Mention any particular style or tone preferences</li>
+                      <li>Keep it between {MINIMUM_WORDS} and {MAXIMUM_WORDS} words</li>
+                    </ul>
+                    <p className="text-sm mt-2">
+                      You can also use the "Write it for me" feature or select from example prompts below.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-gray-400" />
+            <p className="text-muted-foreground">
+              Keep it concise - between {MINIMUM_WORDS} and {MAXIMUM_WORDS} words
+            </p>
+          </div>
         </div>
       </CardHeader>
 
