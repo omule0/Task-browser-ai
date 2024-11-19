@@ -62,9 +62,11 @@ export function HeaderUI({ user, logout }) {
                 <Button variant="ghost" size="icon">
                   <GiftIcon className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <HelpCircleIcon className="h-5 w-5" />
-                </Button>
+                <Link href="/help">
+                  <Button variant="ghost" size="icon">
+                    <HelpCircleIcon className="h-5 w-5" />
+                  </Button>
+                </Link>
               </div>
               <div className="hidden md:block">
                 <HoverCard>
@@ -132,10 +134,12 @@ export function HeaderUI({ user, logout }) {
                       <GiftIcon className="mr-2 h-5 w-5" />
                       New
                     </Button>
-                    <Button variant="ghost" className="justify-start">
-                      <HelpCircleIcon className="mr-2 h-5 w-5" />
-                      Help
-                    </Button>
+                    <Link href="/help" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="justify-start w-full">
+                        <HelpCircleIcon className="mr-2 h-5 w-5" />
+                        Help
+                      </Button>
+                    </Link>
                     <Link href="/workspacesettings" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full">
                         <SettingsIcon className="mr-2 h-5 w-5" />
