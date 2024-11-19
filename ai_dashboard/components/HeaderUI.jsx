@@ -24,6 +24,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import { HeaderTokenUsage } from "@/components/HeaderTokenUsage";
 
 export function HeaderUI({ user, logout }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +57,7 @@ export function HeaderUI({ user, logout }) {
                 <Link href="/templates" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                   Templates
                 </Link>
+                <HeaderTokenUsage />
               </nav>
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
               <div className="hidden md:flex items-center gap-4">
