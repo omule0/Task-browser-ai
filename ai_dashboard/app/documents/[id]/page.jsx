@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import BuysideDueDiligence from "./buyside-due-diligence";
 import ResearchReport from "./research-report";
+import SellsideDueDiligence from "./sellside-due-diligence";
 
 export default function DocumentView() {
   const params = useParams();
@@ -47,6 +48,8 @@ export default function DocumentView() {
         return <BuysideDueDiligence report={report.report_data} />;
       case "Research report":
         return <ResearchReport report={report.report_data} />;
+      case "Sellside Due Diligence":
+        return <SellsideDueDiligence report={report.report_data} />;
       default:
         return <div className="max-w-6xl mx-auto px-6">This report type is not yet supported.</div>;
     }
