@@ -30,9 +30,9 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
+      // 'application/msword': ['.doc'],
+      // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      // 'text/plain': ['.txt'],
       // 'application/vnd.ms-excel': ['.xls'],
       // 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       // 'text/csv': ['.csv']
@@ -269,8 +269,7 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
                 : "Drag and drop files here, or click to select files"}
             </p>
             <p className="text-sm text-gray-500">
-              Supported file types: PDF, DOC, DOCX, TXT (Max 10MB)
-              {/* Supported files: PDF, DOC, DOCX, TXT, XLS, XLSX, CSV (Max 10MB) */}
+              Supported file types: PDF (Max 10MB)
             </p>
           </div>
 

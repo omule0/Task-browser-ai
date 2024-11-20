@@ -395,9 +395,9 @@ export default function FilesPage() {
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
+      // 'application/msword': ['.doc'],
+      // 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      // 'text/plain': ['.txt'],
     },
     maxSize: 10485760, // 10MB
   });
@@ -627,7 +627,8 @@ export default function FilesPage() {
           </div>
           <h3 className="font-semibold">Drop files here or click to upload</h3>
           <p className="text-sm text-muted-foreground">
-            PDF, DOC, DOCX, TXT (Max 10MB)
+            PDF (Max 10MB)
+            {/* PDF, DOC, DOCX, TXT (Max 10MB) */}
           </p>
         </div>
       </div>
