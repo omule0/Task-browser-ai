@@ -61,11 +61,22 @@ export async function POST(req) {
     if (isTokenLimitExceeded(tokenUsage)) {
       return new Response(
         JSON.stringify({
-          error: "Token limit exceeded",
+          warning: "Token limit exceeded",
           details: "You have reached your token usage limit. Please contact support to increase your limit.",
-          errorType: 'TokenLimitError'
+          warningType: 'TokenLimitWarning'
         }),
-        { status: 403 }
+        { status: 200 }
+      );
+    }
+
+    if (isApproachingTokenLimit(tokenUsage)) {
+      return new Response(
+        JSON.stringify({
+          warning: "Approaching token limit",
+          details: "You don't have enough tokens remaining to generate this document. Please contact support to increase your limit.",
+          warningType: 'ApproachingLimitWarning'
+        }),
+        { status: 200 }
       );
     }
 

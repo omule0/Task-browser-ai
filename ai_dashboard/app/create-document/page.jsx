@@ -12,9 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { useCompletion } from "ai/react";
-import {
-  subTypes,
-} from "./constants/constants";
+import { subTypes } from "./constants/constants";
 import { useWorkspace } from "@/context/workspace-context";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
@@ -28,7 +26,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { isTokenLimitExceeded, isApproachingTokenLimit } from "@/utils/tokenLimits";
+import { 
+  isTokenLimitExceeded, 
+  isApproachingTokenLimit, 
+  fetchTotalTokenUsage 
+} from "@/utils/tokenLimits";
 
 export default function CreateDocument() {
   const router = useRouter();
@@ -48,7 +50,7 @@ export default function CreateDocument() {
   const { currentWorkspace } = useWorkspace();
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [tokenStats, setTokenStats] = useState({ totalTokens: 0 });
+  const [tokenStats, setTokenStats] = useState({ totalTokensUsed: 0 });
   const TOKEN_LIMIT = 1000000;
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
@@ -172,22 +174,12 @@ export default function CreateDocument() {
   useEffect(() => {
     async function fetchTokenUsage() {
       const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      const { data: reports, error } = await supabase
-        .from('generated_reports')
-        .select('token_usage');
+      if (!user) return;
 
-      if (error) {
-        console.error('Error fetching token usage:', error);
-        return;
-      }
-
-      const totalTokens = reports.reduce((acc, report) => {
-        const usage = report.token_usage || { totalTokens: 0 };
-        return acc + (usage.totalTokens || 0);
-      }, 0);
-
-      setTokenStats({ totalTokens });
+      const usage = await fetchTotalTokenUsage(supabase, user.id);
+      setTokenStats(usage);
     }
 
     fetchTokenUsage();
@@ -195,18 +187,6 @@ export default function CreateDocument() {
 
   const generateReport = async () => {
     try {
-      // Check for token limit exceeded
-      if (isTokenLimitExceeded(tokenStats, TOKEN_LIMIT)) {
-        customToast.error("Token limit exceeded. Please contact support to increase your limit.");
-        return;
-      }
-
-      // Check for approaching token limit
-      if (isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)) {
-        customToast.error("Insufficient tokens remaining to generate this document. Please contact support to increase your limit.");
-        return;
-      }
-
       setIsGenerating(true);
       setGenerationError(null);
       setProgress(0);
@@ -246,13 +226,19 @@ export default function CreateDocument() {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate document');
+      const data = await response.json();
+
+      // Handle token limit warnings
+      if (data.warningType) {
+        setGenerationError(data.details);
+        customToast.warning(data.details);
+        return;
       }
 
-      const report = await response.json();
-      
+      if (!response.ok) {
+        throw new Error(data.details || 'Failed to generate document');
+      }
+
       setProgress(100);
       customToast.success(`${selectedSubType || selectedType} generated successfully!`);
       
@@ -263,13 +249,13 @@ export default function CreateDocument() {
       console.error(`Error generating ${selectedSubType || selectedType}:`, error);
       setGenerationError(error.message);
       setProgress(0);
-      setIsGenerating(false);
-      
       customToast.error(
         error.message.includes('Try adjusting your description') 
           ? 'Please provide more specific requirements for better results'
           : `Failed to generate ${selectedSubType || selectedType}`
       );
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -391,8 +377,8 @@ export default function CreateDocument() {
 
         {currentStep === 4 && (
           <div className="space-y-8">
-            {/* Token limit warning */}
-            {isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) ? (
+            {/* Token limit warnings */}
+            {isTokenLimitExceeded(tokenStats) && (
               <Card className="p-4 border-red-200 bg-red-50">
                 <div className="flex gap-2 text-red-600">
                   <AlertCircle className="h-5 w-5" />
@@ -404,20 +390,21 @@ export default function CreateDocument() {
                   </div>
                 </div>
               </Card>
-            ) : isApproachingTokenLimit(tokenStats, TOKEN_LIMIT) ? (
+            )}
+
+            {!isTokenLimitExceeded(tokenStats) && isApproachingTokenLimit(tokenStats) && (
               <Card className="p-4 border-yellow-200 bg-yellow-50">
                 <div className="flex gap-2 text-yellow-600">
                   <AlertCircle className="h-5 w-5" />
                   <div className="space-y-1">
-                    <p className="font-medium">Insufficient Tokens</p>
+                    <p className="font-medium">Approaching Token Limit</p>
                     <p className="text-sm">
-                      You don't have enough tokens remaining to generate this document. 
-                      Contact support to increase your limit.
+                      You are approaching your token limit. Consider contacting support to increase your limit.
                     </p>
                   </div>
                 </div>
               </Card>
-            ) : null}
+            )}
 
             {/* Summary Card */}
             <Card className="p-6">
@@ -440,14 +427,14 @@ export default function CreateDocument() {
                       onClick={generateReport}
                       disabled={
                         isGenerating || 
-                        isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) || 
-                        isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)
+                        isTokenLimitExceeded(tokenStats) || 
+                        isApproachingTokenLimit(tokenStats)
                       }
                     >
-                      {isTokenLimitExceeded(tokenStats, TOKEN_LIMIT) 
+                      {isTokenLimitExceeded(tokenStats)
                         ? "Token Limit Exceeded" 
-                        : isApproachingTokenLimit(tokenStats, TOKEN_LIMIT)
-                        ? "Insufficient Tokens"
+                        : isApproachingTokenLimit(tokenStats)
+                        ? "Approaching Token Limit"
                         : `Generate ${selectedSubType || selectedType}`}
                     </Button>
                   )}
