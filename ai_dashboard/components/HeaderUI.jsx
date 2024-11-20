@@ -51,10 +51,10 @@ export function HeaderUI({ user, logout }) {
           {user ? (
             <>
               <nav className="hidden md:flex items-center gap-6 mr-4">
-                <Link href="/integrations" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                   Integrations
                 </Link>
-                <Link href="/templates" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                   Templates
                 </Link>
                 <HeaderTokenUsage />
@@ -123,10 +123,10 @@ export function HeaderUI({ user, logout }) {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-4">
-                    <Link href="/integrations" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                    <Link href="/#" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
                       Integrations
                     </Link>
-                    <Link href="/templates" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                    <Link href="/#" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
                       Templates
                     </Link>
                   </nav>

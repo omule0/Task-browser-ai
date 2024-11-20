@@ -94,6 +94,70 @@ export const reportSchemas = {
         valueCreation: z.array(z.string()).describe("Post-acquisition value creation opportunities"),
       }),
     }),
+    "Sellside Due Diligence": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the sellside due diligence report. Should be between 6-12 words"),
+      executiveSummary: z.object({
+        description: z.string().describe("High-level overview of the company being sold"),
+        purpose: z.string().describe("Purpose of the executive summary"),
+      }),
+      companyOverview: z.object({
+        description: z.string().describe("Company's history, mission, products, and markets"),
+        purpose: z.string().describe("Purpose of the company overview"),
+      }),
+      financialOverview: z.object({
+        description: z.string().describe("Analysis of historical financial statements and ratios"),
+        purpose: z.string().describe("Purpose of the financial overview"),
+      }),
+      marketAndCompetitiveLandscape: z.object({
+        description: z.string().describe("Analysis of market dynamics and competitors"),
+        purpose: z.string().describe("Purpose of the market and competitive landscape"),
+      }),
+      productOrServicePortfolio: z.object({
+        description: z.string().describe("Information about the company's products or services"),
+        purpose: z.string().describe("Purpose of the product or service portfolio"),
+      }),
+      customerAndSalesAnalysis: z.object({
+        description: z.string().describe("Review of customer base and sales channels"),
+        purpose: z.string().describe("Purpose of the customer and sales analysis"),
+      }),
+      operationalOverview: z.object({
+        description: z.string().describe("Analysis of operational processes and metrics"),
+        purpose: z.string().describe("Purpose of the operational overview"),
+      }),
+      legalAndRegulatoryReview: z.object({
+        description: z.string().describe("Summary of legal structure and compliance status"),
+        purpose: z.string().describe("Purpose of the legal and regulatory review"),
+      }),
+      humanResourcesAndWorkforceAssessment: z.object({
+        description: z.string().describe("Overview of workforce and HR risks"),
+        purpose: z.string().describe("Purpose of the HR and workforce assessment"),
+      }),
+      technologyAndIntellectualProperty: z.object({
+        description: z.string().describe("Information on IT infrastructure and IP assets"),
+        purpose: z.string().describe("Purpose of the technology and IP section"),
+      }),
+      esgPractices: z.object({
+        description: z.string().describe("Evaluation of ESG practices"),
+        purpose: z.string().describe("Purpose of the ESG practices section"),
+      }),
+      riskAssessment: z.object({
+        description: z.string().describe("Identification and analysis of potential risks"),
+        purpose: z.string().describe("Purpose of the risk assessment"),
+      }),
+      valuationHighlightsAndStrategicOpportunities: z.object({
+        description: z.string().describe("Summary of valuation and strategic opportunities"),
+        purpose: z.string().describe("Purpose of the valuation highlights section"),
+      }),
+      appendices: z.object({
+        description: z.string().describe("Supporting documents and additional context"),
+        purpose: z.string().describe("Purpose of the appendices"),
+      }),
+    }),
   },
 };
 
