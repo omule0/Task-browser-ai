@@ -1,12 +1,15 @@
 "use client";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, Building2, Users, LineChart, Shield, Lightbulb } from "lucide-react";
+import { AlertTriangle, TrendingUp, Building2, Users, LineChart, Shield, Lightbulb, BarChart3, Cog } from "lucide-react";
 import ReportActions from "@/components/report-actions";
 
 export default function BuysideDueDiligence({ report }) {
   const sections = [
     { id: "executive-summary", title: "Executive Summary" },
+    { id: "business-overview", title: "Business Overview" },
+    { id: "financial-analysis", title: "Financial Analysis" },
     { id: "market-analysis", title: "Market Analysis" },
+    { id: "operational-assessment", title: "Operational Assessment" },
     { id: "risk-assessment", title: "Risk Assessment" },
     { id: "recommendations", title: "Recommendations" }
   ];
@@ -55,6 +58,58 @@ export default function BuysideDueDiligence({ report }) {
             </ul>
           </div>
           <SourceTag source={report.executiveSummary.source} />
+        </div>
+      </Card>
+
+      {/* Business Overview */}
+      <Card id="business-overview" className="p-6">
+        <SectionHeader icon={<Building2 className="w-6 h-6 text-purple-600" />} title="Business Overview" />
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium mb-2">Company Profile</h3>
+            <p>{report.businessOverview.companyProfile}</p>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Market Position</h3>
+            <p>{report.businessOverview.marketPosition}</p>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Product Offerings</h3>
+            <ul className="list-disc pl-5">
+              {report.businessOverview.productOfferings.map((product, index) => (
+                <li key={index}>{product}</li>
+              ))}
+            </ul>
+          </div>
+          <SourceTag source={report.businessOverview.source} />
+        </div>
+      </Card>
+
+      {/* Financial Analysis */}
+      <Card id="financial-analysis" className="p-6">
+        <SectionHeader icon={<BarChart3 className="w-6 h-6 text-blue-600" />} title="Financial Analysis" />
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium mb-2">Performance</h3>
+            <p>{report.financialAnalysis.performance}</p>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Key Metrics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {report.financialAnalysis.metrics.map((metric, index) => (
+                <div key={index} className="border p-4 rounded-lg bg-gray-50">
+                  <h4 className="font-medium text-lg">{metric.value}</h4>
+                  <p className="text-sm text-gray-600 mb-2">{metric.metric}</p>
+                  <p className="text-sm">{metric.analysis}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Forecast</h3>
+            <p>{report.financialAnalysis.forecast}</p>
+          </div>
+          <SourceTag source={report.financialAnalysis.source} />
         </div>
       </Card>
 
@@ -116,6 +171,30 @@ export default function BuysideDueDiligence({ report }) {
               ))}
             </div>
           </div>
+        </div>
+      </Card>
+
+      {/* Operational Assessment */}
+      <Card id="operational-assessment" className="p-6">
+        <SectionHeader icon={<Cog className="w-6 h-6 text-gray-600" />} title="Operational Assessment" />
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium mb-2">Processes</h3>
+            <p>{report.operationalAssessment.processes}</p>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Efficiency</h3>
+            <p>{report.operationalAssessment.efficiency}</p>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Potential Improvements</h3>
+            <ul className="list-disc pl-5">
+              {report.operationalAssessment.improvements.map((improvement, index) => (
+                <li key={index}>{improvement}</li>
+              ))}
+            </ul>
+          </div>
+          <SourceTag source={report.operationalAssessment.source} />
         </div>
       </Card>
 
