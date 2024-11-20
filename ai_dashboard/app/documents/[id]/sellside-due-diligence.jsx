@@ -130,27 +130,59 @@ export default function SellsideDueDiligence({ report }) {
             <h3 className="font-medium mb-2">Industry Overview</h3>
             <p>{report.marketAnalysis.industryOverview}</p>
           </div>
-          
+
+          {/* Competitive Landscape */}
           <div>
-            <h3 className="font-medium mb-4">SWOT Analysis</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <h3 className="font-medium mb-2">Competitive Landscape</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {report.marketAnalysis.competitiveLandscape.map((competitor, index) => (
+                <div key={index} className="border p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">{competitor.competitor}</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <h5 className="text-sm font-medium text-green-600">Strengths</h5>
+                      <ul className="list-disc pl-5 text-sm">
+                        {competitor.strengths.map((strength, idx) => (
+                          <li key={idx}>{strength}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-medium text-red-600">Weaknesses</h5>
+                      <ul className="list-disc pl-5 text-sm">
+                        {competitor.weaknesses.map((weakness, idx) => (
+                          <li key={idx}>{weakness}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SWOT Analysis */}
+          <div>
+            <h3 className="font-medium mb-2">SWOT Analysis</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { title: "Strengths", items: report.marketAnalysis.swotAnalysis.strengths, color: "bg-green-50" },
-                { title: "Weaknesses", items: report.marketAnalysis.swotAnalysis.weaknesses, color: "bg-red-50" },
-                { title: "Opportunities", items: report.marketAnalysis.swotAnalysis.opportunities, color: "bg-blue-50" },
-                { title: "Threats", items: report.marketAnalysis.swotAnalysis.threats, color: "bg-yellow-50" }
+                { title: "Strengths", items: report.marketAnalysis.swotAnalysis.strengths, color: "text-green-600" },
+                { title: "Weaknesses", items: report.marketAnalysis.swotAnalysis.weaknesses, color: "text-red-600" },
+                { title: "Opportunities", items: report.marketAnalysis.swotAnalysis.opportunities, color: "text-blue-600" },
+                { title: "Threats", items: report.marketAnalysis.swotAnalysis.threats, color: "text-orange-600" }
               ].map((section) => (
-                <div key={section.title} className={`p-4 rounded-lg ${section.color}`}>
-                  <h4 className="font-medium mb-2">{section.title}</h4>
+                <div key={section.title} className="border p-4 rounded-lg">
+                  <h4 className={`font-medium mb-2 ${section.color}`}>{section.title}</h4>
                   <ul className="list-disc pl-5">
-                    {section.items.map((item, index) => (
-                      <li key={index}>{item}</li>
+                    {section.items.map((item, idx) => (
+                      <li key={idx}>{item}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
           </div>
+          
           <SourceTag source={report.marketAnalysis.source} />
         </div>
       </Card>
