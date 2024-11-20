@@ -396,9 +396,10 @@ export default function CreateDocument() {
                 <div className="flex gap-2 text-yellow-600">
                   <AlertCircle className="h-5 w-5" />
                   <div className="space-y-1">
-                    <p className="font-medium">Approaching Token Limit</p>
+                    <p className="font-medium">Insufficient Tokens</p>
                     <p className="text-sm">
-                      You are approaching your token limit. Consider contacting support to increase your limit.
+                      You don't have enough tokens remaining to generate this document. 
+                      Contact support to increase your limit.
                     </p>
                   </div>
                 </div>
@@ -433,7 +434,7 @@ export default function CreateDocument() {
                       {isTokenLimitExceeded(tokenStats)
                         ? "Token Limit Exceeded" 
                         : isApproachingTokenLimit(tokenStats)
-                        ? "Approaching Token Limit"
+                        ? "Insufficient Tokens"
                         : `Generate ${selectedSubType || selectedType}`}
                     </Button>
                   )}
