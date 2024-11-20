@@ -47,7 +47,7 @@ export function HeaderUI({ user, logout }) {
           </Link>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           {user ? (
             <>
               <nav className="hidden md:flex items-center gap-6 mr-4">
@@ -60,13 +60,13 @@ export function HeaderUI({ user, logout }) {
                 <HeaderTokenUsage />
               </nav>
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
-              <div className="hidden md:flex items-center gap-4">
+              <div className="hidden md:flex items-center">
                 <Button variant="ghost" size="icon">
-                  <MegaphoneIcon className="h-5 w-5" />
+                  <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
                 </Button>
                 <Link href="/help">
                   <Button variant="ghost" size="icon">
-                    <HelpCircleIcon className="h-5 w-5" />
+                    <HelpCircleIcon className="h-8 w-8" />
                   </Button>
                 </Link>
               </div>
@@ -133,7 +133,7 @@ export function HeaderUI({ user, logout }) {
                   <Separator className="my-4" />
                   <div className="flex flex-col gap-4">
                     <Button variant="ghost" className="justify-start">
-                      <MegaphoneIcon className="mr-2 h-5 w-5" />
+                      <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
                       Announcements
                     </Button>
                     <Link href="/help" onClick={() => setIsOpen(false)}>
