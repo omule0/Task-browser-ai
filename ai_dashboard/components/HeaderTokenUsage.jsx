@@ -11,7 +11,7 @@ export function HeaderTokenUsage() {
   });
   const [mounted, setMounted] = useState(false);
   
-  const TOKEN_LIMIT = 1000000;
+  const TOKEN_LIMIT = 10000;
 
   useEffect(() => {
     setMounted(true);
@@ -71,7 +71,7 @@ export function HeaderTokenUsage() {
               <span className={mounted && isAtLimit ? 'text-red-500' : 'text-muted-foreground'}>
                 {mounted ? (
                   `${tokenStats.totalTokensUsed.toLocaleString()}/${TOKEN_LIMIT.toLocaleString()}`
-                ) : '0/1,000,000'}
+                ) : '0/10,000'}
               </span>
             </div>
             <Progress 

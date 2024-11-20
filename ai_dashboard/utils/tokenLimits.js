@@ -1,9 +1,9 @@
-export function isTokenLimitExceeded(tokenUsage, TOKEN_LIMIT = 1000000) {
+export function isTokenLimitExceeded(tokenUsage, TOKEN_LIMIT = 10000) {
   return tokenUsage.totalTokensUsed >= TOKEN_LIMIT;
 }
 
-export function isApproachingTokenLimit(tokenUsage, TOKEN_LIMIT = 1000000) {
-  const ESTIMATED_TOKENS_PER_GENERATION = 50000;
+export function isApproachingTokenLimit(tokenUsage, TOKEN_LIMIT = 10000) {
+  const ESTIMATED_TOKENS_PER_GENERATION = 5000;
   const remainingTokens = TOKEN_LIMIT - tokenUsage.totalTokensUsed;
   return remainingTokens < ESTIMATED_TOKENS_PER_GENERATION;
 }

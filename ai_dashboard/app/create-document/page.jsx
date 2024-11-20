@@ -51,7 +51,6 @@ export default function CreateDocument() {
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [progress, setProgress] = useState(0);
   const [tokenStats, setTokenStats] = useState({ totalTokensUsed: 0 });
-  const TOKEN_LIMIT = 1000000;
 
   const steps = ["Document Type", "Select Files", "Content Details", "Review"];
 
