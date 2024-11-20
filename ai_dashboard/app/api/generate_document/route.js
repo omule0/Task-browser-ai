@@ -184,12 +184,12 @@ export async function POST(req) {
     if (logError) throw logError;
 
     // Log the token usage for debugging
-    console.log("Token usage logged:", {
-      reportId: report.id,
-      totalTokens,
-      userId: user.id,
-      workspaceId
-    });
+    // console.log("Token usage logged:", {
+    //   reportId: report.id,
+    //   totalTokens,
+    //   userId: user.id,
+    //   workspaceId
+    // });
 
     return new Response(JSON.stringify(combinedReport), {
       headers: { "Content-Type": "application/json" },
