@@ -270,6 +270,119 @@ export const reportSchemas = {
         type: z.string()
       })).describe("Supporting documentation and materials")
     }),
+    "Equity Investment Analyst": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the equity investment analyst report"),
+      
+      executiveSummary: z.object({
+        overview: z.string().describe("High-level overview of key findings"),
+        investmentThesis: z.string().describe("Core investment thesis"),
+        recommendation: z.object({
+          type: z.enum(["buy", "hold", "sell"]).describe("Investment recommendation"),
+          rationale: z.string().describe("Reasoning behind recommendation"),
+          targetPrice: z.string().describe("Target price range for the stock")
+        }),
+        keyPoints: z.array(z.string()).describe("Summary of main analysis points")
+      }),
+
+      companyOverview: z.object({
+        businessModel: z.string().describe("Company's business model description"),
+        history: z.string().describe("Company history and background"),
+        products: z.array(z.string()).describe("Key products or service lines"),
+        geographicPresence: z.string().describe("Geographical market presence"),
+        competitiveAdvantages: z.array(z.string()).describe("Key competitive advantages")
+      }),
+
+      industryAnalysis: z.object({
+        marketSize: z.string().describe("Total addressable market size"),
+        trends: z.array(z.string()).describe("Key industry trends"),
+        growthDrivers: z.array(z.string()).describe("Market growth drivers"),
+        regulatoryEnvironment: z.string().describe("Regulatory landscape"),
+        swotAnalysis: z.object({
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string()),
+          opportunities: z.array(z.string()),
+          threats: z.array(z.string())
+        })
+      }),
+
+      financialAnalysis: z.object({
+        performance: z.object({
+          revenue: z.string().describe("Revenue analysis"),
+          profitability: z.string().describe("Profitability analysis"),
+          cashFlow: z.string().describe("Cash flow analysis")
+        }),
+        ratios: z.array(z.object({
+          category: z.string(),
+          metrics: z.array(z.object({
+            name: z.string(),
+            value: z.string(),
+            analysis: z.string()
+          }))
+        })).describe("Key financial ratios"),
+        trends: z.array(z.string()).describe("Notable financial trends")
+      }),
+
+      valuationAnalysis: z.object({
+        methodologies: z.array(z.object({
+          type: z.string(),
+          value: z.string(),
+          assumptions: z.array(z.string())
+        })).describe("Valuation methodologies used"),
+        peerComparison: z.array(z.object({
+          company: z.string(),
+          metrics: z.array(z.object({
+            name: z.string(),
+            value: z.string()
+          }))
+        })).describe("Peer company comparisons"),
+        fairValue: z.string().describe("Estimated fair value range")
+      }),
+
+      businessStrategy: z.object({
+        model: z.string().describe("Business model analysis"),
+        initiatives: z.array(z.string()).describe("Key strategic initiatives"),
+        management: z.string().describe("Management effectiveness assessment")
+      }),
+
+      riskAssessment: z.array(z.object({
+        category: z.string(),
+        risks: z.array(z.string()),
+        mitigation: z.string()
+      })).describe("Key risk factors and mitigation strategies"),
+
+      competitiveAnalysis: z.object({
+        marketShare: z.string().describe("Company's market position"),
+        competitors: z.array(z.object({
+          name: z.string(),
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string())
+        })).describe("Competitor analysis")
+      }),
+
+      esgAnalysis: z.object({
+        environmental: z.array(z.string()).describe("Environmental initiatives and impact"),
+        social: z.array(z.string()).describe("Social responsibility programs"),
+        governance: z.array(z.string()).describe("Corporate governance practices"),
+        rating: z.string().describe("Overall ESG assessment")
+      }),
+
+      investmentConsiderations: z.object({
+        risks: z.array(z.string()).describe("Key investment risks"),
+        opportunities: z.array(z.string()).describe("Growth opportunities"),
+        catalysts: z.array(z.string()).describe("Potential value catalysts")
+      }),
+
+      appendix: z.array(z.object({
+        title: z.string(),
+        content: z.string(),
+        type: z.string()
+      })).describe("Supporting documentation and materials")
+    }),
   },
 };
 

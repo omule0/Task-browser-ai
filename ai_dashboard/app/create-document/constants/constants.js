@@ -27,13 +27,13 @@ export const subTypes = {
       description: "A formal document outlining a company’s goals, strategies, market analysis, financial projections, and operational structure",
     },
     {
-      icon: <img src="/equity-investment.png" alt="Equity Investment Analyst Report" className="h-5 w-5" />,
-      title: "Equity Investment Analyst Report",
+      icon: <img src="/equity-investment.png" alt="Equity Investment Analyst" className="h-5 w-5" />,
+      title: "Equity Investment Analyst",
       description: "A comprehensive analysis of a publicly traded company's investment potential, including financial performance, market position, and growth prospects",
     },
     {
-      icon: <img src="/credit-investment.png" alt="Credit Investment Analyst Report" className="h-5 w-5" />,
-      title: "Credit Investment Analyst Report",
+      icon: <img src="/credit-investment.png" alt="Credit Investment Analyst" className="h-5 w-5" />,
+      title: "Credit Investment Analyst",
       description: "A comprehensive evaluation of a borrower's creditworthiness, analyzing financial stability, debt structure, cash flow generation, and associated risks for lenders and credit investors",
     },
   ],

@@ -10,6 +10,7 @@ import BuysideDueDiligence from "./buyside-due-diligence";
 import ResearchReport from "./research-report";
 import SellsideDueDiligence from "./sellside-due-diligence";
 import BusinessPlan from "./business-plan";
+import EquityInvestmentAnalyst from "./equity-investment-analyst";
 
 
 export default function DocumentView() {
@@ -52,8 +53,8 @@ export default function DocumentView() {
         return <ResearchReport report={report.report_data} />;
       case "Sellside Due Diligence":
         return <SellsideDueDiligence report={report.report_data} />;
-      case "Business Plan":
-        return <BusinessPlan report={report.report_data} />;
+      case "Equity Investment Analyst":
+        return <EquityInvestmentAnalyst report={report.report_data} />;
       default:
         return <div className="max-w-6xl mx-auto px-6">This report type is not yet supported.</div>;
     }
