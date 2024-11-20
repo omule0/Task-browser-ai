@@ -10,6 +10,7 @@ import {
   Leaf,
   AlertTriangle,
   TrendingUp,
+  Settings,
 } from "lucide-react";
 import ReportActions from "@/components/report-actions";
 
@@ -236,6 +237,35 @@ export default function SellsideDueDiligence({ report }) {
         </div>
       </Card>
 
+      {/* Operational Overview */}
+      <Card id="operational-overview" className="p-6">
+        <SectionHeader icon={<Settings className="w-6 h-6 text-orange-600" />} title="Operational Overview" />
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium mb-2">Processes</h3>
+            <p>{report.operationalOverview.processes}</p>
+          </div>
+
+          <div>
+            <h3 className="font-medium mb-2">Infrastructure</h3>
+            <p>{report.operationalOverview.infrastructure}</p>
+          </div>
+
+          <div>
+            <h3 className="font-medium mb-2">Key Metrics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {report.operationalOverview.metrics.map((metric, index) => (
+                <div key={index} className="border p-4 rounded-lg bg-gray-50">
+                  <p className="text-sm">{metric}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <SourceTag source={report.operationalOverview.source} />
+        </div>
+      </Card>
+
       {/* Legal & Regulatory */}
       <Card id="legal-regulatory" className="p-6">
         <SectionHeader icon={<Shield className="w-6 h-6 text-blue-600" />} title="Legal & Regulatory" />
@@ -373,6 +403,8 @@ export default function SellsideDueDiligence({ report }) {
           <SourceTag source={report.valuationHighlights.source} />
         </div>
       </Card>
+
+      
     </div>
   );
 } 
