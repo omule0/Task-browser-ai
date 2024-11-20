@@ -7,7 +7,7 @@ export const documentTypes = [
 export const subTypes = {
   Report: [
     {
-      icon: <Search className="h-5 w-5" />,
+      icon: <img src="/research-report.png" alt="Research Report" className="h-5 w-5" />,
       title: "Research report",
       description: "A detailed document presenting clear findings and analysis",
     },
@@ -20,6 +20,11 @@ export const subTypes = {
       icon: <LineChart className="h-5 w-5" />,
       title: "Sellside Due Diligence",
       description: "Comprehensive document prepared by the seller to provide potential buyers with a transparent view of the target company",
+    },
+    {
+      icon: <img src="/business-plan.png" alt="Business Plan" className="h-5 w-5" />,
+      title: "Business Plan",
+      description: "A formal document outlining a company’s goals, strategies, market analysis, financial projections, and operational structure",
     },
   ],
 };
@@ -48,6 +53,14 @@ export const documentExamples = {
       },
       {
         text: "Manufacturing firm sellside report with risks and opportunities.",
+      },
+    ],
+    "Business Plan": [
+      {
+        text: "Business plan for a new tech startup focusing on innovative AI solutions.",
+      },
+      {
+        text: "Comprehensive business plan for expanding a retail chain into new markets.",
       },
     ],
   },
