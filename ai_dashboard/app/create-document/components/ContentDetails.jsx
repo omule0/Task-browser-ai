@@ -67,11 +67,11 @@ export default function ContentDetails({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <CardHeader className="px-0">
-        <div className="space-y-2">
+    <div className="max-w-2xl mx-auto space-y-4">
+      <CardHeader className="px-0 pb-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-xl font-semibold tracking-tight">
               Write what your {selectedSubType || selectedType} should be about
             </h1>
             <TooltipProvider>
@@ -99,8 +99,8 @@ export default function ContentDetails({
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
-            <Info className="h-4 w-4 text-gray-400" />
-            <p className="text-muted-foreground">
+            <Info className="h-3 w-3 text-gray-400" />
+            <p className="text-sm text-muted-foreground">
               Keep it concise - between {MINIMUM_WORDS} and {MAXIMUM_WORDS} words
             </p>
           </div>
@@ -108,90 +108,88 @@ export default function ContentDetails({
       </CardHeader>
 
       <Card className={`border-2 ${isMaximumExceeded ? 'border-red-200' : ''}`}>
-        <CardContent className="pt-6">
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="relative">
-                <Textarea
-                  placeholder={`Describe your ${selectedSubType || selectedType} in ${MINIMUM_WORDS}-${MAXIMUM_WORDS} words...`}
-                  className="min-h-[200px] p-4 resize-none text-base"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                />
-                <div 
-                  className={`absolute bottom-3 right-3 text-sm flex items-center gap-2 
-                    ${isMaximumExceeded ? 'text-red-600' : 
-                      isMinimumMet ? 'text-green-600' : 'text-amber-600'}`}
-                >
-                  {!isMinimumMet && <AlertCircle className="h-4 w-4" />}
-                  {isMaximumExceeded && <AlertCircle className="h-4 w-4" />}
-                  <span>
-                    {wordCount} / {MAXIMUM_WORDS} words
-                    {!isMinimumMet && ` (minimum ${MINIMUM_WORDS})`}
-                    {isMaximumExceeded && " (maximum exceeded)"}
-                  </span>
-                </div>
+        <CardContent className="pt-4">
+          <div className="space-y-4">
+            <div className="relative">
+              <Textarea
+                placeholder={`Describe your ${selectedSubType || selectedType} in ${MINIMUM_WORDS}-${MAXIMUM_WORDS} words...`}
+                className="min-h-[150px] p-3 resize-none text-sm"
+                value={inputValue}
+                onChange={handleInputChange}
+              />
+              <div 
+                className={`absolute bottom-3 right-3 text-sm flex items-center gap-2 
+                  ${isMaximumExceeded ? 'text-red-600' : 
+                    isMinimumMet ? 'text-green-600' : 'text-amber-600'}`}
+              >
+                {!isMinimumMet && <AlertCircle className="h-4 w-4" />}
+                {isMaximumExceeded && <AlertCircle className="h-4 w-4" />}
+                <span>
+                  {wordCount} / {MAXIMUM_WORDS} words
+                  {!isMinimumMet && ` (minimum ${MINIMUM_WORDS})`}
+                  {isMaximumExceeded && " (maximum exceeded)"}
+                </span>
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-10"
-                  onClick={() => setShowExamples(!showExamples)}
-                >
-                  {showExamples ? "Hide" : "Show"} examples
-                  {showExamples ? (
-                    <ChevronUp className="ml-2 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  className="flex-1 h-10 bg-purple-600 hover:bg-purple-700 text-white"
-                  onClick={onWriteForMe}
-                  disabled={isLoading}
-                >
-                  <Wand2
-                    className={`mr-2 h-4 w-4 ${
-                      isLoading ? "animate-spin" : ""
-                    }`}
-                  />
-                  {isLoading ? "Writing..." : "Write it for me"}
-                </Button>
-              </div>
-
-              {showExamples && (
-                <div className="space-y-3 mt-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                    Example prompts you can use:
-                  </h3>
-                  {documentExamples[selectedType]?.[selectedSubType]?.map(
-                    (example, index) => (
-                      <Card
-                        key={index}
-                        className="relative group cursor-pointer hover:bg-muted/50 transition-colors"
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {example.text}
-                            </p>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleExampleSelect(example.text)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  )}
-                </div>
-              )}
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-9 text-sm"
+                onClick={() => setShowExamples(!showExamples)}
+              >
+                {showExamples ? "Hide" : "Show"} examples
+                {showExamples ? (
+                  <ChevronUp className="ml-2 h-3 w-3" />
+                ) : (
+                  <ChevronDown className="ml-2 h-3 w-3" />
+                )}
+              </Button>
+              <Button
+                className="flex-1 h-9 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                onClick={onWriteForMe}
+                disabled={isLoading}
+              >
+                <Wand2
+                  className={`mr-2 h-3 w-3 ${
+                    isLoading ? "animate-spin" : ""
+                  }`}
+                />
+                {isLoading ? "Writing..." : "Write it for me"}
+              </Button>
+            </div>
+
+            {showExamples && (
+              <div className="space-y-2 mt-4">
+                <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                  Example prompts you can use:
+                </h3>
+                {documentExamples[selectedType]?.[selectedSubType]?.map(
+                  (example, index) => (
+                    <Card
+                      key={index}
+                      className="relative group cursor-pointer hover:bg-muted/50 transition-colors"
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {example.text}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleExampleSelect(example.text)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
