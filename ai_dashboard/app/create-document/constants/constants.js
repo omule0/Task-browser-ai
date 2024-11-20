@@ -1,4 +1,4 @@
-import { FileText, Search, LineChart } from "lucide-react";
+import { FileText, Search, LineChart, BarChart } from "lucide-react";
 
 export const documentTypes = [
   { icon: <FileText className="h-6 w-6" />, title: "Report" },
@@ -17,7 +17,7 @@ export const subTypes = {
       description: "Comprehensive evaluation of target company for acquisition or investment",
     },
     {
-      icon: <LineChart className="h-5 w-5" />,
+      icon: <BarChart className="h-5 w-5" />,
       title: "Sellside Due Diligence",
       description: "Comprehensive document prepared by the seller to provide potential buyers with a transparent view of the target company",
     },
@@ -25,6 +25,16 @@ export const subTypes = {
       icon: <img src="/business-plan.png" alt="Business Plan" className="h-5 w-5" />,
       title: "Business Plan",
       description: "A formal document outlining a company’s goals, strategies, market analysis, financial projections, and operational structure",
+    },
+    {
+      icon: <img src="/equity-investment.png" alt="Equity Investment Analyst Report" className="h-5 w-5" />,
+      title: "Equity Investment Analyst Report",
+      description: "A comprehensive analysis of a publicly traded company's investment potential, including financial performance, market position, and growth prospects",
+    },
+    {
+      icon: <img src="/credit-investment.png" alt="Credit Investment Analyst Report" className="h-5 w-5" />,
+      title: "Credit Investment Analyst Report",
+      description: "A comprehensive evaluation of a borrower's creditworthiness, analyzing financial stability, debt structure, cash flow generation, and associated risks for lenders and credit investors",
     },
   ],
 };
@@ -61,6 +71,22 @@ export const documentExamples = {
       },
       {
         text: "Comprehensive business plan for expanding a retail chain into new markets.",
+      },
+    ],
+    "Equity Investment Analyst Report": [
+      {
+        text: "Investment analysis report on tech company with strong growth potential in AI sector.",
+      },
+      {
+        text: "Detailed equity research report on renewable energy company with ESG considerations.",
+      },
+    ],
+    "Credit Investment Analyst Report": [
+      {
+        text: "Credit analysis report on corporate bond issuer with detailed financial metrics and covenant review.",
+      },
+      {
+        text: "Comprehensive credit assessment of infrastructure project financing with cash flow and collateral analysis.",
       },
     ],
   },
