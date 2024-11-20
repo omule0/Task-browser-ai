@@ -93,7 +93,94 @@ export const reportSchemas = {
         nextSteps: z.array(z.string()).describe("Recommended next steps"),
         valueCreation: z.array(z.string()).describe("Post-acquisition value creation opportunities"),
       }),
-    })
+    }),
+    "Sellside Due Diligence": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the sellside due diligence report. Should be between 6-12 words"),
+      executiveSummary: z.object({
+        overview: z.string().describe("High-level overview of the company and key strengths"),
+        marketPosition: z.string().describe("Company's market position and growth opportunities"),
+        keyHighlights: z.array(z.string()).describe("Notable strengths and opportunities"),
+      }),
+      companyOverview: z.object({
+        history: z.string().describe("Company history and background"),
+        mission: z.string().describe("Company mission and strategic goals"),
+        structure: z.string().describe("Organizational structure and corporate culture"),
+      }),
+      financialOverview: z.object({
+        performance: z.string().describe("Historical financial performance analysis"),
+        metrics: z.array(z.object({
+          metric: z.string(),
+          value: z.string(),
+          analysis: z.string(),
+        })).describe("Key financial metrics and trends"),
+        projections: z.string().describe("Financial projections and growth outlook"),
+      }),
+      marketAnalysis: z.object({
+        industryOverview: z.string().describe("Market size, dynamics, and growth trends"),
+        competitiveLandscape: z.array(z.object({
+          competitor: z.string(),
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string()),
+        })).describe("Analysis of key competitors"),
+        swotAnalysis: z.object({
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string()),
+          opportunities: z.array(z.string()),
+          threats: z.array(z.string()),
+        }),
+      }),
+      productPortfolio: z.object({
+        products: z.array(z.object({
+          name: z.string(),
+          description: z.string(),
+          performance: z.string(),
+        })).describe("Details of products/services offered"),
+        rdInitiatives: z.array(z.string()).describe("Ongoing R&D efforts and innovations"),
+      }),
+      customerAnalysis: z.object({
+        segments: z.array(z.string()).describe("Key market segments served"),
+        relationships: z.string().describe("Customer retention and relationship analysis"),
+        pipeline: z.string().describe("Sales pipeline and growth opportunities"),
+      }),
+      operationalOverview: z.object({
+        processes: z.string().describe("Key operational processes and capabilities"),
+        infrastructure: z.string().describe("Technology and operational infrastructure"),
+        metrics: z.array(z.string()).describe("Key operational performance metrics"),
+      }),
+      legalRegulatory: z.object({
+        structure: z.string().describe("Legal structure and compliance status"),
+        intellectualProperty: z.array(z.string()).describe("IP holdings and protection"),
+        compliance: z.array(z.string()).describe("Regulatory compliance and issues"),
+      }),
+      humanResources: z.object({
+        workforce: z.string().describe("Workforce overview and demographics"),
+        leadership: z.array(z.object({
+          position: z.string(),
+          experience: z.string(),
+        })).describe("Key leadership profiles"),
+        culture: z.string().describe("Company culture and employee relations"),
+      }),
+      esgPractices: z.object({
+        environmental: z.array(z.string()).describe("Environmental initiatives and impact"),
+        social: z.array(z.string()).describe("Social responsibility programs"),
+        governance: z.array(z.string()).describe("Corporate governance practices"),
+      }),
+      riskAssessment: z.array(z.object({
+        category: z.string(),
+        risks: z.array(z.string()),
+        mitigation: z.string(),
+      })).describe("Detailed risk analysis by category"),
+      valuationHighlights: z.object({
+        valueDrivers: z.array(z.string()).describe("Key value drivers"),
+        opportunities: z.array(z.string()).describe("Growth and strategic opportunities"),
+        synergies: z.array(z.string()).describe("Potential synergies for buyers"),
+      }),
+    }),
   },
 };
 
