@@ -181,6 +181,95 @@ export const reportSchemas = {
         synergies: z.array(z.string()).describe("Potential synergies for buyers"),
       }),
     }),
+    "Business Plan": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the business plan. Should be between 6-12 words"),
+      executiveSummary: z.object({
+        overview: z.string().describe("High-level overview of the business plan"),
+        mission: z.string().describe("Company's mission statement"),
+        highlights: z.array(z.string()).describe("Key financial and business highlights"),
+        objectives: z.array(z.string()).describe("Primary business objectives")
+      }),
+      businessDescription: z.object({
+        concept: z.string().describe("Detailed business concept and vision"),
+        legalStructure: z.string().describe("Legal structure of the business"),
+        history: z.string().describe("Company history and milestones"),
+        values: z.array(z.string()).describe("Core company values")
+      }),
+      marketAnalysis: z.object({
+        industryOverview: z.string().describe("Analysis of industry landscape and trends"),
+        targetMarket: z.object({
+          demographics: z.array(z.string()).describe("Target customer demographics"),
+          needs: z.array(z.string()).describe("Customer needs and pain points"),
+          size: z.string().describe("Market size and potential")
+        }),
+        competitiveAnalysis: z.array(z.object({
+          competitor: z.string(),
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string())
+        })).describe("Analysis of key competitors")
+      }),
+      productsServices: z.object({
+        offerings: z.array(z.object({
+          name: z.string(),
+          description: z.string(),
+          features: z.array(z.string()),
+          pricing: z.string()
+        })).describe("Details of products or services offered"),
+        rdPlans: z.array(z.string()).describe("Future development and R&D plans")
+      }),
+      marketingStrategy: z.object({
+        channels: z.array(z.string()).describe("Marketing and distribution channels"),
+        tactics: z.array(z.string()).describe("Marketing and advertising tactics"),
+        pricing: z.string().describe("Pricing strategy"),
+        retention: z.string().describe("Customer retention strategy")
+      }),
+      operationsPlan: z.object({
+        location: z.string().describe("Business location and facilities"),
+        processes: z.string().describe("Operational processes and systems"),
+        suppliers: z.array(z.string()).describe("Key suppliers and partnerships"),
+        technology: z.string().describe("Technology infrastructure")
+      }),
+      management: z.object({
+        structure: z.string().describe("Organizational structure"),
+        team: z.array(z.object({
+          role: z.string(),
+          qualifications: z.string(),
+          responsibilities: z.array(z.string())
+        })).describe("Key management team members")
+      }),
+      financialPlan: z.object({
+        projections: z.object({
+          revenue: z.string().describe("Revenue projections"),
+          expenses: z.string().describe("Expense projections"),
+          profitability: z.string().describe("Profitability analysis")
+        }),
+        metrics: z.array(z.object({
+          metric: z.string(),
+          value: z.string(),
+          analysis: z.string()
+        })).describe("Key financial metrics"),
+        funding: z.object({
+          requirements: z.string().describe("Funding requirements"),
+          use: z.array(z.string()).describe("Use of funds"),
+          terms: z.string().describe("Preferred funding terms")
+        })
+      }),
+      riskAnalysis: z.array(z.object({
+        category: z.string(),
+        risks: z.array(z.string()),
+        mitigation: z.string()
+      })).describe("Analysis of business risks and mitigation strategies"),
+      appendix: z.array(z.object({
+        title: z.string(),
+        content: z.string(),
+        type: z.string()
+      })).describe("Supporting documentation and materials")
+    }),
   },
 };
 
