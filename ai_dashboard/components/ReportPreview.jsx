@@ -131,7 +131,7 @@ export function ReportPreview() {
         </div>
 
         <div className="grid gap-4">
-          {recentReports.map((report) => (
+          {recentReports.slice(0, 2).map((report) => (
             <Link key={report.id} href={`/documents/${report.id}`}>
               <Card className="p-4 hover:shadow-md transition-all cursor-pointer group border-gray-200 hover:border-purple-200">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -176,6 +176,16 @@ export function ReportPreview() {
               </Card>
             </Link>
           ))}
+
+          {recentReports.length > 2 && (
+            <Link href="/documents">
+              <div className="text-center p-3 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group">
+                <p className="text-sm text-muted-foreground group-hover:text-purple-600">
+                  +{recentReports.length - 2} more documents
+                </p>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
     </Card>
