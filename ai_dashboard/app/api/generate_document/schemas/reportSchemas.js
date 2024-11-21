@@ -36,7 +36,7 @@ export const reportSchemas = {
         implications: z.array(z.string()).describe("Practical or theoretical implications"),
         limitations: z.array(z.string()).describe("Study limitations and constraints"),
         futureResearch: z.array(z.string()).describe("Suggestions for future research")
-      })
+      }),
     }),
     "Buyside Due Diligence": z.object({
       title: z.string()
@@ -375,6 +375,120 @@ export const reportSchemas = {
         risks: z.array(z.string()).describe("Key investment risks"),
         opportunities: z.array(z.string()).describe("Growth opportunities"),
         catalysts: z.array(z.string()).describe("Potential value catalysts")
+      }),
+
+      appendix: z.array(z.object({
+        title: z.string(),
+        content: z.string(),
+        type: z.string()
+      })).describe("Supporting documentation and materials")
+    }),
+    "Credit Investment Analyst": z.object({
+      title: z.string()
+        .refine(
+          (str) => validateWordCount(str),
+          "Title should be between 6-12 words"
+        )
+        .describe("Title of the credit investment analyst report"),
+      
+      executiveSummary: z.object({
+        overview: z.string().describe("High-level overview of credit analysis and key findings"),
+        creditRating: z.string().describe("Recommended credit rating and rationale"),
+        riskAssessment: z.string().describe("Overall risk assessment summary"),
+        financialPosition: z.string().describe("Summary of borrower's financial position")
+      }),
+
+      borrowerProfile: z.object({
+        background: z.string().describe("Borrower's history and background"),
+        businessModel: z.string().describe("Core business model and operations"),
+        structure: z.string().describe("Organizational structure"),
+        marketPosition: z.string().describe("Market presence and competitive position")
+      }),
+
+      industryAnalysis: z.object({
+        overview: z.string().describe("Industry dynamics and market analysis"),
+        trends: z.array(z.string()).describe("Key market trends"),
+        factors: z.array(z.string()).describe("Economic, regulatory, and geopolitical factors"),
+        competition: z.string().describe("Competitive landscape analysis")
+      }),
+
+      financialAnalysis: z.object({
+        performance: z.object({
+          income: z.string().describe("Income statement analysis"),
+          balance: z.string().describe("Balance sheet analysis"),
+          cashflow: z.string().describe("Cash flow statement analysis")
+        }),
+        ratios: z.array(z.object({
+          category: z.string(),
+          metrics: z.array(z.object({
+            name: z.string(),
+            value: z.string(),
+            analysis: z.string()
+          }))
+        })).describe("Key financial ratios and metrics")
+      }),
+
+      creditMetrics: z.object({
+        debtStructure: z.string().describe("Analysis of capital structure and debt obligations"),
+        maturityProfile: z.string().describe("Debt maturity profile"),
+        covenants: z.array(z.string()).describe("Key debt covenants"),
+        metrics: z.array(z.object({
+          metric: z.string(),
+          value: z.string(),
+          analysis: z.string()
+        })).describe("Credit metrics analysis")
+      }),
+
+      cashFlowAnalysis: z.object({
+        operatingCashFlow: z.string().describe("Analysis of operating cash flow"),
+        capitalExpenditures: z.string().describe("Capital expenditure analysis"),
+        freeCashFlow: z.string().describe("Free cash flow analysis"),
+        liquidity: z.string().describe("Liquidity position assessment")
+      }),
+
+      riskAssessment: z.array(z.object({
+        category: z.string(),
+        risks: z.array(z.string()),
+        mitigation: z.string()
+      })).describe("Detailed risk analysis by category"),
+
+      collateralAnalysis: z.object({
+        assets: z.array(z.string()).describe("Pledged collateral assets"),
+        valuation: z.string().describe("Collateral valuation analysis"),
+        recovery: z.string().describe("Recovery analysis in default scenarios")
+      }),
+
+      covenantReview: z.object({
+        compliance: z.string().describe("Covenant compliance status"),
+        restrictions: z.array(z.string()).describe("Key covenant restrictions"),
+        legalIssues: z.array(z.string()).describe("Legal and regulatory compliance issues")
+      }),
+
+      esgAnalysis: z.object({
+        environmental: z.array(z.string()).describe("Environmental considerations"),
+        social: z.array(z.string()).describe("Social impact analysis"),
+        governance: z.array(z.string()).describe("Corporate governance assessment")
+      }),
+
+      scenarioAnalysis: z.array(z.object({
+        scenario: z.string(),
+        assumptions: z.array(z.string()),
+        impact: z.string()
+      })).describe("Stress testing and scenario analysis"),
+
+      comparativeAnalysis: z.array(z.object({
+        peer: z.string(),
+        metrics: z.array(z.object({
+          metric: z.string(),
+          value: z.string(),
+          comparison: z.string()
+        }))
+      })).describe("Peer comparison analysis"),
+
+      investmentRecommendation: z.object({
+        recommendation: z.enum(["invest", "hold", "avoid"]).describe("Credit recommendation"),
+        rationale: z.string().describe("Recommendation rationale"),
+        targetYield: z.string().describe("Target yield range")
       }),
 
       appendix: z.array(z.object({
