@@ -144,15 +144,6 @@ export function ActionCards({ onUploadSuccess }) {
 
   const actions = [
     {
-      icon: <SearchIcon />,
-      title: "New Search Query",
-      description: "Search through documents",
-      tooltip: "Ask questions about your documents and get instant answers powered by AI. Search through your entire document collection using natural language.",
-      variant: "default",
-      disabled: true,
-      comingSoon: true,
-    },
-    {
       icon: <UploadIcon />,
       title: "Upload Data",
       description: "Add files for AI analysis",
@@ -160,6 +151,25 @@ export function ActionCards({ onUploadSuccess }) {
       variant: "upload",
       onClick: () => setIsUploadSidebarOpen(true),
     },
+    {
+      icon: <FileIcon />,
+      title: "Create Reports",
+      description: "Generate AI reports",
+      tooltip: "Create professional reports from your uploaded files using AI with various customization options. Choose from different report types and tailor the output to your needs.",
+      variant: "document",
+      onClick: () => router.push('/create-document'),
+      beta: true,
+    },
+    {
+      icon: <SearchIcon />,
+      title: "Search Query",
+      description: "Search through documents",
+      tooltip: "Ask questions about your documents and get instant answers powered by AI. Search through your entire document collection using natural language.",
+      variant: "default",
+      disabled: true,
+      comingSoon: true,
+    },
+    
     {
       icon: <BarChartIcon />,
       title: "Data Visualization",
@@ -169,15 +179,7 @@ export function ActionCards({ onUploadSuccess }) {
       disabled: true,
       comingSoon: true,
     },
-    {
-      icon: <FileIcon />,
-      title: "Create Document",
-      description: "Generate AI documents",
-      tooltip: "Create professional documents using AI with various customization options. Choose from different document types and tailor the output to your needs.",
-      variant: "document",
-      onClick: () => router.push('/create-document'),
-      beta: true,
-    },
+    
   ];
 
   return (
