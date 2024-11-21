@@ -186,6 +186,7 @@ export default function FilesPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Get metadata for selected files
       const { data: fileMetadata } = await supabase.storage
         .from('documents')
         .list(`${currentWorkspace.id}/${user.id}`);
@@ -197,14 +198,25 @@ export default function FilesPage() {
         acc + (file.metadata?.size || 0), 0
       );
 
+      // Delete files from storage
       const deletePromises = selectedFiles.map(fileName => 
         supabase.storage
           .from('documents')
           .remove([`${currentWorkspace.id}/${user.id}/${fileName}`])
       );
 
-      await Promise.all(deletePromises);
+      // Delete parsed content for selected files
+      const contentDeletePromises = selectedFiles.map(fileName =>
+        supabase
+          .from('document_content')
+          .delete()
+          .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`)
+      );
 
+      // Wait for all deletions to complete
+      await Promise.all([...deletePromises, ...contentDeletePromises]);
+
+      // Update storage usage
       const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
         user_id_input: user.id,
         bytes_to_remove: totalSize
@@ -402,14 +414,6 @@ export default function FilesPage() {
     maxSize: 10485760, // 10MB
   });
 
-  const getFileIcon = (fileName) => {
-    if (fileName.toLowerCase().endsWith('.pdf')) {
-      return <FileText className="h-5 w-5 text-red-500" />;
-    } else if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
-      return <Image className="h-5 w-5 text-blue-500" />;
-    }
-    return <File className="h-5 w-5 text-gray-500" />;
-  };
 
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 Bytes';
@@ -549,28 +553,6 @@ export default function FilesPage() {
     </div>
   );
 
-  const PDFContentModal = () => {
-    if (!selectedFileContent) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">{selectedFileContent.name}</h3>
-            <button
-              onClick={() => setSelectedFileContent(null)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          <div className="whitespace-pre-wrap">
-            {selectedFileContent.content}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (loading) {
     return (
