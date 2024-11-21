@@ -176,16 +176,7 @@ export function HeaderUI({ user, logout }) {
                 </SheetContent>
               </Sheet>
             </>
-          ) : (
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">Sign Up</Link>
-              </Button>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
     </header>

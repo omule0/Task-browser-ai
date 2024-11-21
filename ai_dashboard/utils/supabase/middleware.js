@@ -2,36 +2,43 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function updateSession(request) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    let response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            return request.cookies.get(name)?.value
+          },
+          set(name, value, options) {
+            response.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          },
+          remove(name, options) {
+            response.cookies.set({
+              name,
+              value: '',
+              ...options,
+            })
+          },
+        },
+      }
+    )
+
+    const { data: { session }, error } = await supabase.auth.getSession()
 
     // Check if user has a workspace
-    if (user) {
+    if (session) {
       const { data: workspaces } = await supabase
         .from('workspaces')
         .select('id')
@@ -46,7 +53,7 @@ export async function updateSession(request) {
     }
 
     // If user is signed in and trying to access auth pages, redirect to dashboard
-    if (user && (
+    if (session && (
       request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/signup') ||
       request.nextUrl.pathname.startsWith('/confirm-email')
@@ -55,8 +62,8 @@ export async function updateSession(request) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // If no user and trying to access protected pages, redirect to login
-    if (!user && 
+    // If no session and trying to access protected pages, redirect to login
+    if (!session && 
       !request.nextUrl.pathname.startsWith('/login') &&
       !request.nextUrl.pathname.startsWith('/signup') &&
       !request.nextUrl.pathname.startsWith('/auth') &&
@@ -66,12 +73,14 @@ export async function updateSession(request) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    return supabaseResponse
+    return response
 
   } catch (e) {
     // If there's an error, return the original request
     return NextResponse.next({
-      request,
+      request: {
+        headers: request.headers,
+      },
     })
   }
 }
