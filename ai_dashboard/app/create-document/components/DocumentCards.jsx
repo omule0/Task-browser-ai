@@ -15,17 +15,20 @@ export default function DocumentCards({ selectedType, onCardClick, onSubTypeClic
         {documentTypes.map((doc) => (
           <Card
             key={doc.title}
-            className={`relative p-3 hover:bg-muted/50 cursor-pointer ${
-              selectedType === doc.title ? "bg-muted/50" : ""
-            }`}
-            onClick={() => onCardClick(doc.title)}
+            className={`relative p-3 ${
+              doc.disabled 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:bg-muted/50 cursor-pointer'
+            } ${selectedType === doc.title ? "bg-muted/50" : ""}`}
+            onClick={() => !doc.disabled && onCardClick(doc.title)}
           >
             <div className="absolute right-2 top-2">
               <Checkbox
                 checked={selectedType === doc.title}
-                onCheckedChange={() => onCardClick(doc.title)}
+                onCheckedChange={() => !doc.disabled && onCardClick(doc.title)}
                 onClick={(e) => e.stopPropagation()}
                 className="h-4 w-4"
+                disabled={doc.disabled}
               />
             </div>
             <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted">

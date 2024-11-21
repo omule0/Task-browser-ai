@@ -1,7 +1,13 @@
-import { FileText, Search, LineChart, BarChart } from "lucide-react";
+import { FileText, FileIcon, LineChart, BarChart } from "lucide-react";
 
 export const documentTypes = [
   { icon: <FileText className="h-6 w-6" />, title: "Report" },
+  { 
+    icon: <FileIcon className="h-6 w-6" />, 
+    title: "More Coming Soon", 
+    description: "Additional document types will be available soon",
+    disabled: true 
+  },
 ];
 
 export const subTypes = {
