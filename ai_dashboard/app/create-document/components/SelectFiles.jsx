@@ -5,12 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, Upload, Grid, List, Info } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export default function SelectFiles({
   isLoadingFiles,
@@ -62,28 +56,22 @@ export default function SelectFiles({
 
   return (
     <div className="space-y-4">
+      <Card className="p-4 bg-purple-50 border-purple-100">
+        <div className="flex gap-3">
+          <Info className="h-5 w-5 text-purple-600 mt-0.5" />
+          <div className="space-y-1">
+            <h3 className="font-medium text-purple-900">About File Selection</h3>
+            <p className="text-sm text-purple-700">
+              The files you select will determine the content of your AI-generated document. 
+              Choose files that contain relevant information for your desired output.
+            </p>
+          </div>
+        </div>
+      </Card>
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-medium text-gray-900">Select Files</h2>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-gray-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[300px] p-3">
-                <div className="space-y-2">
-                  <p className="text-sm">
-                    Select the files you want the AI to analyze. These files will be used as reference material to generate your document.
-                  </p>
-                  <ul className="text-sm list-disc pl-4 space-y-1">
-                    <li>You can select multiple files</li>
-                    <li>Supported formats: PDF, DOCX, TXT</li>
-                    <li>The more relevant your files, the better the output</li>
-                  </ul>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
         <div className="flex items-center gap-2">
           <Button 

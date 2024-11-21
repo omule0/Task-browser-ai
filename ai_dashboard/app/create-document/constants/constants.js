@@ -28,12 +28,12 @@ export const subTypes = {
     },
     {
       icon: <img src="/equity-investment.png" alt="Equity Investment Analyst" className="h-5 w-5" />,
-      title: "Equity Investment Analyst",
+      title: "Equity Investment Analyst Report",
       description: "A comprehensive analysis of a publicly traded company's investment potential, including financial performance, market position, and growth prospects",
     },
     {
       icon: <img src="/credit-investment.png" alt="Credit Investment Analyst" className="h-5 w-5" />,
-      title: "Credit Investment Analyst",
+      title: "Credit Investment Analyst Report",
       description: "A comprehensive evaluation of a borrower's creditworthiness, analyzing financial stability, debt structure, cash flow generation, and associated risks for lenders and credit investors",
     },
   ],
@@ -75,18 +75,18 @@ export const documentExamples = {
     ],
     "Equity Investment Analyst Report": [
       {
-        text: "Investment analysis report on tech company with strong growth potential in AI sector.",
+        text: "Tech company growth analysis with AI focus",
       },
       {
-        text: "Detailed equity research report on renewable energy company with ESG considerations.",
+        text: "Renewable energy company ESG investment report",
       },
     ],
     "Credit Investment Analyst Report": [
       {
-        text: "Credit analysis report on corporate bond issuer with detailed financial metrics and covenant review.",
-      },
+        text: "Corporate bond issuer credit analysis",
+      }, 
       {
-        text: "Comprehensive credit assessment of infrastructure project financing with cash flow and collateral analysis.",
+        text: "Infrastructure project financing assessment",
       },
     ],
   },

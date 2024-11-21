@@ -270,7 +270,7 @@ export const reportSchemas = {
         type: z.string()
       })).describe("Supporting documentation and materials")
     }),
-    "Equity Investment Analyst": z.object({
+    "Equity Investment Analyst Report": z.object({
       title: z.string()
         .refine(
           (str) => validateWordCount(str),
@@ -383,7 +383,7 @@ export const reportSchemas = {
         type: z.string()
       })).describe("Supporting documentation and materials")
     }),
-    "Credit Investment Analyst": z.object({
+    "Credit Investment Analyst Report": z.object({
       title: z.string()
         .refine(
           (str) => validateWordCount(str),
