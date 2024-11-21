@@ -17,6 +17,8 @@ import {
   Folder,
   HelpCircle,
   Mail,
+  LineChart,
+  Printer,
 } from "lucide-react";
 
 export default function HelpPage() {
@@ -76,6 +78,66 @@ export default function HelpPage() {
         {
           title: "Common Issues",
           content: "Common troubleshooting steps:\n1. Clear browser cache\n2. Check file size limits\n3. Verify supported file formats\n4. Ensure stable internet connection"
+        }
+      ]
+    },
+    {
+      category: "Document Generation",
+      icon: <FileText className="h-5 w-5" />,
+      items: [
+        {
+          title: "Understanding Document Types",
+          content: "Available document types include:\n• Research Reports\n• Buyside Due Diligence\n• Sellside Due Diligence\n• Business Plans\n• Equity Investment Analysis\n• Credit Investment Analysis\n\nEach type is optimized for specific analysis needs and follows industry-standard formats."
+        },
+        {
+          title: "Document Generation Process",
+          content: "How document generation works:\n1. Select document type\n2. Choose relevant files as sources\n3. Provide specific requirements\n4. AI analyzes source materials\n5. Generates structured document\n6. Review and download result"
+        },
+        {
+          title: "Source File Requirements",
+          content: "For optimal document generation:\n• Currently supports PDF files\n• Maximum file size: 10MB\n• Files should contain relevant content\n• Multiple files can be selected\n• Files must be in your workspace"
+        }
+      ]
+    },
+    {
+      category: "Canvas & Visualization",
+      icon: <LineChart className="h-5 w-5" />,
+      items: [
+        {
+          title: "Using the Canvas View",
+          content: "Canvas features include:\n• Interactive node-based visualization\n• Drag and drop file positioning\n• Connection creation between nodes\n• Mini-map navigation\n• Background grid system\n• Node deletion and management"
+        },
+        {
+          title: "Document Organization",
+          content: "Organize your documents effectively:\n• Create logical connections between related files\n• Use the mini-map for navigation\n• Group related documents together\n• Save canvas layouts\n• Export visualizations"
+        }
+      ]
+    },
+    {
+      category: "Advanced Features",
+      icon: <Settings className="h-5 w-5" />,
+      items: [
+        {
+          title: "Storage Management",
+          content: "Monitor and manage storage:\n• View storage usage statistics\n• Track file sizes and counts\n• Delete unnecessary files\n• Optimize workspace storage\n• Understand storage limits"
+        },
+        {
+          title: "Document Content Analysis",
+          content: "Access advanced content features:\n• View parsed PDF content\n• Search within documents\n• Extract key information\n• Compare document contents\n• Track document versions"
+        }
+      ]
+    },
+    {
+      category: "Printing & Export",
+      icon: <Printer className="h-5 w-5" />,
+      items: [
+        {
+          title: "Document Export Options",
+          content: "Available export features:\n• Print documents directly\n• Save as PDF\n• Custom print layouts\n• Select specific sections\n• Include/exclude sources"
+        },
+        {
+          title: "Print Optimization",
+          content: "Tips for better printing:\n1. Use print preview\n2. Adjust page margins\n3. Select relevant sections\n4. Check formatting\n5. Verify all content is included"
         }
       ]
     }
