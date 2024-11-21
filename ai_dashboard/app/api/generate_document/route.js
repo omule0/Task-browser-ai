@@ -3,6 +3,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { getSchema } from "./schemas/reportSchemas";
 import { createClient } from "@/utils/supabase/server";
 import { isTokenLimitExceeded, isApproachingTokenLimit, fetchTotalTokenUsage } from "@/utils/tokenLimits";
+import { StructuredOutputParser } from "@langchain/core/output_parsers";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 // Add this helper function at the top
 function getHumanFriendlyError(error) {
@@ -100,19 +102,12 @@ export async function POST(req) {
       chunks.push(...contentChunks);
     }
 
-    // Define schemas based on document type and subtype
-    const schema = getSchema(documentType, subType);
-    if (!schema) {
-      throw new Error("Invalid document type or subtype");
-    }
-
     // Initialize ChatOpenAI with structured output and callbacks
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
       temperature: 0,
       callbacks: [{
         handleLLMEnd(output) {
-          // Update totalTokens directly from the callback
           if (output.llmOutput?.tokenUsage) {
             totalTokens.promptTokens += output.llmOutput.tokenUsage.promptTokens || 0;
             totalTokens.completionTokens += output.llmOutput.tokenUsage.completionTokens || 0;
@@ -120,7 +115,24 @@ export async function POST(req) {
           }
         },
       }]
-    }).withStructuredOutput(schema);
+    });
+
+    // Define schemas based on document type and subtype
+    const schema = getSchema(documentType, subType);
+    if (!schema) {
+      throw new Error("Invalid document type or subtype");
+    }
+
+    // Create structured output parser from schema
+    const parser = StructuredOutputParser.fromZodSchema(schema);
+
+    // Create prompt template with format instructions
+    const prompt = ChatPromptTemplate.fromMessages([
+      ["system", `Generate a ${subType} based on the following content and requirements. 
+       {format_instructions}
+       Important: Ensure the title is between 6-12 words and incorporate relevant information from the source document.`],
+      ["human", "{content}\n\nSource document content:\n{chunk}"]
+    ]);
 
     // Process chunks and generate report
     const processedChunks = [];
@@ -128,19 +140,17 @@ export async function POST(req) {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       try {
-        const result = await model.invoke(
-          `Generate a ${subType} based on the following content and requirements: ${content}
-           
-           Source document content:
-           ${chunk}
-           
-           Important: Ensure the title is between 6-12 words and the ${documentType} follows the required structure.
-           Incorporate relevant information from the source document.`
-        );
+        const formattedPrompt = await prompt.formatMessages({
+          content,
+          chunk,
+          format_instructions: parser.getFormatInstructions()
+        });
 
-        // No need to track tokens here anymore since we're doing it in the callback
+        const result = await model.invoke(formattedPrompt);
+        const parsed = await parser.parse(result.content);
+        
         processedChunks.push({
-          ...result,
+          ...parsed,
           sourceText: chunk
         });
       } catch (chunkError) {
