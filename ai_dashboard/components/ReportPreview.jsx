@@ -8,35 +8,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 function ReportPreviewSkeleton() {
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
+    <Card className="p-4">
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-40" />
-            <Skeleton className="h-5 w-8 rounded-full" />
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-6 rounded-full" />
           </div>
-          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-4 w-20" />
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {[1, 2].map((index) => (
-            <Card key={index} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="w-12 h-12 rounded-lg" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                    <Skeleton className="h-4 w-64" />
+            <Card key={index} className="p-3">
+              <div className="flex items-start gap-3">
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-4" />
                   </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
                 </div>
-                <Skeleton className="w-5 h-5" />
               </div>
             </Card>
           ))}
@@ -83,10 +84,10 @@ export function ReportPreview() {
   if (!currentWorkspace) {
     return (
       <Card>
-        <div className="p-6 text-center">
-          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No workspace selected</h3>
-          <p className="text-muted-foreground">Please select or create a workspace to view documents</p>
+        <div className="p-4 text-center">
+          <FileText className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+          <h3 className="text-base font-medium text-gray-900 mb-1">No workspace selected</h3>
+          <p className="text-sm text-muted-foreground">Select a workspace to view documents</p>
         </div>
       </Card>
     );
@@ -99,14 +100,14 @@ export function ReportPreview() {
   if (recentReports.length === 0) {
     return (
       <Card>
-        <div className="p-6 text-center">
-          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No documents yet</h3>
-          <p className="text-muted-foreground mb-4">Create your first document to get started</p>
+        <div className="p-4 text-center">
+          <FileText className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+          <h3 className="text-base font-medium text-gray-900 mb-1">No documents yet</h3>
+          <p className="text-sm text-muted-foreground mb-3">Create your first document to get started</p>
           <Link href="/create-document">
-            <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-purple-600 text-white hover:bg-purple-700 h-10 px-4 py-2">
-              Create your first document
-            </button>
+            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+              Create document
+            </Button>
           </Link>
         </div>
       </Card>
@@ -114,63 +115,59 @@ export function ReportPreview() {
   }
 
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <Card className="p-4">
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <CardTitle>Recent Documents</CardTitle>
-            <Badge variant="secondary">{recentReports.length}</Badge>
+            <h2 className="font-semibold text-base">Recent Documents</h2>
+            <Badge variant="secondary" className="text-xs">{recentReports.length}</Badge>
           </div>
           <Link 
             href="/documents" 
-            className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1 group"
+            className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1 group"
           >
-            View all documents
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            View all
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {recentReports.slice(0, 2).map((report) => (
             <Link key={report.id} href={`/documents/${report.id}`}>
-              <Card className="p-4 hover:shadow-md transition-all cursor-pointer group border-gray-200 hover:border-purple-200">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition-colors">
-                      <FileText className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div className="space-y-1 min-w-0">
+              <Card className="p-3 hover:shadow-sm transition-all cursor-pointer group border-gray-200 hover:border-purple-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition-colors">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <h3 className="font-medium text-gray-900 truncate max-w-[300px]">
+                            <h3 className="font-medium text-sm text-gray-900 truncate">
                               {report.sub_type || report.document_type}
                             </h3>
                           </TooltipTrigger>
-                          <TooltipContent side="top">
+                          <TooltipContent side="top" className="text-xs">
                             <p>{report.sub_type || report.document_type}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Tag className="w-3.5 h-3.5" />
-                          <span>{report.document_type}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-gray-500 line-clamp-2 sm:line-clamp-1 max-w-[600px]">
-                        {report.content.substring(0, 100)}...
-                      </p>
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                     </div>
-                  </div>
-                  <div className="flex items-center ml-16 sm:ml-0">
-                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
+                    <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Tag className="w-3 h-3" />
+                        <span>{report.document_type}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        <span>{formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 truncate mt-1">
+                      {report.content.substring(0, 100)}...
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -179,8 +176,8 @@ export function ReportPreview() {
 
           {recentReports.length > 2 && (
             <Link href="/documents">
-              <div className="text-center p-3 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group">
-                <p className="text-sm text-muted-foreground group-hover:text-purple-600">
+              <div className="text-center p-2 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group">
+                <p className="text-xs text-muted-foreground group-hover:text-purple-600">
                   +{recentReports.length - 2} more documents
                 </p>
               </div>
