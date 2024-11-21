@@ -11,7 +11,7 @@ export function HeaderTokenUsage() {
   });
   const [mounted, setMounted] = useState(false);
   
-  const TOKEN_LIMIT = 1000000;
+  const TOKEN_LIMIT = 200000;
 
   useEffect(() => {
     setMounted(true);
