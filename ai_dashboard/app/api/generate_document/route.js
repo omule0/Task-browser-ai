@@ -14,7 +14,7 @@ function getHumanFriendlyError(error) {
     'rate limit': 'We\'re processing too many requests. Please wait a moment and try again.',
     'invalid_api_key': 'There was an authentication error. Please contact support.',
     'Failed to generate': 'Unable to generate the document. Try adjusting your description to be more specific.',
-    'Failed to parse': 'The generated content did not meet our requirements. Please try again with more specific instructions.',
+    'Failed to parse': 'The generated content did not meet our requirements. Please try again with more specific instructions or selected files.',
     'OutputParserException': 'The generated content format was invalid. Please try again with clearer requirements.',
   };
 
