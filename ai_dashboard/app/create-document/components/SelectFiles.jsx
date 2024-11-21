@@ -156,16 +156,18 @@ export default function SelectFiles({
             return (
               <div
                 key={filePath}
-                className={`flex items-center p-4 cursor-pointer transition-colors rounded-lg
+                className={`flex items-center p-4 cursor-pointer transition-colors rounded-lg border
                   ${isSelected
-                    ? 'bg-purple-50 border-purple-500 border'
-                    : 'hover:bg-gray-50 border border-transparent'
+                    ? 'bg-purple-50 border-purple-500'
+                    : 'hover:bg-gray-50 border-gray-200'
                   }`}
                 onClick={() => onFileSelect(filePath)}
               >
                 <div className="flex items-center flex-1 min-w-0 space-x-3">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                  <div>
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-gray-900 truncate">
                       {file.originalName}
                     </h3>
