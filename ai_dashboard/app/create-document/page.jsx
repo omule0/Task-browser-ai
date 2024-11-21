@@ -249,8 +249,8 @@ export default function CreateDocument() {
       setGenerationError(error.message);
       setProgress(0);
       customToast.error(
-        error.message.includes('Try adjusting your description or selected files') 
-          ? 'Please provide more specific requirements for better results'
+        error.message.includes('Try adjusting your description or ensuring files are relevant') 
+          ? 'Please provide more specific requirements for better results or ensure files used are relevant to the document type'
           : `Failed to generate ${selectedSubType || selectedType}`
       );
     } finally {
