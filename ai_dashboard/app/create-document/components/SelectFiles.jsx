@@ -5,20 +5,35 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, Upload, Grid, List, Info } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { UploadSidebar } from "@/components/UploadSidebar";
 
 export default function SelectFiles({
   isLoadingFiles,
   files,
   selectedFiles,
-  onFileSelect
+  onFileSelect,
+  onFilesUpdate
 }) {
   const [viewMode, setViewMode] = useState('grid');
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+  const handleUploadSuccess = (newFiles) => {
+    setIsUploadOpen(false);
+    if (onFilesUpdate) {
+      onFilesUpdate(newFiles);
+    }
+  };
+
+  // Debug helper
+  const isFileSelected = (filePath) => {
+    return selectedFiles.includes(filePath);
+  };
 
   if (isLoadingFiles) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array(6).fill(0).map((_, index) => (
-          <Card key={index} className="p-4">
+        {[...Array(6)].map((_, index) => (
+          <Card key={`skeleton-${index}`} className="p-4">
             <Skeleton className="h-12 w-12 rounded" />
             <div className="mt-4 space-y-2">
               <Skeleton className="h-4 w-[150px]" />
@@ -44,12 +59,18 @@ export default function SelectFiles({
         <p className="text-gray-500 mb-4">
           Upload some files to get started
         </p>
-        <Link href="/files">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Files
-          </Button>
-        </Link>
+        <Button 
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+          onClick={() => setIsUploadOpen(true)}
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          Upload Files
+        </Button>
+        <UploadSidebar 
+          isOpen={isUploadOpen}
+          onClose={() => setIsUploadOpen(false)}
+          onUploadSuccess={handleUploadSuccess}
+        />
       </div>
     );
   }
@@ -71,7 +92,9 @@ export default function SelectFiles({
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium text-gray-900">Select Files</h2>
+          <h2 className="text-sm font-medium text-gray-900">
+            Selected: {selectedFiles.length} files
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <Button 
@@ -94,72 +117,74 @@ export default function SelectFiles({
       </div>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {files.map((file) => (
-            <Card
-              key={file.file_path}
-              className={`bg-white border-gray-200 cursor-pointer hover:bg-muted/50 ${
-                selectedFiles.includes(file.file_path) ? 'ring-2 ring-purple-500' : ''
-              }`}
-              onClick={() => onFileSelect(file.file_path, !selectedFiles.includes(file.file_path))}
-            >
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="h-12 w-12 bg-gray-100 rounded flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-gray-600" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {files.map((file) => {
+            const filePath = file.file_path;
+            const isSelected = isFileSelected(filePath);
+            
+            return (
+              <div
+                key={filePath}
+                className={`relative rounded-lg border p-4 cursor-pointer transition-colors
+                  ${isSelected 
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-200 hover:border-purple-500'
+                  }`}
+                onClick={() => onFileSelect(filePath)}
+              >
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-6 w-6 text-gray-600" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                      {file.originalName}
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  <Checkbox
-                    checked={selectedFiles.includes(file.file_path)}
-                    onCheckedChange={(checked) => {
-                      onFileSelect(file.file_path, checked);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4"
-                  />
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-sm font-medium text-gray-900">{file.originalName}</h3>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </p>
                 </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-2">
-          {files.map((file) => (
-            <Card
-              key={file.file_path}
-              className={`bg-white border-gray-200 cursor-pointer hover:bg-muted/50 ${
-                selectedFiles.includes(file.file_path) ? 'ring-2 ring-purple-500' : ''
-              }`}
-              onClick={() => onFileSelect(file.file_path, !selectedFiles.includes(file.file_path))}
-            >
-              <div className="p-3 flex items-center space-x-3">
-                <Checkbox
-                  checked={selectedFiles.includes(file.file_path)}
-                  onCheckedChange={(checked) => {
-                    onFileSelect(file.file_path, checked);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-4 w-4"
-                />
-                <div className="h-10 w-10 bg-gray-100 rounded flex items-center justify-center">
+          {files.map((file) => {
+            const filePath = file.file_path;
+            const isSelected = isFileSelected(filePath);
+
+            return (
+              <div
+                key={filePath}
+                className={`flex items-center p-4 cursor-pointer transition-colors rounded-lg
+                  ${isSelected
+                    ? 'bg-purple-50 border-purple-500 border'
+                    : 'hover:bg-gray-50 border border-transparent'
+                  }`}
+                onClick={() => onFileSelect(filePath)}
+              >
+                <div className="flex items-center flex-1 min-w-0 space-x-3">
                   <FileText className="h-5 w-5 text-gray-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900">{file.originalName}</h3>
-                  <p className="text-xs text-gray-600">
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </p>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                      {file.originalName}
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       )}
+
+      <UploadSidebar 
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+      />
     </div>
   );
 } 

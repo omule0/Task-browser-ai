@@ -268,12 +268,20 @@ export default function CreateDocument() {
     return () => clearInterval(interval);
   }, [isGenerating, progress]);
 
-  const handleFileSelect = (filePath, isChecked) => {
-    setSelectedFiles((prev) =>
-      isChecked
-        ? [...prev, filePath]
-        : prev.filter((f) => f !== filePath)
-    );
+  const handleFileSelect = (filePath) => {
+    setSelectedFiles(prev => {
+      const isSelected = prev.includes(filePath);
+      
+      if (isSelected) {
+        return prev.filter(path => path !== filePath);
+      } else {
+        return [...prev, filePath];
+      }
+    });
+  };
+
+  const handleFilesUpdate = (newFiles) => {
+    setFiles(newFiles);
   };
 
   if (loading || !user) {
@@ -326,6 +334,7 @@ export default function CreateDocument() {
                 files={files}
                 selectedFiles={selectedFiles}
                 onFileSelect={handleFileSelect}
+                onFilesUpdate={handleFilesUpdate}
               />
             </div>
 

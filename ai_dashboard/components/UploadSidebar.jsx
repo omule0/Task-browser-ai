@@ -180,10 +180,25 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
 
       if (successes.length > 0) {
         customToast.success(`Successfully uploaded ${successes.length} file(s)`);
-        setFiles([]);
+        
+        // Fetch the newly uploaded files
+        const { data: newFiles } = await supabase.storage
+          .from('documents')
+          .list(`${currentWorkspace.id}/${user.id}`);
+
+        const processedFiles = (newFiles || []).map(file => {
+          const parts = file.name.split('-');
+          const originalName = parts.slice(2).join('-');
+          return {
+            ...file,
+            originalName
+          };
+        });
+
         if (onUploadSuccess) {
-          onUploadSuccess();
+          onUploadSuccess(processedFiles);  // Pass the new files to the callback
         }
+        setFiles([]);
         onClose();
       }
 
