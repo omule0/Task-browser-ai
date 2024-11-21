@@ -121,7 +121,7 @@ export default function ReportActions({ sections }) {
   };
 
   return (
-    <div className="fixed right-8 top-24 print:hidden floating-actions">
+    <div className="fixed right-8 top-24 print:hidden floating-actions z-50">
       {/* Floating Action Button */}
       <Button
         size="icon"
@@ -134,17 +134,18 @@ export default function ReportActions({ sections }) {
       {/* Actions Panel */}
       {isOpen && (
         <div className="space-y-2 animate-in slide-in-from-right">
+          {/* Contents Panel - Now with max height and scrolling */}
           <div className="bg-white rounded-lg shadow-lg p-4 w-48">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 sticky top-0 bg-white">
               <List className="w-4 h-4" />
               <span className="font-medium">Contents</span>
             </div>
-            <nav className="space-y-2">
+            <nav className="space-y-2 max-h-[40vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               {sections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className="block text-sm text-gray-600 hover:text-gray-900 w-full text-left"
+                  className="block text-sm text-gray-600 hover:text-gray-900 w-full text-left hover:bg-gray-50 rounded px-2 py-1"
                 >
                   {section.title}
                 </button>
@@ -152,6 +153,7 @@ export default function ReportActions({ sections }) {
             </nav>
           </div>
 
+          {/* Actions Panel */}
           <div className="bg-white rounded-lg shadow-lg p-4 space-y-2 w-48">
             <Button
               variant="ghost"
