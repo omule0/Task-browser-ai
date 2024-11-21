@@ -172,14 +172,7 @@ export default function ReportActions({ sections }) {
               <Download className="w-4 h-4 mr-2" />
               {downloading ? 'Generating PDF...' : 'Download PDF'}
             </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => {/* TODO: Implement sharing */}}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+        
           </div>
         </div>
       )}
