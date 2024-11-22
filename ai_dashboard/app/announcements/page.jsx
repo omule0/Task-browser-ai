@@ -3,30 +3,17 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Card } from "@/components/ui/card";
+import { useAnnouncements } from "@/components/AnnouncementsProvider";
 
 export default function Announcements() {
-  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { announcements, markAsRead } = useAnnouncements();
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching announcements:', error);
-        return;
-      }
-
-      setAnnouncements(data);
-      setLoading(false);
-    };
-
-    fetchAnnouncements();
-  }, []);
+    // Mark announcements as read when the page is visited
+    markAsRead();
+    setLoading(false);
+  }, [markAsRead]);
 
   if (loading) {
     return (

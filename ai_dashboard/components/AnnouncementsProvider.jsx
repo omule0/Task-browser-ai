@@ -28,6 +28,17 @@ export function AnnouncementsProvider({ children }) {
       }
 
       setAnnouncements(data || []);
+      
+      // Calculate unread count based on last read time
+      const lastReadTime = localStorage.getItem('lastReadAnnouncement');
+      if (lastReadTime && data) {
+        const unreadAnnouncements = data.filter(
+          announcement => new Date(announcement.created_at) > new Date(lastReadTime)
+        );
+        setUnreadCount(unreadAnnouncements.length);
+      } else if (data) {
+        setUnreadCount(data.length);
+      }
     };
 
     fetchAnnouncements();
