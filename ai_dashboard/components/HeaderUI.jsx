@@ -25,8 +25,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { HeaderTokenUsage } from "@/components/HeaderTokenUsage";
+import { useAnnouncements } from "@/components/AnnouncementsProvider";
 
 export function HeaderUI({ user, logout }) {
+  const { announcements, unreadCount, markAsRead } = useAnnouncements();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleMenuItemClick = () => {
@@ -61,9 +63,42 @@ export function HeaderUI({ user, logout }) {
               </nav>
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
               <div className="hidden md:flex items-center">
-                <Button variant="ghost" size="icon">
-                  <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
-                </Button>
+                <HoverCard onOpenChange={(open) => {
+                  if (open) markAsRead();
+                }}>
+                  <HoverCardTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-80">
+                    <div className="space-y-4">
+                      <div className="font-medium">Announcements</div>
+                      <div className="space-y-2">
+                        {announcements.map((announcement) => (
+                          <div key={announcement.id} className="text-sm">
+                            <span className="font-medium">{announcement.title}</span>
+                            <p className="text-muted-foreground">{announcement.content}</p>
+                            <span className="text-xs text-muted-foreground block">
+                              {new Date(announcement.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <Link 
+                        href="/announcements" 
+                        className="text-xs text-blue-500 hover:text-blue-700"
+                      >
+                        View all announcements
+                      </Link>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
                 <Link href="/help">
                   <Button variant="ghost" size="icon">
                     <HelpCircleIcon className="h-8 w-8" />
@@ -132,10 +167,12 @@ export function HeaderUI({ user, logout }) {
                   </nav>
                   <Separator className="my-4" />
                   <div className="flex flex-col gap-4">
-                    <Button variant="ghost" className="justify-start">
-                      <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
-                      Announcements
-                    </Button>
+                    <Link href="/announcements" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="justify-start w-full">
+                        <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
+                        Announcements
+                      </Button>
+                    </Link>
                     <Link href="/help" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full">
                         <HelpCircleIcon className="mr-2 h-5 w-5" />
