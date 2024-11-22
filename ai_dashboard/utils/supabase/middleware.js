@@ -36,7 +36,9 @@ export async function updateSession(request) {
     )
 
     const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
 
+    // Admin check
     if (request.nextUrl.pathname.startsWith('/admin')) {
       if (!user) {
         console.log('No user found, redirecting to login');
@@ -47,38 +49,15 @@ export async function updateSession(request) {
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('*')  // Select all fields for better debugging
+          .select('*')
           .eq('id', user.id)
           .single();
 
-        console.log('Profile query result:', {
-          userId: user.id,
-          profile,
-          error: profileError
-        });
-
-        if (profileError) {
-          console.error('Profile query error:', profileError);
+        if (profileError || !profile || !profile.is_admin) {
+          console.log('Admin access denied:', { profileError, profile });
           const redirectUrl = new URL('/', request.url);
           return NextResponse.redirect(redirectUrl);
         }
-
-        if (!profile) {
-          console.error('No profile found for user:', user.id);
-          const redirectUrl = new URL('/', request.url);
-          return NextResponse.redirect(redirectUrl);
-        }
-
-        if (!profile.is_admin) {
-          console.log('User is not admin:', {
-            userId: user.id,
-            isAdmin: profile.is_admin
-          });
-          const redirectUrl = new URL('/', request.url);
-          return NextResponse.redirect(redirectUrl);
-        }
-
-        console.log('Admin access granted for user:', user.id);
       } catch (error) {
         console.error('Error checking admin status:', error);
         const redirectUrl = new URL('/', request.url);
@@ -86,19 +65,36 @@ export async function updateSession(request) {
       }
     }
 
-    const { data: { session } } = await supabase.auth.getSession()
+    // Workspace check
+    if (session) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1);
 
+      if ((!workspaces || workspaces.length === 0) && 
+          !request.nextUrl.pathname.startsWith('/create-workspace')) {
+        const redirectUrl = new URL('/create-workspace', request.url)
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+
+    // Auth pages redirect
     if (session && (
       request.nextUrl.pathname.startsWith('/login') ||
-      request.nextUrl.pathname.startsWith('/signup')
+      request.nextUrl.pathname.startsWith('/signup') ||
+      request.nextUrl.pathname.startsWith('/confirm-email')
     )) {
       const redirectUrl = new URL('/', request.url)
       return NextResponse.redirect(redirectUrl)
     }
 
+    // Protected pages redirect
     if (!session && 
       !request.nextUrl.pathname.startsWith('/login') &&
-      !request.nextUrl.pathname.startsWith('/signup')
+      !request.nextUrl.pathname.startsWith('/signup') &&
+      !request.nextUrl.pathname.startsWith('/auth') &&
+      !request.nextUrl.pathname.startsWith('/confirm-email')
     ) {
       const redirectUrl = new URL('/login', request.url)
       return NextResponse.redirect(redirectUrl)
