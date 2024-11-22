@@ -112,11 +112,11 @@ export default function GeneratedReports() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       {/* Header Section */}
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Generated Documents</h1>
+        <h1 className="text-2xl font-semibold">Generated Reports</h1>
         <Link href="/create-document">
           <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full md:w-auto">
             <FileText className="w-4 h-4 mr-2" />
-            Generate New Document
+            Generate Report
           </Button>
         </Link>
       </div>

@@ -106,7 +106,7 @@ export function ReportPreview() {
           <p className="text-sm text-muted-foreground mb-3">Create your first document to get started</p>
           <Link href="/create-document">
             <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
-              Create document
+              Create Report
             </Button>
           </Link>
         </div>
