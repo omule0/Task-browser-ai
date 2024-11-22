@@ -4,13 +4,13 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Card } from "@/components/ui/card";
 import { useAnnouncements } from "@/components/AnnouncementsProvider";
+import { MegaphoneIcon } from "lucide-react";
 
 export default function Announcements() {
   const [loading, setLoading] = useState(true);
   const { announcements, markAsRead } = useAnnouncements();
 
   useEffect(() => {
-    // Mark announcements as read when the page is visited
     markAsRead();
     setLoading(false);
   }, [markAsRead]);
@@ -26,31 +26,43 @@ export default function Announcements() {
   return (
     <main className="flex-1 p-4 md:p-6 max-w-3xl mx-auto w-full">
       <h1 className="text-2xl font-bold mb-6">Announcements</h1>
-      <div className="space-y-4">
-        {announcements.map((announcement) => (
-          <Card key={announcement.id} className="p-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-start">
-                <h2 className="text-lg font-medium">{announcement.title}</h2>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(announcement.created_at).toLocaleDateString()}
-                </span>
+      {announcements.length === 0 ? (
+        <Card className="p-12">
+          <div className="flex flex-col items-center justify-center text-center space-y-3">
+            <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
+            <h3 className="font-semibold text-lg">No announcements yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Check back later for updates and announcements.
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {announcements.map((announcement) => (
+            <Card key={announcement.id} className="p-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-lg font-medium">{announcement.title}</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(announcement.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">{announcement.content}</p>
+                {announcement.link && (
+                  <a 
+                    href={announcement.link} 
+                    className="text-sm text-blue-500 hover:text-blue-700"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    Learn more →
+                  </a>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground">{announcement.content}</p>
-              {announcement.link && (
-                <a 
-                  href={announcement.link} 
-                  className="text-sm text-blue-500 hover:text-blue-700"
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  Learn more →
-                </a>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </main>
   );
 } 

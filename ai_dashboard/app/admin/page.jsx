@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { customToast } from "@/components/ui/toast-theme";
+import { MegaphoneIcon } from "lucide-react";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -257,38 +258,48 @@ export default function AdminPanel() {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Content</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {announcements.map((announcement) => (
-                  <TableRow key={announcement.id}>
-                    <TableCell>{announcement.title}</TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {announcement.content}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(announcement.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteAnnouncement(announcement.id)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
+            {announcements.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center py-12 space-y-3">
+                <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
+                <h3 className="font-semibold text-lg">No announcements yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create your first announcement using the form above.
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Content</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {announcements.map((announcement) => (
+                    <TableRow key={announcement.id}>
+                      <TableCell>{announcement.title}</TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {announcement.content}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(announcement.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteAnnouncement(announcement.id)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </TabsContent>
       </Tabs>

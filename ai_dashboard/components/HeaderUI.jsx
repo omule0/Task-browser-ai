@@ -107,17 +107,26 @@ export function HeaderUI({ user, logout }) {
                   <HoverCardContent className="w-80">
                     <div className="space-y-4">
                       <div className="font-medium">Announcements</div>
-                      <div className="space-y-2">
-                        {announcements.map((announcement) => (
-                          <div key={announcement.id} className="text-sm">
-                            <span className="font-medium">{announcement.title}</span>
-                            <p className="text-muted-foreground">{announcement.content}</p>
-                            <span className="text-xs text-muted-foreground block">
-                              {new Date(announcement.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      {announcements.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center text-center py-6 space-y-2">
+                          <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
+                          <p className="text-sm text-muted-foreground">
+                            No announcements at the moment
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {announcements.map((announcement) => (
+                            <div key={announcement.id} className="text-sm">
+                              <span className="font-medium">{announcement.title}</span>
+                              <p className="text-muted-foreground">{announcement.content}</p>
+                              <span className="text-xs text-muted-foreground block">
+                                {new Date(announcement.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <Link 
                         href="/announcements" 
                         className="text-xs text-blue-500 hover:text-blue-700"
