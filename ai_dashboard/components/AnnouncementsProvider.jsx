@@ -16,9 +16,6 @@ export function AnnouncementsProvider({ children }) {
     const supabase = createClient();
     
     const fetchAnnouncements = async () => {
-      // Get the last read timestamp from localStorage
-      const lastRead = localStorage.getItem('lastReadAnnouncement') || '1970-01-01';
-      
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
@@ -30,25 +27,26 @@ export function AnnouncementsProvider({ children }) {
         return;
       }
 
-      setAnnouncements(data);
-      
-      // Count unread announcements
-      const unread = data.filter(
-        announcement => new Date(announcement.created_at) > new Date(lastRead)
-      ).length;
-      setUnreadCount(unread);
+      setAnnouncements(data || []);
     };
 
     fetchAnnouncements();
 
-    // Subscribe to new announcements
+    // Subscribe to both INSERT and DELETE changes
     const channel = supabase
-      .channel('announcements')
+      .channel('announcements-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'announcements' },
         (payload) => {
           setAnnouncements(current => [payload.new, ...current].slice(0, 5));
           setUnreadCount(count => count + 1);
+        }
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'announcements' },
+        () => {
+          // Refetch announcements when one is deleted
+          fetchAnnouncements();
         }
       )
       .subscribe();
