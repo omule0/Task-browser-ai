@@ -35,39 +35,70 @@ export async function updateSession(request) {
       }
     )
 
-    const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    // Check if user has a workspace
-    if (session) {
-      const { data: workspaces } = await supabase
-        .from('workspaces')
-        .select('id')
-        .limit(1);
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (!user) {
+        console.log('No user found, redirecting to login');
+        const redirectUrl = new URL('/login', request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
 
-      // If authenticated but no workspace, redirect to create workspace
-      if ((!workspaces || workspaces.length === 0) && 
-          !request.nextUrl.pathname.startsWith('/create-workspace')) {
-        const redirectUrl = new URL('/create-workspace', request.url)
-        return NextResponse.redirect(redirectUrl)
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')  // Select all fields for better debugging
+          .eq('id', user.id)
+          .single();
+
+        console.log('Profile query result:', {
+          userId: user.id,
+          profile,
+          error: profileError
+        });
+
+        if (profileError) {
+          console.error('Profile query error:', profileError);
+          const redirectUrl = new URL('/', request.url);
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        if (!profile) {
+          console.error('No profile found for user:', user.id);
+          const redirectUrl = new URL('/', request.url);
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        if (!profile.is_admin) {
+          console.log('User is not admin:', {
+            userId: user.id,
+            isAdmin: profile.is_admin
+          });
+          const redirectUrl = new URL('/', request.url);
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        console.log('Admin access granted for user:', user.id);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        const redirectUrl = new URL('/', request.url);
+        return NextResponse.redirect(redirectUrl);
       }
     }
 
-    // If user is signed in and trying to access auth pages, redirect to dashboard
+    const { data: { session } } = await supabase.auth.getSession()
+
     if (session && (
       request.nextUrl.pathname.startsWith('/login') ||
-      request.nextUrl.pathname.startsWith('/signup') ||
-      request.nextUrl.pathname.startsWith('/confirm-email')
+      request.nextUrl.pathname.startsWith('/signup')
     )) {
       const redirectUrl = new URL('/', request.url)
       return NextResponse.redirect(redirectUrl)
     }
 
-    // If no session and trying to access protected pages, redirect to login
     if (!session && 
       !request.nextUrl.pathname.startsWith('/login') &&
-      !request.nextUrl.pathname.startsWith('/signup') &&
-      !request.nextUrl.pathname.startsWith('/auth') &&
-      !request.nextUrl.pathname.startsWith('/confirm-email')
+      !request.nextUrl.pathname.startsWith('/signup')
     ) {
       const redirectUrl = new URL('/login', request.url)
       return NextResponse.redirect(redirectUrl)
@@ -76,7 +107,7 @@ export async function updateSession(request) {
     return response
 
   } catch (e) {
-    // If there's an error, return the original request
+    console.error('Middleware error:', e);
     return NextResponse.next({
       request: {
         headers: request.headers,

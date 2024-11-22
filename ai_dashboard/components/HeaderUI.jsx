@@ -6,9 +6,10 @@ import {
   SettingsIcon,
   MenuIcon,
   MegaphoneIcon,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -26,10 +27,29 @@ import {
 } from "@/components/ui/hover-card"
 import { HeaderTokenUsage } from "@/components/HeaderTokenUsage";
 import { useAnnouncements } from "@/components/AnnouncementsProvider";
+import { createClient } from "@/utils/supabase/client";
 
 export function HeaderUI({ user, logout }) {
   const { announcements, unreadCount, markAsRead } = useAnnouncements();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      setIsAdmin(profile?.is_admin || false);
+    };
+
+    if (user) {
+      checkAdminStatus();
+    }
+  }, [user]);
 
   const handleMenuItemClick = () => {
     setIsOpen(false);
@@ -62,13 +82,21 @@ export function HeaderUI({ user, logout }) {
                 <HeaderTokenUsage />
               </nav>
               <Separator orientation="vertical" className="h-6 mx-4 hidden md:block" />
-              <div className="hidden md:flex items-center">
+              <div className="hidden md:flex items-center gap-2">
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Settings className="h-5 w-5" />
+                      <span className="sr-only">Admin Panel</span>
+                    </Button>
+                  </Link>
+                )}
                 <HoverCard onOpenChange={(open) => {
                   if (open) markAsRead();
                 }}>
                   <HoverCardTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
-                      <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
+                      <img src="/megaphone.png" className="h-5 w-5" alt="Megaphone" />
                       {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
                           {unreadCount}
@@ -106,7 +134,9 @@ export function HeaderUI({ user, logout }) {
                 </Link>
               </div>
               <div className="hidden md:block">
-                <HoverCard>
+                <HoverCard onOpenChange={(open) => {
+                  if (open) markAsRead();
+                }}>
                   <HoverCardTrigger asChild>
                     <Avatar className="cursor-pointer h-8 w-8">
                       {user.user_metadata.avatar_url ? (
@@ -169,7 +199,7 @@ export function HeaderUI({ user, logout }) {
                   <div className="flex flex-col gap-4">
                     <Link href="/announcements" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="justify-start w-full">
-                        <img src="/megaphone.png" className="mr-2 h-5 w-5" alt="Megaphone" />
+                        <img src="/megaphone.png" className="h-5 w-5" alt="Megaphone" />
                         Announcements
                       </Button>
                     </Link>
@@ -185,6 +215,14 @@ export function HeaderUI({ user, logout }) {
                         Workspace Settings
                       </Button>
                     </Link>
+                    {isAdmin && (
+                      <Link href="/admin" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="justify-start w-full">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                   <Separator className="my-4" />
                   <div className="flex items-center gap-4">
