@@ -65,13 +65,14 @@ export async function updateSession(request) {
       }
     }
 
-    // Workspace check
+    // Check if user has a workspace
     if (session) {
       const { data: workspaces } = await supabase
         .from('workspaces')
         .select('id')
         .limit(1);
 
+      // If authenticated but no workspace, redirect to create workspace
       if ((!workspaces || workspaces.length === 0) && 
           !request.nextUrl.pathname.startsWith('/create-workspace')) {
         const redirectUrl = new URL('/create-workspace', request.url)
@@ -79,7 +80,7 @@ export async function updateSession(request) {
       }
     }
 
-    // Auth pages redirect
+    // If user is signed in and trying to access auth pages, redirect to dashboard
     if (session && (
       request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/signup') ||
@@ -89,7 +90,7 @@ export async function updateSession(request) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Protected pages redirect
+     // If no session and trying to access protected pages, redirect to login
     if (!session && 
       !request.nextUrl.pathname.startsWith('/login') &&
       !request.nextUrl.pathname.startsWith('/signup') &&
