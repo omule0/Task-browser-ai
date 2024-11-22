@@ -128,8 +128,6 @@ export function HeaderUI({ user, logout }) {
                                   <a 
                                     href={announcement.link}
                                     className="text-xs text-blue-500 hover:text-blue-700"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                   >
                                     Learn more →
                                   </a>
