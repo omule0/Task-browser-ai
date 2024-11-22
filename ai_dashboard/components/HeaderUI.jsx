@@ -106,7 +106,7 @@ export function HeaderUI({ user, logout }) {
                   </HoverCardTrigger>
                   <HoverCardContent className="w-80">
                     <div className="space-y-4">
-                      <div className="font-medium">Announcements</div>
+                      <div className="font-medium">Latest Announcements</div>
                       {announcements.length === 0 ? (
                         <div className="flex flex-col items-center justify-center text-center py-6 space-y-2">
                           <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
@@ -116,23 +116,42 @@ export function HeaderUI({ user, logout }) {
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          {announcements.map((announcement) => (
-                            <div key={announcement.id} className="text-sm">
+                          {announcements.slice(0, 3).map((announcement) => (
+                            <div key={announcement.id} className="text-sm border-b last:border-0 pb-2">
                               <span className="font-medium">{announcement.title}</span>
-                              <p className="text-muted-foreground">{announcement.content}</p>
-                              <span className="text-xs text-muted-foreground block">
-                                {new Date(announcement.created_at).toLocaleDateString()}
-                              </span>
+                              <p className="text-muted-foreground line-clamp-2">{announcement.content}</p>
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(announcement.created_at).toLocaleDateString()}
+                                </span>
+                                {announcement.link && (
+                                  <a 
+                                    href={announcement.link}
+                                    className="text-xs text-blue-500 hover:text-blue-700"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    Learn more →
+                                  </a>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
                       )}
-                      <Link 
-                        href="/announcements" 
-                        className="text-xs text-blue-500 hover:text-blue-700"
-                      >
-                        View all announcements
-                      </Link>
+                      <div className="pt-2 border-t">
+                        <Link 
+                          href="/announcements" 
+                          className="text-xs text-blue-500 hover:text-blue-700 flex items-center justify-center gap-1"
+                        >
+                          View all announcements
+                          {announcements.length > 3 && (
+                            <span className="text-xs text-muted-foreground">
+                              ({announcements.length - 3} more)
+                            </span>
+                          )}
+                        </Link>
+                      </div>
                     </div>
                   </HoverCardContent>
                 </HoverCard>
