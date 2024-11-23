@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ChevronRight, Upload, FileText, Lightbulb } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Upload, FileText, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
 
@@ -63,6 +63,9 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
             <span className="bg-purple-100 text-purple-700 text-xs font-medium px-2.5 py-0.5 rounded">
               Quick Start Guide
             </span>
+            <span className="text-sm text-gray-500">
+              Step {currentStep + 1} of {steps.length}
+            </span>
           </div>
 
           <div className="flex items-start gap-4">
@@ -87,15 +90,26 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
                 >
                   {steps[currentStep].action}
                 </Button>
-                {currentStep < steps.length - 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCurrentStep(currentStep + 1)}
-                  >
-                    Next <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                )}
+                <div className="flex gap-2">
+                  {currentStep > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(currentStep - 1)}
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" /> Back
+                    </Button>
+                  )}
+                  {currentStep < steps.length - 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(currentStep + 1)}
+                    >
+                      Next <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
