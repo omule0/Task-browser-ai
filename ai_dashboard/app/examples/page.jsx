@@ -58,18 +58,19 @@ export default function ExamplesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-140px)]">
         {/* Sidebar */}
-        <Card className="p-3 lg:col-span-1 lg:sticky lg:top-4 h-fit">
+        <Card className="p-3 lg:col-span-1 lg:sticky lg:top-4 h-fit overflow-hidden">
           <h2 className="font-semibold mb-2">Report Types</h2>
           <div className="space-y-1">
             {Object.entries(exampleReports).map(([key, report]) => (
               <Button
                 key={key}
                 variant={selectedReport === key ? "default" : "ghost"}
-                className="w-full justify-start"
+                className="w-full justify-start text-left whitespace-normal h-auto py-2"
+                size="sm"
                 onClick={() => setSelectedReport(key)}
               >
-                <FileText className="w-4 h-4 mr-2" />
-                {report.title}
+                <FileText className="w-4 h-4 mr-2 shrink-0" />
+                <span className="line-clamp-2">{report.title}</span>
               </Button>
             ))}
           </div>
