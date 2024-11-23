@@ -1,82 +1,78 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, FileText, Download, ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
 const exampleReports = {
-  "business-plan": {
-    title: "Business Plan Analysis",
-    description: "AI-generated analysis of a sample business plan",
+  "credit-investment-analysis": {
+    title: "Credit Suisse Investment Analysis",
+    description: "AI-generated credit and investment analysis report",
     content: [
       {
         section: "Executive Summary",
-        content: "This AI analysis examines a business plan for a tech startup focusing on sustainable energy solutions. The plan demonstrates strong market potential with some areas requiring additional detail.",
+        content: "This report evaluates Credit Suisse's financial health, market position, and risk factors, providing a comprehensive analysis of its creditworthiness.",
         insights: [
-          "Clear value proposition in renewable energy sector",
-          "Detailed financial projections showing 40% YoY growth",
-          "Well-defined target market segments"
+          "OUTPERFORM rating with strong order book prospects",
+          "Net profit of RM27.8 million in Q1 2023",
+          "Key risks include policy changes and payment risks"
         ]
       },
       {
-        section: "Market Analysis",
-        content: "The market analysis shows significant growth potential in the sustainable energy sector, with a projected market size of $500B by 2025.",
+        section: "Credit Metrics",
+        content: "The capital structure is primarily equity-based with minimal debt exposure, enhancing financial stability.",
         insights: [
-          "Growing market demand for sustainable solutions",
-          "Competitive landscape analysis identifies key differentiators",
-          "Clear market entry strategy"
+          "Debt to Equity Ratio: 0.1 - Conservative leverage approach",
+          "Interest Coverage Ratio: 10.5 - Strong debt service capability",
+          "Favorable debt maturity profile"
         ]
       },
       {
-        section: "Financial Projections",
-        content: "Financial forecasts indicate strong potential for profitability within 24 months, with detailed cash flow analysis and funding requirements.",
+        section: "Financial Analysis",
+        content: "Financial performance shows mixed results with some challenges in the construction division.",
         insights: [
-          "Break-even analysis shows 18-month timeline",
-          "Conservative revenue projections based on market data",
-          "Clear capital requirements and allocation"
+          "Net Profit Margin: 6.3% - Decreased due to construction segment",
+          "ROE: 18.8% - Strong equity management",
+          "Current Ratio: 1.5 - Healthy liquidity position"
+        ]
+      },
+      {
+        section: "Risk Assessment",
+        content: "Comprehensive analysis of key risk factors and mitigation strategies.",
+        insights: [
+          "Market risks: Economic downturns and regulatory changes",
+          "Operational risks: Project delays and cost overruns",
+          "Strong risk mitigation through diversification"
+        ]
+      },
+      {
+        section: "ESG Analysis",
+        content: "Environmental, Social, and Governance factors assessment.",
+        insights: [
+          "Environmental: Carbon footprint reduction initiatives",
+          "Social: Strong community engagement",
+          "Governance: Transparent reporting practices"
         ]
       }
     ]
   },
-  "market-research": {
-    title: "Market Research Summary",
-    description: "AI analysis of market trends and opportunities",
-    content: [
-      {
-        section: "Industry Overview",
-        content: "Analysis of current market conditions, trends, and growth projections in the target industry.",
-        insights: [
-          "Market size growing at 15% CAGR",
-          "Emerging opportunities in digital transformation",
-          "Shift in consumer behavior patterns"
-        ]
-      },
-      // Add more sections as needed
-    ]
-  },
-  "financial-report": {
-    title: "Financial Report Overview",
-    description: "AI-powered financial analysis and metrics",
-    content: [
-      {
-        section: "Financial Performance",
-        content: "Comprehensive analysis of key financial metrics and performance indicators.",
-        insights: [
-          "Strong revenue growth trajectory",
-          "Improving profit margins",
-          "Healthy cash flow position"
-        ]
-      },
-      // Add more sections as needed
-    ]
-  }
 };
 
 export default function ExamplesPage() {
   const router = useRouter();
-  const [selectedReport, setSelectedReport] = useState("business-plan");
+  const searchParams = useSearchParams();
+  const [selectedReport, setSelectedReport] = useState("credit-investment-analysis");
+
+  useEffect(() => {
+    const reportParam = searchParams.get('report');
+    if (reportParam && exampleReports[reportParam]) {
+      setSelectedReport(reportParam);
+    }
+  }, [searchParams]);
+
+  const currentReport = exampleReports[selectedReport] || exampleReports["credit-investment-analysis"];
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
@@ -126,10 +122,10 @@ export default function ExamplesPage() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-bold mb-2">
-                  {exampleReports[selectedReport].title}
+                  {currentReport.title}
                 </h2>
                 <p className="text-gray-600">
-                  {exampleReports[selectedReport].description}
+                  {currentReport.description}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -145,7 +141,7 @@ export default function ExamplesPage() {
             </div>
 
             <div className="space-y-8">
-              {exampleReports[selectedReport].content.map((section, index) => (
+              {currentReport.content.map((section, index) => (
                 <div key={index} className="space-y-4">
                   <h3 className="text-lg font-semibold">
                     {section.section}

@@ -7,19 +7,9 @@ import { useRouter } from "next/navigation";
 
 const exampleReports = [
   {
-    title: "Business Plan Analysis",
-    description: "See how our AI analyzes a business plan and provides strategic recommendations.",
-    tags: ["Strategy", "Planning", "Analysis"],
-  },
-  {
-    title: "Market Research Summary",
-    description: "Example of how our AI extracts key market insights and trends from research documents.",
-    tags: ["Market Research", "Insights"],
-  },
-  {
-    title: "Financial Report Overview",
-    description: "Demonstration of AI-powered financial analysis and key metrics extraction.",
-    tags: ["Finance", "Metrics"],
+    title: "Credit Investment Analysis",
+    description: "Comprehensive credit analysis of Credit Suisse, including financial health, risk assessment, and investment recommendation.",
+    tags: ["Financial Services", "Credit Analysis", "Investment"],
   },
 ];
 
