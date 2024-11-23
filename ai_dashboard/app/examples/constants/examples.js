@@ -2,7 +2,7 @@ import {FileText, Building2, Target, Wallet, AlertTriangle, Scale, BookOpen, Glo
 
 export const exampleReports = {
     "credit-investment-analysis": {
-      title: "Credit Suisse Investment Analysis",
+      title: "Credit Investment Analysis Report",
       description: "AI-generated credit and investment analysis report",
       content: [
         {
