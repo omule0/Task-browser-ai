@@ -39,28 +39,28 @@ export default function ExamplesPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-8">
+    <div className="container mx-auto max-w-7xl px-4 py-4">
+      <div className="mb-4">
         <Button
           variant="ghost"
           size="sm"
-          className="mb-4"
+          className="mb-2"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
         
-        <h1 className="text-2xl font-bold mb-2">Example AI Reports</h1>
-        <p className="text-gray-600">
+        <h1 className="text-xl font-bold mb-1">Example AI Reports</h1>
+        <p className="text-sm text-gray-600">
           See how our AI analyzes different types of business documents and generates insights.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-140px)]">
         {/* Sidebar */}
-        <Card className="p-4 lg:col-span-1">
-          <h2 className="font-semibold mb-4">Report Types</h2>
-          <div className="space-y-2">
+        <Card className="p-3 lg:col-span-1 lg:sticky lg:top-4 h-fit">
+          <h2 className="font-semibold mb-2">Report Types</h2>
+          <div className="space-y-1">
             {Object.entries(exampleReports).map(([key, report]) => (
               <Button
                 key={key}
@@ -80,10 +80,10 @@ export default function ExamplesPage() {
           key={selectedReport}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-3 space-y-6"
+          className="lg:col-span-3 space-y-4 lg:overflow-y-auto lg:h-[calc(100vh-140px)]"
         >
-          <Card className="p-6 main-content">
-            <div className="flex justify-between items-start mb-6">
+          <Card className="p-4 main-content">
+            <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-xl font-bold mb-2">
                   {currentReport.title}
@@ -103,16 +103,16 @@ export default function ExamplesPage() {
               </div>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-4">
               {currentReport.content.map((section, index) => (
-                <Card key={index} className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
+                <Card key={index} className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
                     {section.icon}
-                    <h3 className="text-lg font-semibold">{section.section}</h3>
+                    <h3 className="text-base font-semibold">{section.section}</h3>
                   </div>
                   
                   {section.section === "Borrower Profile" && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {Object.entries(section.content).map(([key, value]) => (
                         <div key={key}>
                           <h4 className="font-medium mb-2">{key.charAt(0).toUpperCase() + key.slice(1)}</h4>
@@ -123,7 +123,7 @@ export default function ExamplesPage() {
                   )}
 
                   {section.section === "Credit Metrics" && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-2">Debt Structure</h4>
                         <p className="text-gray-600">{section.content.debtStructure}</p>
@@ -218,7 +218,7 @@ export default function ExamplesPage() {
                   )}
 
                   {section.section === "Cash Flow Analysis" && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-2">Operating Cash Flow</h4>
                         <p className="text-gray-600">{section.content.operatingCashFlow}</p>
@@ -239,7 +239,7 @@ export default function ExamplesPage() {
                   )}
 
                   {section.section === "Covenant Review" && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
                         <h4 className="font-medium mb-2">Compliance Status</h4>
                         <p className="text-gray-600">{section.content.compliance}</p>
@@ -264,7 +264,7 @@ export default function ExamplesPage() {
                   )}
 
                   {section.section === "Scenario Analysis" && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {section.content.map((scenario, idx) => (
                         <div key={idx} className="border p-4 rounded-lg">
                           <h4 className="font-medium mb-3">{scenario.scenario}</h4>
