@@ -11,7 +11,9 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
   const router = useRouter();
 
   const handleUploadClick = () => {
-    onUploadClick();
+    if (onUploadClick) {
+      onUploadClick();
+    }
   };
 
   const handleExampleClick = () => {

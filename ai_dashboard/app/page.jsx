@@ -88,7 +88,6 @@ export default function Dashboard() {
           onClose={() => setIsUploadSidebarOpen(false)}
           onUploadSuccess={(files) => {
             handleUploadSuccess(files);
-            setShowOnboarding(false); // Optionally close the onboarding after successful upload
           }}
         />
 
