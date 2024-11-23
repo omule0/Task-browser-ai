@@ -1,0 +1,76 @@
+"use client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FileText, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+
+const exampleReports = [
+  {
+    title: "Business Plan Analysis",
+    description: "See how our AI analyzes a business plan and provides strategic recommendations.",
+    tags: ["Strategy", "Planning", "Analysis"],
+  },
+  {
+    title: "Market Research Summary",
+    description: "Example of how our AI extracts key market insights and trends from research documents.",
+    tags: ["Market Research", "Insights"],
+  },
+  {
+    title: "Financial Report Overview",
+    description: "Demonstration of AI-powered financial analysis and key metrics extraction.",
+    tags: ["Finance", "Metrics"],
+  },
+];
+
+export function ExampleReports({ onViewExample }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-8"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Example Reports</h2>
+        <Button variant="ghost" size="sm">
+          View all examples
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {exampleReports.map((report, index) => (
+          <Card key={index} className="p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-50 p-2 rounded-lg">
+                <FileText className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-sm mb-1">{report.title}</h3>
+                <p className="text-xs text-gray-600 mb-3">
+                  {report.description}
+                </p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {report.tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => onViewExample(report)}
+                >
+                  View example <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </motion.div>
+  );
+} 
