@@ -2,11 +2,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, FileText, Download, ExternalLink} from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { exampleReports } from "./constants/examples";
-
 
 export default function ExamplesPage() {
   const router = useRouter();
@@ -23,7 +22,20 @@ export default function ExamplesPage() {
   const currentReport = exampleReports[selectedReport];
 
   const handlePrint = () => {
+    // Store current scroll position
+    const scrollPos = window.scrollY;
+    
+    // Add print-specific class to body
+    document.body.classList.add('printing');
+    
+    // Trigger print
     window.print();
+    
+    // Clean up after print dialog closes
+    setTimeout(() => {
+      document.body.classList.remove('printing');
+      window.scrollTo(0, scrollPos);
+    }, 100);
   };
 
   return (
@@ -70,7 +82,7 @@ export default function ExamplesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="lg:col-span-3 space-y-6"
         >
-          <Card className="p-6">
+          <Card className="p-6 main-content">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-bold mb-2">
@@ -81,10 +93,6 @@ export default function ExamplesPage() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handlePrint}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Print
-                </Button>
                 <Button 
                   size="sm" 
                   onClick={() => router.push('/create-document')}
