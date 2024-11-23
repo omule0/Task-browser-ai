@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { customToast } from "@/components/ui/toast-theme";
 import { MegaphoneIcon } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -29,12 +30,16 @@ export default function AdminPanel() {
     link: '',
     priority: 0
   });
+  const [feedback, setFeedback] = useState([]);
+  const [feedbackError, setFeedbackError] = useState(null);
+  const [isFeedbackLoading, setIsFeedbackLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
     checkAdminStatus();
     fetchUsers();
     fetchAnnouncements();
+    fetchFeedback();
   }, []);
 
   const checkAdminStatus = async () => {
@@ -77,6 +82,51 @@ export default function AdminPanel() {
     }
 
     setAnnouncements(data);
+  };
+
+  const fetchFeedback = async () => {
+    setIsFeedbackLoading(true);
+    setFeedbackError(null);
+    
+    try {
+      // First get all feedback
+      const { data: feedbackData, error: feedbackError } = await supabase
+        .from('feedback')
+        .select(`
+          id,
+          rating,
+          feedback,
+          created_at,
+          user_id
+        `)
+        .order('created_at', { ascending: false });
+
+      if (feedbackError) throw feedbackError;
+
+      // Then get user profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email');
+
+      if (profilesError) throw profilesError;
+
+      // Combine feedback with user data
+      const enrichedFeedback = feedbackData.map(feedback => ({
+        ...feedback,
+        user: profilesData.find(profile => profile.id === feedback.user_id) || {
+          full_name: 'Unknown User',
+          email: 'unknown@email.com'
+        }
+      }));
+
+      setFeedback(enrichedFeedback);
+    } catch (error) {
+      console.error('Error fetching feedback:', error);
+      setFeedbackError('Failed to load feedback. Please try again later.');
+      customToast.error("Failed to fetch feedback");
+    } finally {
+      setIsFeedbackLoading(false);
+    }
   };
 
   const createAnnouncement = async (e) => {
@@ -178,6 +228,7 @@ export default function AdminPanel() {
         <TabsList>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="announcements">Announcements</TabsTrigger>
+          <TabsTrigger value="feedback">Feedback</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -294,6 +345,75 @@ export default function AdminPanel() {
                         >
                           Delete
                         </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            {isFeedbackLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <Loading />
+              </div>
+            ) : feedbackError ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <p className="text-red-500 mb-4">{feedbackError}</p>
+                <Button 
+                  variant="outline" 
+                  onClick={fetchFeedback}
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : feedback.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center py-12">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <MessageSquare className="h-6 w-6" />
+                </div>
+                <h3 className="font-semibold text-lg">No feedback yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  When users submit feedback, it will appear here.
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Feedback</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {feedback.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {item.user?.full_name || 'Unknown User'}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {item.user?.email || 'unknown@email.com'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <span className="font-medium">{item.rating}</span>
+                          <span className="text-muted-foreground">/5</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        {item.feedback || <span className="text-muted-foreground italic">No comment</span>}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(item.created_at).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                   ))}
