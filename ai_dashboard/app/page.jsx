@@ -9,6 +9,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { useRouter } from "next/navigation";
 import { UploadSidebar } from "@/components/UploadSidebar";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
+import { FeedbackReminder } from "@/components/FeedbackReminder";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -88,6 +89,7 @@ export default function Dashboard() {
         <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           <DashboardTabs refresh={refreshFiles} />
         </section>
+        <FeedbackReminder />
       </main>
     </>
   );

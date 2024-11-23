@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 import { customToast } from "@/components/ui/toast-theme";
 
-export function FeedbackDialog() {
+export function FeedbackDialog({ onFeedbackSubmitted }) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(null);
   const [feedback, setFeedback] = useState("");
@@ -46,6 +46,11 @@ export function FeedbackDialog() {
       setFeedback("");
       setOpen(false);
       
+      // Call the callback if provided
+      if (onFeedbackSubmitted) {
+        onFeedbackSubmitted();
+      }
+
       // Show success toast
       customToast.success("Thank you for your feedback! Your feedback helps us improve our service.");
     } catch (error) {
