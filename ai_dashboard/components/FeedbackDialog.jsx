@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
+import { customToast } from "@/components/ui/toast-theme";
 
 export function FeedbackDialog() {
   const [open, setOpen] = useState(false);
@@ -44,8 +45,12 @@ export function FeedbackDialog() {
       setRating(null);
       setFeedback("");
       setOpen(false);
+      
+      // Show success toast
+      customToast.success("Thank you for your feedback! Your feedback helps us improve our service.");
     } catch (error) {
       console.error('Error submitting feedback:', error);
+      customToast.error("Error submitting feedback. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
