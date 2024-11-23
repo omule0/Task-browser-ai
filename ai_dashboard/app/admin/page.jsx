@@ -16,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { customToast } from "@/components/ui/toast-theme";
-import { MegaphoneIcon } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 
 export default function AdminPanel() {
