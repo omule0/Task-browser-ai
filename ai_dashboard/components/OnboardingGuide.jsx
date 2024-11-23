@@ -13,6 +13,14 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
   const handleUploadClick = () => {
     if (onUploadClick) {
       onUploadClick();
+      // After upload dialog is opened, listen for successful upload
+      const checkUploadSuccess = (event) => {
+        if (event.detail.success) {
+          setCurrentStep(currentStep + 1);
+          window.removeEventListener('uploadSuccess', checkUploadSuccess);
+        }
+      };
+      window.addEventListener('uploadSuccess', checkUploadSuccess);
     }
   };
 

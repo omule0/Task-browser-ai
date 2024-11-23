@@ -181,6 +181,11 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
       if (successes.length > 0) {
         customToast.success(`Successfully uploaded ${successes.length} file(s)`);
         
+        // Dispatch upload success event
+        window.dispatchEvent(new CustomEvent('uploadSuccess', { 
+          detail: { success: true } 
+        }));
+        
         // Fetch the newly uploaded files
         const { data: newFiles } = await supabase.storage
           .from('documents')
