@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const exampleReports = [
   {
@@ -23,6 +24,8 @@ const exampleReports = [
 ];
 
 export function ExampleReports({ onViewExample }) {
+  const router = useRouter();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -62,7 +65,10 @@ export function ExampleReports({ onViewExample }) {
                   variant="ghost"
                   size="sm"
                   className="text-xs"
-                  onClick={() => onViewExample(report)}
+                  onClick={() => {
+                    const reportId = report.title.toLowerCase().replace(/\s+/g, '-');
+                    router.push(`/examples?report=${reportId}`);
+                  }}
                 >
                   View example <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>

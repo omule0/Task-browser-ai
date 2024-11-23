@@ -4,13 +4,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, ChevronRight, Upload, FileText, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from 'next/navigation';
 
-export function OnboardingGuide({ onClose, onUploadClick, onExampleClick }) {
+export function OnboardingGuide({ onClose, onUploadClick }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showUploadSidebar, setShowUploadSidebar] = useState(false);
+  const router = useRouter();
 
   const handleUploadClick = () => {
     onUploadClick();
+  };
+
+  const handleExampleClick = () => {
+    router.push('/examples');
   };
 
   const steps = [
@@ -26,12 +31,14 @@ export function OnboardingGuide({ onClose, onUploadClick, onExampleClick }) {
       description: "Our AI analyzes your documents and creates comprehensive reports with key insights and recommendations.",
       icon: <FileText className="w-5 h-5" />,
       action: "See example",
+      onClick: handleExampleClick
     },
     {
       title: "Get Business Insights",
       description: "Review AI-generated insights to make data-driven decisions for your business.",
       icon: <Lightbulb className="w-5 h-5" />,
       action: "View demo",
+      onClick: handleExampleClick
     },
   ];
 
@@ -75,8 +82,6 @@ export function OnboardingGuide({ onClose, onUploadClick, onExampleClick }) {
                   onClick={() => {
                     if (steps[currentStep].onClick) {
                       steps[currentStep].onClick();
-                    } else if (currentStep === 1) {
-                      onExampleClick();
                     }
                   }}
                 >

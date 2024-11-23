@@ -68,8 +68,7 @@ export default function Dashboard() {
         {showOnboarding && (
           <OnboardingGuide
             onClose={() => setShowOnboarding(false)}
-            onUploadClick={handleUploadClick}
-            onExampleClick={() => router.push('/example-report')}
+            onUploadClick={() => setIsUploadSidebarOpen(true)}
           />
         )}
 
