@@ -27,10 +27,16 @@ export function AnnouncementsProvider({ children }) {
         return;
       }
 
-      setAnnouncements(data || []);
-      
-      // Calculate unread count based on last read time
       const lastReadTime = localStorage.getItem('lastReadAnnouncement');
+      // Add seen status to each announcement
+      const processedData = (data || []).map(announcement => ({
+        ...announcement,
+        seen: lastReadTime ? new Date(announcement.created_at) <= new Date(lastReadTime) : false
+      }));
+
+      setAnnouncements(processedData);
+      
+      // Calculate unread count
       if (lastReadTime && data) {
         const unreadAnnouncements = data.filter(
           announcement => new Date(announcement.created_at) > new Date(lastReadTime)

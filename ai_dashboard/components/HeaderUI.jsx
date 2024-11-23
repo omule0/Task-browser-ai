@@ -1,11 +1,9 @@
 "use client";
 import {
-  GiftIcon,
   HelpCircleIcon,
   LogOutIcon,
   SettingsIcon,
   MenuIcon,
-  MegaphoneIcon,
   Settings,
 } from "lucide-react";
 import Link from "next/link";
@@ -117,7 +115,10 @@ export function HeaderUI({ user, logout }) {
                       ) : (
                         <div className="space-y-2">
                           {announcements.slice(0, 3).map((announcement) => (
-                            <div key={announcement.id} className="text-sm border-b last:border-0 pb-2">
+                            <div 
+                              key={announcement.id} 
+                              className={`text-sm border-b last:border-0 pb-2 ${announcement.seen ? 'opacity-60' : ''}`}
+                            >
                               <span className="font-medium">{announcement.title}</span>
                               <p className="text-muted-foreground line-clamp-2">{announcement.content}</p>
                               <div className="flex justify-between items-center mt-1">
