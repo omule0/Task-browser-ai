@@ -52,8 +52,6 @@ export default function Announcements() {
                   <a 
                     href={announcement.link} 
                     className="text-sm text-blue-500 hover:text-blue-700"
-                    target="_blank" 
-                    rel="noopener noreferrer"
                   >
                     Learn more →
                   </a>
