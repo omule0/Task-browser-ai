@@ -18,7 +18,7 @@ function FilePreviewSkeleton() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <Skeleton className="h-7 w-32" />
           <Skeleton className="h-4 w-24" />
         </div>
@@ -26,10 +26,10 @@ function FilePreviewSkeleton() {
       <CardContent className="space-y-4">
         {[1, 2].map((i) => (
           <div key={i} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Skeleton className="w-10 h-10 rounded" />
-              <div>
-                <Skeleton className="h-4 w-48 mb-2" />
+            <div className="flex items-center space-x-3 min-w-0">
+              <Skeleton className="w-10 h-10 rounded flex-shrink-0" />
+              <div className="min-w-0">
+                <Skeleton className="h-4 w-[200px] sm:w-[300px] mb-2" />
                 <div className="flex gap-2">
                   <Skeleton className="h-3 w-16" />
                   <Skeleton className="h-3 w-16" />

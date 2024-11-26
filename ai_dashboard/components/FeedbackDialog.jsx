@@ -68,25 +68,31 @@ export function FeedbackDialog({ onFeedbackSubmitted }) {
           Give Feedback
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Share your feedback</DialogTitle>
           <DialogDescription>
             Help us improve your experience. Your feedback is valuable to us.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-2 sm:py-4">
           <div className="space-y-2">
             <Label>How would you rate your experience?</Label>
             <RadioGroup
               value={rating}
               onValueChange={setRating}
-              className="flex space-x-4"
+              className="flex flex-wrap gap-4 sm:flex-nowrap sm:space-x-4"
             >
               {[1, 2, 3, 4, 5].map((value) => (
                 <div key={value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={value.toString()} id={`r${value}`} />
-                  <Label htmlFor={`r${value}`}>{value}</Label>
+                  <RadioGroupItem 
+                    value={value.toString()} 
+                    id={`r${value}`}
+                    className="h-5 w-5" // Slightly larger touch target
+                  />
+                  <Label htmlFor={`r${value}`} className="text-base">
+                    {value}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>
@@ -102,11 +108,12 @@ export function FeedbackDialog({ onFeedbackSubmitted }) {
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="sm:mt-2">
           <Button
             type="submit"
             onClick={handleSubmit}
             disabled={!rating || isSubmitting}
+            className="w-full sm:w-auto"
           >
             {isSubmitting ? "Submitting..." : "Submit feedback"}
           </Button>

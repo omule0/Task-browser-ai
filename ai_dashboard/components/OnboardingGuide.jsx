@@ -58,7 +58,7 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
       animate={{ opacity: 1, y: 0 }}
       className="mb-8"
     >
-      <Card className="relative p-6 border-2 border-primary/20 bg-primary/5">
+      <Card className="relative p-4 sm:p-6 border-2 border-primary/20 bg-primary/5">
         <Button
           variant="ghost"
           size="icon"
@@ -69,7 +69,7 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
         </Button>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5 rounded">
               Quick Start Guide
             </span>
@@ -78,18 +78,18 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
             </span>
           </div>
 
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
             <div className="bg-primary/10 p-3 rounded-lg">
               {steps[currentStep].icon}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <h3 className="font-semibold text-lg mb-1 text-foreground">
                 {steps[currentStep].title}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {steps[currentStep].description}
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <Button
                   size="sm"
                   onClick={() => {
@@ -100,7 +100,7 @@ export function OnboardingGuide({ onClose, onUploadClick }) {
                 >
                   {steps[currentStep].action}
                 </Button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto justify-between sm:justify-start">
                   {currentStep > 0 && (
                     <Button
                       variant="ghost"
