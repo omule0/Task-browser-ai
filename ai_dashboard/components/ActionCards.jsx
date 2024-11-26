@@ -101,7 +101,7 @@ function ActionCard({
                       {beta && (
                         <Badge 
                           variant="secondary" 
-                          className="bg-badge-purple text-badge-purple-foreground text-[10px] h-4 px-1"
+                          className="bg-[hsl(var(--badge-purple))] text-[hsl(var(--badge-purple-foreground))] text-[10px] h-4 px-1"
                         >
                           Beta
                         </Badge>
