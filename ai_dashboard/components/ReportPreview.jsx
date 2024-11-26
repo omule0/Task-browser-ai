@@ -166,7 +166,7 @@ export function ReportPreview() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground truncate mt-1">
-                      {report.content.substring(0, 100)}...
+                      {report.content.substring(0, 30)}...
                     </p>
                   </div>
                 </div>
