@@ -180,17 +180,17 @@ export default function ProfilePage() {
       <title>Profile Settings</title>
       <div className="max-w-2xl mx-auto p-6 space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold mb-2">Profile Settings</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl font-semibold mb-2 text-foreground">Profile Settings</h1>
+          <p className="text-muted-foreground">
             Manage your account settings and preferences.
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="bg-background p-6 rounded-lg shadow-sm border border-border">
           {/* Profile Picture Section */}
           <div className="mb-8 flex flex-col items-center">
             <div className="relative group">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-muted">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -198,7 +198,7 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-purple-100 text-purple-600 text-4xl">
+                  <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-4xl">
                     {formData.full_name?.[0]?.toUpperCase() ||
                       formData.email[0].toUpperCase()}
                   </div>
@@ -207,8 +207,8 @@ export default function ProfilePage() {
               <div className="absolute bottom-0 right-0 flex space-x-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-purple-600 text-white p-2 rounded-full 
-            shadow-lg hover:bg-purple-700 transition-colors"
+                  className="bg-primary text-primary-foreground p-2 rounded-full 
+                    shadow-lg hover:bg-primary/90 transition-colors"
                   disabled={uploading}
                 >
                   {uploading ? (
@@ -220,8 +220,8 @@ export default function ProfilePage() {
                 {avatarUrl && (
                   <button
                     onClick={deleteAvatar}
-                    className="bg-red-600 text-white p-2 rounded-full 
-              shadow-lg hover:bg-red-700 transition-colors"
+                    className="bg-destructive text-destructive-foreground p-2 rounded-full 
+                      shadow-lg hover:bg-destructive/90 transition-colors"
                     disabled={uploading}
                   >
                     {uploading ? (
@@ -240,17 +240,17 @@ export default function ProfilePage() {
               accept="image/*"
               className="hidden"
             />
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               {avatarUrl
                 ? "Click the camera icon to change or trash icon to remove"
                 : "Click the camera icon to upload a profile picture"}
             </p>
           </div>
 
-          {/* Existing Form */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="full_name">
+              <label className="text-sm font-medium text-foreground" htmlFor="full_name">
                 Full Name
               </label>
               <Input
@@ -262,30 +262,28 @@ export default function ProfilePage() {
                     full_name: e.target.value,
                   }))
                 }
-                className="border-gray-200"
+                className="border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">
+              <label className="text-sm font-medium text-foreground" htmlFor="email">
                 Email
               </label>
               <Input
                 id="email"
                 value={formData.email}
                 disabled
-                className="bg-gray-50 border-gray-200"
+                className="bg-muted border-border"
               />
-              <p className="text-sm text-gray-500">
-                Email cannot be changed. Contact support if you need to update
-                it.
+              <p className="text-sm text-muted-foreground">
+                Email cannot be changed. Contact support if you need to update it.
               </p>
             </div>
 
             <div className="flex justify-end">
               <Button
                 type="submit"
-                className="bg-purple-600 hover:bg-purple-700"
                 disabled={saving}
               >
                 {saving ? (

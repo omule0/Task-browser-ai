@@ -154,11 +154,11 @@ export default function WorkspaceSettings() {
           </CardHeader>
           <CardContent>
             {workspaces.length >= 3 && (
-              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <svg
-                      className="h-5 w-5 text-purple-600"
+                      className="h-5 w-5 text-primary"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -170,10 +170,10 @@ export default function WorkspaceSettings() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-purple-800">
+                    <h3 className="text-sm font-medium text-foreground">
                       Workspace Limit Reached
                     </h3>
-                    <div className="mt-1 text-sm text-purple-700">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       <p>
                         You have reached the maximum limit of 3 workspaces. To
                         create a new workspace, you'll need to delete an existing
@@ -196,27 +196,27 @@ export default function WorkspaceSettings() {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="px-2 py-1 border border-border rounded focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Workspace name"
                           />
                           <button
                             onClick={() => updateWorkspaceName(workspace.id)}
-                            className="p-1 text-green-600 hover:text-green-700"
+                            className="p-1 text-success hover:text-success/80"
                           >
                             <CheckIcon className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => setEditing(null)}
-                            className="p-1 text-gray-600 hover:text-gray-700"
+                            className="p-1 text-muted-foreground hover:text-foreground"
                           >
                             <XIcon className="w-4 h-4" />
                           </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{workspace.name}</span>
+                          <span className="font-medium text-foreground">{workspace.name}</span>
                           {workspace.is_default && (
-                            <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                               Default
                             </span>
                           )}
@@ -227,7 +227,7 @@ export default function WorkspaceSettings() {
                       {!workspace.is_default && (
                         <button
                           onClick={() => setDefaultWorkspace(workspace.id)}
-                          className="text-sm text-purple-600 hover:text-purple-700"
+                          className="text-sm text-primary hover:text-primary/80"
                         >
                           Set as Default
                         </button>
@@ -238,7 +238,7 @@ export default function WorkspaceSettings() {
                             setEditing(workspace.id);
                             setEditName(workspace.name);
                           }}
-                          className="p-1 text-gray-500 hover:text-gray-700"
+                          className="p-1 text-muted-foreground hover:text-foreground"
                           title="Edit workspace name"
                         >
                           <PencilIcon className="w-4 h-4" />
@@ -246,13 +246,11 @@ export default function WorkspaceSettings() {
                       )}
                       <button
                         onClick={() => deleteWorkspace(workspace.id)}
-                        disabled={
-                          deleting === workspace.id || workspaces.length === 1
-                        }
+                        disabled={deleting === workspace.id || workspaces.length === 1}
                         className={`p-1 ${
                           workspaces.length === 1
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-gray-500 hover:text-red-600"
+                            ? "text-muted-foreground/50 cursor-not-allowed"
+                            : "text-muted-foreground hover:text-destructive"
                         }`}
                         title={
                           workspaces.length === 1

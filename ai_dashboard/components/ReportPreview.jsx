@@ -85,8 +85,8 @@ export function ReportPreview() {
     return (
       <Card>
         <div className="p-4 text-center">
-          <FileText className="w-10 h-10 mx-auto text-gray-400 mb-3" />
-          <h3 className="text-base font-medium text-gray-900 mb-1">No workspace selected</h3>
+          <FileText className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+          <h3 className="text-base font-medium text-foreground mb-1">No workspace selected</h3>
           <p className="text-sm text-muted-foreground">Select a workspace to view documents</p>
         </div>
       </Card>
@@ -101,8 +101,8 @@ export function ReportPreview() {
     return (
       <Card>
         <div className="p-4 text-center">
-          <FileText className="w-10 h-10 mx-auto text-gray-400 mb-3" />
-          <h3 className="text-base font-medium text-gray-900 mb-1">No documents yet</h3>
+          <FileText className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+          <h3 className="text-base font-medium text-foreground mb-1">No documents yet</h3>
           <p className="text-sm text-muted-foreground mb-3">Create your first document to get started</p>
           <Link href="/create-document">
             <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
@@ -134,17 +134,17 @@ export function ReportPreview() {
         <div className="grid gap-2">
           {recentReports.slice(0, 2).map((report) => (
             <Link key={report.id} href={`/documents/${report.id}`}>
-              <Card className="p-3 hover:shadow-sm transition-all cursor-pointer group border-gray-200 hover:border-purple-200">
+              <Card className="p-3 hover:shadow-sm transition-all cursor-pointer group border-border hover:border-primary/20">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition-colors">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <FileText className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <h3 className="font-medium text-sm text-gray-900 truncate">
+                            <h3 className="font-medium text-sm text-foreground truncate">
                               {report.sub_type || report.document_type}
                             </h3>
                           </TooltipTrigger>
@@ -153,19 +153,19 @@ export function ReportPreview() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Tag className="w-3 h-3" />
                         <span>{report.document_type}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
                         <span>{formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}</span>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 truncate mt-1">
+                    <p className="text-xs text-muted-foreground truncate mt-1">
                       {report.content.substring(0, 100)}...
                     </p>
                   </div>
@@ -176,8 +176,8 @@ export function ReportPreview() {
 
           {recentReports.length > 2 && (
             <Link href="/documents">
-              <div className="text-center p-2 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group">
-                <p className="text-xs text-muted-foreground group-hover:text-purple-600">
+              <div className="text-center p-2 border border-dashed border-border rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group">
+                <p className="text-xs text-muted-foreground group-hover:text-primary">
                   +{recentReports.length - 2} more documents
                 </p>
               </div>

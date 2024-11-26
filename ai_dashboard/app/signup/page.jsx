@@ -14,7 +14,7 @@ function SubmitButton() {
 
   return (
     <Button
-      className="w-full bg-[#663399] hover:bg-[#552288]"
+      className="w-full bg-primary hover:bg-primary/90"
       type="submit"
       disabled={pending}
     >
@@ -38,18 +38,18 @@ function SignUpContent() {
   return (
     <div className="w-full max-w-sm space-y-8">
       {error && (
-        <div className="p-4 text-sm text-red-500 bg-red-50 rounded-md">
+        <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-md">
           {error}
         </div>
       )}
       {message && (
-        <div className="p-4 text-sm text-green-500 bg-green-50 rounded-md">
+        <div className="p-4 text-sm text-success bg-success/10 rounded-md">
           {message}
         </div>
       )}
       <div className="flex flex-col items-center space-y-6">
-        <div className="h-12 w-12 rounded-lg bg-[#663399]/10 flex items-center justify-center">
-          <UserPlusIcon className="h-6 w-6 text-[#663399]" />
+        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          <UserPlusIcon className="h-6 w-6 text-primary" />
         </div>
         <h1 className="text-3xl font-semibold tracking-tight">
           Create an account
@@ -70,7 +70,7 @@ function SignUpContent() {
             type="text"
             autoCapitalize="words"
             autoComplete="name"
-            className="border-gray-200"
+            className="border-border"
             required
           />
         </div>
@@ -89,7 +89,7 @@ function SignUpContent() {
             autoCapitalize="none"
             autoComplete="email"
             autoCorrect="off"
-            className="border-gray-200"
+            className="border-border"
             required
           />
         </div>
@@ -106,7 +106,7 @@ function SignUpContent() {
             type="password"
             autoCapitalize="none"
             autoComplete="new-password"
-            className="border-gray-200"
+            className="border-border"
             required
           />
         </div>
@@ -114,16 +114,16 @@ function SignUpContent() {
       </form>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200"></div>
+          <div className="w-full border-t border-border"></div>
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[#F8F8F9] px-2 text-gray-500">OR</span>
+          <span className="bg-background px-2 text-muted-foreground">OR</span>
         </div>
       </div>
       <SignUpWithGoogleButton />
       <div className="text-center text-sm">
         Already have an account?{" "}
-        <Link href="/login" className="text-[#663399] hover:text-[#552288]">
+        <Link href="/login" className="text-primary hover:text-primary/90">
           Sign In
         </Link>
       </div>

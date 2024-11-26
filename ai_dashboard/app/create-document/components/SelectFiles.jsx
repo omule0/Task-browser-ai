@@ -49,18 +49,18 @@ export default function SelectFiles({
     return (
       <div className="text-center py-8">
         <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-4">
-            <Upload className="w-6 h-6 text-purple-600" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            <Upload className="w-6 h-6 text-primary" />
           </div>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-foreground mb-2">
           No files available
         </h3>
-        <p className="text-gray-500 mb-4">
+        <p className="text-muted-foreground mb-4">
           Upload some files to get started
         </p>
         <Button 
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={() => setIsUploadOpen(true)}
         >
           <Upload className="w-4 h-4 mr-2" />
@@ -77,12 +77,12 @@ export default function SelectFiles({
 
   return (
     <div className="space-y-4">
-      <Card className="p-4 bg-purple-50 border-purple-100">
+      <Card className="p-4 bg-primary/10 border-primary/20">
         <div className="flex gap-3">
-          <Info className="h-5 w-5 text-purple-600 mt-0.5" />
+          <Info className="h-5 w-5 text-primary mt-0.5" />
           <div className="space-y-1">
-            <h3 className="font-medium text-purple-900">About File Selection</h3>
-            <p className="text-sm text-purple-700">
+            <h3 className="font-medium text-foreground">About File Selection</h3>
+            <p className="text-sm text-muted-foreground">
               The files you select will determine the content of your AI-generated document. 
               Choose files that contain relevant information for your desired output.
             </p>
@@ -92,7 +92,7 @@ export default function SelectFiles({
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium text-gray-900">
+          <h2 className="text-sm font-medium text-foreground">
             Selected: {selectedFiles.length} files
           </h2>
         </div>
@@ -101,7 +101,7 @@ export default function SelectFiles({
             variant="ghost" 
             size="icon"
             onClick={() => setViewMode('list')}
-            className={viewMode === 'list' ? 'text-purple-600' : 'text-gray-600'}
+            className={viewMode === 'list' ? 'text-primary' : 'text-muted-foreground'}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -109,7 +109,7 @@ export default function SelectFiles({
             variant="ghost" 
             size="icon"
             onClick={() => setViewMode('grid')}
-            className={viewMode === 'grid' ? 'text-purple-600' : 'text-gray-600'}
+            className={viewMode === 'grid' ? 'text-primary' : 'text-muted-foreground'}
           >
             <Grid className="h-4 w-4" />
           </Button>
@@ -127,18 +127,18 @@ export default function SelectFiles({
                 key={filePath}
                 className={`relative rounded-lg border p-4 cursor-pointer transition-colors
                   ${isSelected 
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-200 hover:border-purple-500'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary'
                   }`}
                 onClick={() => onFileSelect(filePath)}
               >
                 <div className="flex items-center space-x-3">
-                  <FileText className="h-6 w-6 text-gray-600" />
+                  <FileText className="h-6 w-6 text-muted-foreground" />
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                    <h3 className="text-sm font-medium text-foreground truncate">
                       {file.originalName}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {new Date(file.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -158,20 +158,20 @@ export default function SelectFiles({
                 key={filePath}
                 className={`flex items-center p-4 cursor-pointer transition-colors rounded-lg border
                   ${isSelected
-                    ? 'bg-purple-50 border-purple-500'
-                    : 'hover:bg-gray-50 border-gray-200'
+                    ? 'bg-primary/10 border-primary'
+                    : 'hover:bg-muted/50 border-border'
                   }`}
                 onClick={() => onFileSelect(filePath)}
               >
                 <div className="flex items-center flex-1 min-w-0 space-x-3">
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-gray-600" />
+                    <FileText className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                    <h3 className="text-sm font-medium text-foreground truncate">
                       {file.originalName}
                     </h3>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(file.created_at).toLocaleDateString()}
                     </p>
                   </div>

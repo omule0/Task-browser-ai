@@ -134,18 +134,20 @@ export default function ReportActions({ sections }) {
       {/* Actions Panel */}
       {isOpen && (
         <div className="space-y-2 animate-in slide-in-from-right">
-          {/* Contents Panel - Now with max height and scrolling */}
-          <div className="bg-white rounded-lg shadow-lg p-4 w-48">
-            <div className="flex items-center gap-2 mb-3 sticky top-0 bg-white">
-              <List className="w-4 h-4" />
-              <span className="font-medium">Contents</span>
+          {/* Contents Panel */}
+          <div className="bg-card rounded-lg shadow-lg p-4 w-48 border border-border">
+            <div className="flex items-center gap-2 mb-3 sticky top-0 bg-card">
+              <List className="w-4 h-4 text-muted-foreground" />
+              <span className="font-medium text-foreground">Contents</span>
             </div>
-            <nav className="space-y-2 max-h-[40vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            <nav className="space-y-2 max-h-[40vh] overflow-y-auto pr-2 
+              scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
               {sections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className="block text-sm text-gray-600 hover:text-gray-900 w-full text-left hover:bg-gray-50 rounded px-2 py-1"
+                  className="block text-sm text-muted-foreground hover:text-foreground 
+                    w-full text-left hover:bg-accent rounded px-2 py-1"
                 >
                   {section.title}
                 </button>
@@ -154,7 +156,7 @@ export default function ReportActions({ sections }) {
           </div>
 
           {/* Actions Panel */}
-          <div className="bg-white rounded-lg shadow-lg p-4 space-y-2 w-48">
+          <div className="bg-card rounded-lg shadow-lg p-4 space-y-2 w-48 border border-border">
             <Button
               variant="ghost"
               className="w-full justify-start"
@@ -172,7 +174,6 @@ export default function ReportActions({ sections }) {
               <Download className="w-4 h-4 mr-2" />
               {downloading ? 'Generating PDF...' : 'Download PDF'}
             </Button>
-        
           </div>
         </div>
       )}

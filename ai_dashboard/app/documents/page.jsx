@@ -112,9 +112,9 @@ export default function GeneratedReports() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       {/* Header Section */}
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Generated Reports</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Generated Reports</h1>
         <Link href="/create-document">
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full md:w-auto">
+          <Button className="w-full md:w-auto">
             <FileText className="w-4 h-4 mr-2" />
             Generate Report
           </Button>
@@ -125,7 +125,7 @@ export default function GeneratedReports() {
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between mb-6">
         <div className="flex items-center space-x-2 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search documents..."
               value={searchQuery}
@@ -155,7 +155,7 @@ export default function GeneratedReports() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex items-center space-x-1 border rounded-md">
+          <div className="flex items-center space-x-1 border border-border rounded-md">
             <Button
               variant="ghost"
               size="icon"
@@ -186,21 +186,21 @@ export default function GeneratedReports() {
               }`}>
                 <div className={`flex ${viewMode === 'list' ? 'items-center' : 'flex-col'} gap-4`}>
                   <div className={`flex items-center ${viewMode === 'list' ? 'flex-1' : 'w-full'}`}>
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-purple-600" />
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
                     <div className="ml-3 min-w-0 flex-1">
-                      <h3 className="font-medium truncate">
+                      <h3 className="font-medium truncate text-foreground">
                         {report.sub_type || report.document_type}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                         {report.content.substring(0, 100)}...
                       </p>
                     </div>
                   </div>
                   
                   <div className={`flex ${viewMode === 'list' ? 'items-center' : 'items-end'} gap-3`}>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4 mr-1" />
                       {new Date(report.created_at).toLocaleDateString()}
                     </div>
@@ -208,12 +208,12 @@ export default function GeneratedReports() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-600"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                         onClick={(e) => handleDelete(e, report.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
                   </div>
                 </div>
@@ -224,24 +224,24 @@ export default function GeneratedReports() {
           <div className="col-span-full text-center py-12">
             {searchQuery ? (
               <div className="space-y-4">
-                <Search className="w-12 h-12 text-gray-400 mx-auto" />
+                <Search className="w-12 h-12 text-muted-foreground mx-auto" />
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  <h3 className="text-lg font-medium text-foreground mb-1">
                     No matching documents found
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Try adjusting your search terms or clear the search
                   </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto" />
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto" />
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  <h3 className="text-lg font-medium text-foreground mb-1">
                     No documents generated yet
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Start by generating your first document
                   </p>
                 </div>

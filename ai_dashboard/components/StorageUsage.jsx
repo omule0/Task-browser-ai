@@ -98,19 +98,19 @@ export function StorageUsage({ refresh }) {
   return (
     <div className="p-4">
       <div className="flex justify-between mb-2">
-        <span className="text-sm text-gray-600">Storage Used</span>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-muted-foreground">Storage Used</span>
+        <span className="text-sm text-muted-foreground">
           {formatBytes(usage.bytes_used)} / {formatBytes(usage.storage_limit)}
         </span>
       </div>
-      <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="relative w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className={cn("h-full transition-all duration-300", getProgressColorClass())}
           style={{ width: `${Math.min(usagePercent, 100)}%` }}
         />
       </div>
       {usagePercent > 90 && (
-        <p className="text-xs text-red-500 mt-1">
+        <p className="text-xs text-destructive mt-1">
           Storage almost full! Please delete some files.
         </p>
       )}

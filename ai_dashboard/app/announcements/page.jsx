@@ -25,12 +25,12 @@ export default function Announcements() {
 
   return (
     <main className="flex-1 p-4 md:p-6 max-w-3xl mx-auto w-full">
-      <h1 className="text-2xl font-bold mb-6">Announcements</h1>
+      <h1 className="text-2xl font-bold mb-6 text-foreground">Announcements</h1>
       {announcements.length === 0 ? (
-        <Card className="p-12">
+        <Card className="p-12 bg-background">
           <div className="flex flex-col items-center justify-center text-center space-y-3">
             <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
-            <h3 className="font-semibold text-lg">No announcements yet</h3>
+            <h3 className="font-semibold text-lg text-foreground">No announcements yet</h3>
             <p className="text-sm text-muted-foreground">
               Check back later for updates and announcements.
             </p>
@@ -39,10 +39,10 @@ export default function Announcements() {
       ) : (
         <div className="space-y-4">
           {announcements.map((announcement) => (
-            <Card key={announcement.id} className="p-4">
+            <Card key={announcement.id} className="p-4 bg-background">
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
-                  <h2 className="text-lg font-medium">{announcement.title}</h2>
+                  <h2 className="text-lg font-medium text-foreground">{announcement.title}</h2>
                   <span className="text-xs text-muted-foreground">
                     {new Date(announcement.created_at).toLocaleDateString()}
                   </span>
@@ -51,7 +51,7 @@ export default function Announcements() {
                 {announcement.link && (
                   <a 
                     href={announcement.link} 
-                    className="text-sm text-blue-500 hover:text-blue-700"
+                    className="text-sm text-primary hover:text-primary/80"
                   >
                     Learn more →
                   </a>

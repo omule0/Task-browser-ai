@@ -39,8 +39,8 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
   const button = (
     <Button
       variant={isActive ? "secondary" : "ghost"}
-      className={`w-full justify-start hover:bg-gray-100 transition-all ${
-        isActive ? "bg-purple-100 text-purple-600 border-l-4 border-purple-600" : ""
+      className={`w-full justify-start hover:bg-accent transition-all ${
+        isActive ? "bg-primary/10 text-primary border-l-4 border-primary" : ""
       }`}
       asChild={!!href}
     >
@@ -129,6 +129,7 @@ export function Sidebar() {
           p-4
           h-full
           border-r
+          border-border
           transition-all duration-300
           ${isCollapsed ? "w-20" : "w-56"}
         `}
@@ -178,12 +179,12 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Collapse button positioned absolutely */}
+      {/* Collapse button */}
       <Button
         variant="ghost"
         size="icon"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-4 top-6 hidden md:flex h-8 w-8 rounded-full border bg-white shadow-sm"
+        className="absolute -right-4 top-6 hidden md:flex h-8 w-8 rounded-full border border-border bg-background shadow-sm"
       >
         {isCollapsed ? (
           <ChevronRightIcon className="h-4 w-4" />

@@ -13,7 +13,7 @@ export const documentTypes = [
 export const subTypes = {
   Report: [
     {
-      icon: <img src="/research-report.png" alt="Research Report" className="h-5 w-5" />,
+      icon: <img src="/research-report.png" alt="Research Report" className="h-5 w-5 dark:invert" />,
       title: "Research report",
       description: "A detailed document presenting clear findings and analysis",
     },
@@ -28,17 +28,17 @@ export const subTypes = {
       description: "Comprehensive document prepared by the seller to provide potential buyers with a transparent view of the target company",
     },
     {
-      icon: <img src="/business-plan.png" alt="Business Plan" className="h-5 w-5" />,
+      icon: <img src="/business-plan.png" alt="Business Plan" className="h-5 w-5 dark:invert" />,
       title: "Business Plan",
-      description: "A formal document outlining a company’s goals, strategies, market analysis, financial projections, and operational structure",
+      description: "A formal document outlining a company's goals, strategies, market analysis, financial projections, and operational structure",
     },
     {
-      icon: <img src="/equity-investment.png" alt="Equity Investment Analyst" className="h-5 w-5" />,
+      icon: <img src="/equity-investment.png" alt="Equity Investment Analyst" className="h-5 w-5 dark:invert" />,
       title: "Equity Investment Analyst Report",
       description: "A comprehensive analysis of a publicly traded company's investment potential, including financial performance, market position, and growth prospects",
     },
     {
-      icon: <img src="/credit-investment.png" alt="Credit Investment Analyst" className="h-5 w-5" />,
+      icon: <img src="/credit-investment.png" alt="Credit Investment Analyst" className="h-5 w-5 dark:invert" />,
       title: "Credit Investment Analyst Report",
       description: "A comprehensive evaluation of a borrower's creditworthiness, analyzing financial stability, debt structure, cash flow generation, and associated risks for lenders and credit investors",
     },

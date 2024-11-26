@@ -17,7 +17,7 @@ export function FeedbackReminder() {
   const [lastReminder, setLastReminder] = useLocalStorage("last-feedback-reminder", null);
   const [hasFeedback, setHasFeedback] = useLocalStorage("has-given-feedback", false);
   
-  const REMINDER_DELAY = 5; // Minutes between reminders
+  const REMINDER_DELAY = 1440; // 1 day between reminders
   const INITIAL_DELAY = 5; // Minutes before first reminder
 
   useEffect(() => {

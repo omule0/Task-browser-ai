@@ -278,29 +278,29 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-              ${isDragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300'}
-              ${files.length > 0 ? 'border-green-500 bg-green-50' : ''}`}
+              ${isDragActive ? 'border-primary bg-primary/10' : 'border-border'}
+              ${files.length > 0 ? 'border-success bg-success/10' : ''}`}
           >
             <input {...getInputProps()} />
-            <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 mb-2">
+            <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-foreground mb-2">
               {isDragActive
                 ? "Drop the files here"
                 : "Drag and drop files here, or click to select files"}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Supported file types: PDF (Max 10MB)
             </p>
           </div>
 
           {files.length > 0 && (
             <div className="mt-4">
-              <h3 className="font-medium mb-2">Selected Files:</h3>
+              <h3 className="font-medium text-foreground mb-2">Selected Files:</h3>
               <div className="space-y-3">
                 {files.map((file) => (
                   <div
                     key={file.name}
-                    className="flex flex-col bg-gray-50 p-3 rounded group"
+                    className="flex flex-col bg-muted/50 p-3 rounded group"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
@@ -310,16 +310,16 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
                             {...defaultStyles}
                           />
                         </div>
-                        <span className="text-sm">{file.name}</span>
+                        <span className="text-sm text-foreground">{file.name}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </span>
                         {!uploading && (
                           <button
                             onClick={() => removeFile(file.name)}
-                            className="p-1 text-gray-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-1 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
                             title="Remove file"
                           >
                             <XCircle className="w-4 h-4" />
@@ -334,15 +334,15 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
                           className="h-2"
                         />
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {uploadProgress[file.name] === 100 ? (
-                              <span className="text-green-600">Complete</span>
+                              <span className="text-success">Complete</span>
                             ) : (
                               `${uploadProgress[file.name] || 0}%`
                             )}
                           </span>
                           {uploadProgress[file.name] === 100 && (
-                            <span className="text-xs text-green-600">✓</span>
+                            <span className="text-xs text-success">✓</span>
                           )}
                         </div>
                       </div>
@@ -354,19 +354,19 @@ export function UploadSidebar({ isOpen, onClose, onUploadSuccess }) {
           )}
         </div>
 
-        <div className="border-t mt-6 pt-6">
+        <div className="border-t border-border mt-6 pt-6">
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
             >
               Cancel
             </button>
             <button
               onClick={uploadFiles}
               disabled={files.length === 0 || uploading}
-              className={`px-4 py-2 text-sm text-white rounded-md flex items-center
-                ${files.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'}`}
+              className={`px-4 py-2 text-sm text-primary-foreground rounded-md flex items-center
+                ${files.length === 0 ? 'bg-muted cursor-not-allowed' : 'bg-primary hover:bg-primary/90'}`}
             >
               {uploading ? (
                 <>

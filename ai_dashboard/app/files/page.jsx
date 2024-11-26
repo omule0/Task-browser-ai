@@ -618,7 +618,7 @@ export default function FilesPage() {
       {/* Upload Progress */}
       {uploadingFiles.length > 0 && (
         <div className="space-y-4">
-          <h3 className="font-semibold">Uploading Files</h3>
+          <h3 className="font-semibold text-foreground">Uploading Files</h3>
           <div className="space-y-3">
             {uploadingFiles.map((file) => (
               <div
@@ -649,14 +649,14 @@ export default function FilesPage() {
       )}
 
       {/* Files Section - Table for desktop, Cards for mobile */}
-      <div className="rounded-lg border bg-card">
-        <div className="p-4 border-b">
+      <div className="rounded-lg border border-border bg-card">
+        <div className="p-4 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <input
               type="text"
               placeholder="Search files..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-muted/50 border-0 rounded-md focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-muted/50 border-0 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -684,8 +684,8 @@ export default function FilesPage() {
             <TableBody>
               {filteredFiles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
-                    <div className="flex flex-col items-center gap-2">
+                  <TableCell colSpan={5} className="text-center">
+                    <div className="flex flex-col items-center gap-2 py-4">
                       <FileText className="h-8 w-8 text-muted-foreground" />
                       <p className="text-muted-foreground">No files found</p>
                     </div>
@@ -695,7 +695,7 @@ export default function FilesPage() {
                 filteredFiles.map((file) => (
                   <TableRow 
                     key={file.name}
-                    className={selectedFiles.includes(file.name) ? 'bg-purple-50' : ''}
+                    className={selectedFiles.includes(file.name) ? 'bg-primary/5' : ''}
                   >
                     <TableCell className="pl-4">
                       <Checkbox
@@ -739,7 +739,7 @@ export default function FilesPage() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="block md:hidden">
+        <div className="block md:hidden divide-y divide-border">
           {filteredFiles.length === 0 ? (
             <div className="p-4 text-center">
               <div className="flex flex-col items-center gap-2">
@@ -822,9 +822,9 @@ export default function FilesPage() {
       {/* PDF Content Modal with improved styling */}
       {selectedFileContent && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-          <div className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-2xl max-h-[80vh] border rounded-lg bg-card shadow-lg">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">{selectedFileContent.name}</h3>
+          <div className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-2xl max-h-[80vh] border border-border rounded-lg bg-card shadow-lg">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h3 className="text-lg font-semibold text-foreground">{selectedFileContent.name}</h3>
               <Button
                 variant="ghost"
                 size="icon"
@@ -834,7 +834,7 @@ export default function FilesPage() {
               </Button>
             </div>
             <div className="p-6 overflow-y-auto max-h-[calc(80vh-8rem)]">
-              <pre className="whitespace-pre-wrap text-sm">
+              <pre className="whitespace-pre-wrap text-sm text-foreground">
                 {selectedFileContent.content}
               </pre>
             </div>
@@ -842,7 +842,7 @@ export default function FilesPage() {
         </div>
       )}
       {/* Storage Usage Card */}
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border border-border bg-card">
         <StorageUsage refresh={storageRefresh} />
       </div>
     </div>

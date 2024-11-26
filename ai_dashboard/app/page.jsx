@@ -6,7 +6,6 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { OnboardingGuide } from "@/components/OnboardingGuide";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { useRouter } from "next/navigation";
 import { UploadSidebar } from "@/components/UploadSidebar";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { FeedbackReminder } from "@/components/FeedbackReminder";
@@ -54,10 +53,12 @@ export default function Dashboard() {
       <title>Dashboard</title>
       <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
         <div className="mb-8 flex justify-between items-center">
-          <h1 className="text-xl md:text-xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-xl md:text-xl font-bold text-foreground">
             Welcome back, {user.user_metadata.full_name || user.email}
           </h1>
-          <FeedbackDialog />
+          <div className="flex items-center gap-4">
+            <FeedbackDialog />
+          </div>
         </div>
 
         {showOnboarding && (
@@ -86,7 +87,7 @@ export default function Dashboard() {
           }}
         />
 
-        <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <section className="bg-card text-card-foreground rounded-lg shadow-sm">
           <DashboardTabs refresh={refreshFiles} />
         </section>
         <FeedbackReminder />

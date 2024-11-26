@@ -77,7 +77,7 @@ export default function ContentDetails({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[300px] p-3">
                   <div className="space-y-2">
@@ -107,7 +107,7 @@ export default function ContentDetails({
         </div>
       </CardHeader>
 
-      <Card className={`border-2 ${isMaximumExceeded ? 'border-red-200' : ''}`}>
+      <Card className={`border-2 ${isMaximumExceeded ? 'border-destructive' : ''}`}>
         <CardContent className="pt-4">
           <div className="space-y-4">
             <div className="relative">
@@ -119,8 +119,8 @@ export default function ContentDetails({
               />
               <div 
                 className={`absolute bottom-3 right-3 text-sm flex items-center gap-2 
-                  ${isMaximumExceeded ? 'text-red-600' : 
-                    isMinimumMet ? 'text-green-600' : 'text-amber-600'}`}
+                  ${isMaximumExceeded ? 'text-destructive' : 
+                    isMinimumMet ? 'text-success' : 'text-warning'}`}
               >
                 {!isMinimumMet && <AlertCircle className="h-4 w-4" />}
                 {isMaximumExceeded && <AlertCircle className="h-4 w-4" />}
@@ -146,7 +146,7 @@ export default function ContentDetails({
                 )}
               </Button>
               <Button
-                className="flex-1 h-9 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                className="flex-1 h-9 bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
                 onClick={onWriteForMe}
                 disabled={isLoading}
               >

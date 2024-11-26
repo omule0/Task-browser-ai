@@ -25,7 +25,7 @@ function FilePreviewSkeleton() {
       </CardHeader>
       <CardContent className="space-y-4">
         {[1, 2].map((i) => (
-          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div key={i} className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="flex items-center space-x-3">
               <Skeleton className="w-10 h-10 rounded" />
               <div>
@@ -220,8 +220,8 @@ export function FilePreview({ refresh }) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No workspace selected</h3>
+          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No workspace selected</h3>
           <p className="text-muted-foreground">Please select or create a workspace to view files</p>
         </CardContent>
       </Card>
@@ -236,8 +236,8 @@ export function FilePreview({ refresh }) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No files uploaded</h3>
+          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No files uploaded</h3>
           <p className="text-muted-foreground mb-4">Your uploaded files will appear here</p>
           <Link href="/files">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white">
@@ -270,10 +270,10 @@ export function FilePreview({ refresh }) {
         {files.slice(0, 2).map((file) => (
           <div
             key={file.name}
-            className="group flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all"
+            className="group flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-all"
           >
             <div className="flex items-center space-x-3 min-w-0">
-              <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-white border p-2">
+              <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-background border p-2">
                 <FileIcon
                   {...getFileIconProps(file.originalName)}
                   {...defaultStyles}
@@ -283,7 +283,7 @@ export function FilePreview({ refresh }) {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <h3 className="font-medium text-sm text-gray-900 truncate max-w-[200px] sm:max-w-[300px]">
+                      <h3 className="font-medium text-sm text-foreground truncate max-w-[200px] sm:max-w-[300px]">
                         {file.originalName}
                       </h3>
                     </TooltipTrigger>
@@ -292,7 +292,7 @@ export function FilePreview({ refresh }) {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{bytesToSize(file.metadata?.size || 0)}</span>
                   <span>•</span>
                   <span>{formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}</span>
@@ -342,8 +342,8 @@ export function FilePreview({ refresh }) {
         
         {files.length > 2 && (
           <Link href="/files">
-            <div className="text-center p-3 border border-dashed border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group">
-              <p className="text-sm text-muted-foreground group-hover:text-purple-600">
+            <div className="text-center p-3 border border-dashed border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group">
+              <p className="text-sm text-muted-foreground group-hover:text-primary">
                 +{files.length - 2} more files
               </p>
             </div>

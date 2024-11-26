@@ -328,7 +328,7 @@ export default function CreateDocument() {
 
         {currentStep === 2 && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-card rounded-lg shadow p-6">
               <SelectFiles
                 isLoadingFiles={isLoadingFiles}
                 files={files}
@@ -344,7 +344,6 @@ export default function CreateDocument() {
                 Previous
               </Button>
               <Button
-                className="bg-purple-600 hover:bg-purple-700 text-white"
                 onClick={() => setCurrentStep(3)}
                 disabled={selectedFiles.length === 0}
               >
@@ -387,8 +386,8 @@ export default function CreateDocument() {
           <div className="space-y-8">
             {/* Token limit warnings */}
             {isTokenLimitExceeded(tokenStats) && (
-              <Card className="p-4 border-red-200 bg-red-50">
-                <div className="flex gap-2 text-red-600">
+              <Card className="p-4 border-destructive/50 bg-destructive/10">
+                <div className="flex gap-2 text-destructive">
                   <AlertCircle className="h-5 w-5" />
                   <div className="space-y-1">
                     <p className="font-medium">Token Limit Exceeded</p>
@@ -401,8 +400,8 @@ export default function CreateDocument() {
             )}
 
             {!isTokenLimitExceeded(tokenStats) && isApproachingTokenLimit(tokenStats) && (
-              <Card className="p-4 border-yellow-200 bg-yellow-50">
-                <div className="flex gap-2 text-yellow-600">
+              <Card className="p-4 border-warning/50 bg-warning/10">
+                <div className="flex gap-2 text-warning">
                   <AlertCircle className="h-5 w-5" />
                   <div className="space-y-1">
                     <p className="font-medium">Insufficient Tokens</p>
@@ -419,12 +418,12 @@ export default function CreateDocument() {
             <Card className="p-6">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-2xl font-bold">
+                  <h1 className="text-2xl font-bold text-foreground">
                     {isGenerating ? (
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-purple-600 animate-pulse" />
+                        <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                         Generating your{' '}
-                        <span className="text-purple-600">{selectedSubType || selectedType}</span>
+                        <span className="text-primary">{selectedSubType || selectedType}</span>
                       </span>
                     ) : (
                       'Review Details'
@@ -432,7 +431,6 @@ export default function CreateDocument() {
                   </h1>
                   {!isGenerating && (
                     <Button
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
                       onClick={generateReport}
                       disabled={
                         isGenerating || 
@@ -452,22 +450,22 @@ export default function CreateDocument() {
                 <div className="grid gap-6 md:grid-cols-3">
                   {/* Document Type */}
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
-                    <Card className="p-4 bg-purple-50 border-purple-100">
-                      <p className="font-medium text-purple-900">{selectedSubType || selectedType}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground">Document Type</h3>
+                    <Card className="p-4 bg-primary/10 border-primary/20">
+                      <p className="font-medium text-primary">{selectedSubType || selectedType}</p>
                     </Card>
                   </div>
 
                   {/* Selected Files */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-medium text-gray-500">
+                      <h3 className="text-sm font-medium text-muted-foreground">
                         Selected Files ({selectedFiles.length})
                       </h3>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                          <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent className="max-w-[300px] p-3">
                             <p className="text-sm">
@@ -478,6 +476,7 @@ export default function CreateDocument() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                     
                     </div>
                     <Card className="p-4 max-h-[120px] overflow-y-auto">
                       <div className="space-y-2">
@@ -485,8 +484,8 @@ export default function CreateDocument() {
                           const originalName = file.split("/").pop().split("-").slice(2).join("-");
                           return (
                             <div key={index} className="flex items-center gap-2 text-sm">
-                              <FileText className="h-4 w-4 text-gray-400" />
-                              <span className="truncate">{originalName}</span>
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="truncate text-foreground">{originalName}</span>
                             </div>
                           );
                         })}
@@ -571,9 +570,9 @@ export default function CreateDocument() {
                     ].map((step, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className={`h-2 w-2 rounded-full ${
-                          step.progress ? 'bg-green-500' : 'bg-gray-300'
+                          step.progress ? 'bg-green-500' : 'bg-muted'
                         }`} />
-                        <span className="text-sm">{step.label}</span>
+                        <span className="text-sm text-foreground">{step.label}</span>
                       </div>
                     ))}
                   </div>

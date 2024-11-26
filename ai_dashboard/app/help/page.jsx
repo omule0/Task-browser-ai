@@ -157,7 +157,7 @@ export default function HelpPage() {
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Help Center</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Help Center</h1>
           <p className="text-muted-foreground">
             Find answers to common questions and learn how to use Digest.ai
           </p>
@@ -165,7 +165,7 @@ export default function HelpPage() {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search help articles..."
             value={searchQuery}
@@ -176,39 +176,35 @@ export default function HelpPage() {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-purple-100">
-                <Mail className="h-5 w-5 text-purple-600" />
+          {[
+            {
+              icon: <Mail className="h-5 w-5" />,
+              title: "Contact Support",
+              description: "Get help from our team"
+            },
+            {
+              icon: <FileText className="h-5 w-5" />,
+              title: "Documentation",
+              description: "Read our guides"
+            },
+            {
+              icon: <Users className="h-5 w-5" />,
+              title: "Community",
+              description: "Join our community"
+            }
+          ].map((item, index) => (
+            <Card key={index} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <div className="text-primary">{item.icon}</div>
+                </div>
+                <div>
+                  <h3 className="font-medium text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium">Contact Support</h3>
-                <p className="text-sm text-muted-foreground">Get help from our team</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-purple-100">
-                <FileText className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-medium">Documentation</h3>
-                <p className="text-sm text-muted-foreground">Read our guides</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-purple-100">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-medium">Community</h3>
-                <p className="text-sm text-muted-foreground">Join our community</p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Help Topics */}
@@ -216,16 +212,18 @@ export default function HelpPage() {
           {filteredTopics.map((category, index) => (
             <Card key={index} className="p-6">
               <div className="flex items-center gap-2 mb-4">
-                {category.icon}
-                <h2 className="text-xl font-semibold">{category.category}</h2>
+                <div className="text-muted-foreground">{category.icon}</div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {category.category}
+                </h2>
               </div>
               <Accordion type="single" collapsible className="w-full">
                 {category.items.map((item, itemIndex) => (
                   <AccordionItem key={itemIndex} value={`item-${index}-${itemIndex}`}>
-                    <AccordionTrigger className="text-left">
+                    <AccordionTrigger className="text-left text-foreground">
                       {item.title}
                     </AccordionTrigger>
-                    <AccordionContent className="whitespace-pre-line">
+                    <AccordionContent className="whitespace-pre-line text-muted-foreground">
                       {item.content}
                     </AccordionContent>
                   </AccordionItem>

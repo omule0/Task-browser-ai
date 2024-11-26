@@ -13,7 +13,6 @@ import BusinessPlan from "./business-plan";
 import EquityInvestmentAnalyst from "./equity-investment-analyst";
 import CreditInvestmentAnalyst from "./credit-investment-analyst";
 
-
 export default function DocumentView() {
   const params = useParams();
   const [report, setReport] = useState(null);
@@ -44,7 +43,7 @@ export default function DocumentView() {
   };
 
   if (loading) return <Loading />;
-  if (!report) return <div>Report not found</div>;
+  if (!report) return <div className="text-foreground">Report not found</div>;
 
   const renderReport = () => {
     switch (report.sub_type) {
@@ -61,13 +60,15 @@ export default function DocumentView() {
       case "Business Plan":
         return <BusinessPlan report={report.report_data} />;
       default:
-        return <div className="max-w-6xl mx-auto px-6">This report type is not yet supported.</div>;
+        return <div className="max-w-6xl mx-auto px-6 text-foreground">
+          This report type is not yet supported.
+        </div>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-background">
+      <div className="bg-card border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -77,8 +78,10 @@ export default function DocumentView() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-semibold">{report.sub_type}</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-xl font-semibold text-foreground">
+                  {report.sub_type}
+                </h1>
+                <p className="text-sm text-muted-foreground">
                   Created on {new Date(report.created_at).toLocaleDateString()}
                 </p>
               </div>

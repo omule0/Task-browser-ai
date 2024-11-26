@@ -33,42 +33,42 @@ export function HeaderTokenUsage() {
   const isNearLimit = mounted && percentage > 90;
   const isAtLimit = mounted && percentage >= 100;
 
-  // Base styles that will be consistent between server and client
+  // Update the color logic
+  const iconColorClass = mounted ? (
+    isAtLimit ? 'text-destructive' : 
+    isNearLimit ? 'text-warning' : 
+    'text-muted-foreground'
+  ) : 'text-muted-foreground';
+
+  const textColorClass = mounted ? (
+    isAtLimit ? 'text-destructive' : 
+    isNearLimit ? 'text-warning' : 
+    'text-muted-foreground'
+  ) : 'text-muted-foreground';
+
   const progressBaseClass = "h-2";
   const progressStateClass = mounted ? (
-    isAtLimit ? 'bg-red-100' : 
-    isNearLimit ? 'bg-yellow-100' : ''
+    isAtLimit ? 'bg-destructive/20' : 
+    isNearLimit ? 'bg-warning/20' : ''
   ) : '';
 
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <div className="flex items-center gap-2 cursor-pointer">
-          <Coins className={`h-5 w-5 ${
-            mounted ? (
-              isAtLimit ? 'text-red-500' : 
-              isNearLimit ? 'text-yellow-500' : 
-              'text-muted-foreground'
-            ) : 'text-muted-foreground'
-          }`} />
-          <span className={`text-sm ${
-            mounted ? (
-              isAtLimit ? 'text-red-500' : 
-              isNearLimit ? 'text-yellow-500' : 
-              'text-muted-foreground'
-            ) : 'text-muted-foreground'
-          }`}>
+          <Coins className={`h-5 w-5 ${iconColorClass}`} />
+          <span className={`text-sm ${textColorClass}`}>
             {mounted ? `${(tokenStats.totalTokensUsed / 1000).toFixed(1)}k` : '0.0k'}
           </span>
         </div>
       </HoverCardTrigger>
       <HoverCardContent className="w-80">
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold">Token Usage</h4>
+          <h4 className="text-sm font-semibold text-foreground">Token Usage</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Total Tokens Used</span>
-              <span className={mounted && isAtLimit ? 'text-red-500' : 'text-muted-foreground'}>
+              <span className="text-foreground">Total Tokens Used</span>
+              <span className={mounted && isAtLimit ? 'text-destructive' : 'text-muted-foreground'}>
                 {mounted ? (
                   `${tokenStats.totalTokensUsed.toLocaleString()}/${TOKEN_LIMIT.toLocaleString()}`
                 ) : '0/10,000'}
@@ -80,7 +80,7 @@ export function HeaderTokenUsage() {
               aria-label="Token usage progress"
             />
             {mounted && isAtLimit && (
-              <p className="text-sm text-red-500 mt-2">
+              <p className="text-sm text-destructive mt-2">
                 Token limit reached. Contact support to increase your limit.
               </p>
             )}

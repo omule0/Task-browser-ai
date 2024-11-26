@@ -5,7 +5,6 @@ import { FilePreview } from "./FilePreview";
 import { ReportPreview } from "./ReportPreview";
 import { FileText, FileOutput, Info } from "lucide-react";
 import { motion } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
@@ -65,7 +64,7 @@ export function DashboardTabs({ refresh }) {
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
             {tabInfo[activeTab].title}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -75,43 +74,28 @@ export function DashboardTabs({ refresh }) {
 
         <TabsList className="grid w-full sm:w-auto grid-cols-2 gap-2 p-1 h-auto bg-muted/50">
           {Object.entries(tabInfo).map(([key, { title, icon, count }]) => (
-            <TooltipProvider key={key}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger
-                    value={key}
-                    className="relative flex items-center justify-center gap-2 px-4 py-2.5 data-[state=active]:bg-white"
+            <TabsTrigger
+              key={key}
+              value={key}
+              className="relative flex items-center justify-center gap-2 px-4 py-2.5 data-[state=active]:bg-background"
+            >
+              {icon}
+              <span className="text-sm font-medium">{title}</span>
+              {count > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                >
+                  <Badge 
+                    variant="secondary" 
+                    className="ml-1 bg-primary/10 text-primary"
                   >
-                    {icon}
-                    <span className="text-sm font-medium">{title}</span>
-                    {count > 0 && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                      >
-                        <Badge 
-                          variant="secondary" 
-                          className="ml-1 bg-purple-100 text-purple-700"
-                        >
-                          {count}
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[250px]">
-                  <div className="space-y-1">
-                    <p className="font-medium">{title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {key === 'files' 
-                        ? "Upload and manage files for AI analysis" 
-                        : "View and access your AI-generated documents"}
-                    </p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    {count}
+                  </Badge>
+                </motion.div>
+              )}
+            </TabsTrigger>
           ))}
         </TabsList>
       </div>

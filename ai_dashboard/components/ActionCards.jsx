@@ -38,24 +38,24 @@ function ActionCard({
 }) {
   const variants = {
     default: {
-      icon: "text-indigo-500 bg-indigo-50",
-      hover: "hover:bg-indigo-50",
-      border: "hover:border-indigo-200",
+      icon: "bg-[hsl(var(--accent-indigo))] text-[hsl(var(--accent-indigo-foreground))]",
+      hover: "hover:bg-[hsl(var(--accent-indigo)/0.2)]",
+      border: "hover:border-[hsl(var(--accent-indigo-foreground)/0.2)]",
     },
     upload: {
-      icon: "text-pink-500 bg-pink-50",
-      hover: "hover:bg-pink-50",
-      border: "hover:border-pink-200",
+      icon: "bg-[hsl(var(--accent-pink))] text-[hsl(var(--accent-pink-foreground))]",
+      hover: "hover:bg-[hsl(var(--accent-pink)/0.2)]",
+      border: "hover:border-[hsl(var(--accent-pink-foreground)/0.2)]",
     },
     visualize: {
-      icon: "text-emerald-500 bg-emerald-50",
-      hover: "hover:bg-emerald-50",
-      border: "hover:border-emerald-200",
+      icon: "bg-[hsl(var(--accent-emerald))] text-[hsl(var(--accent-emerald-foreground))]",
+      hover: "hover:bg-[hsl(var(--accent-emerald)/0.2)]",
+      border: "hover:border-[hsl(var(--accent-emerald-foreground)/0.2)]",
     },
     document: {
-      icon: "text-orange-500 bg-orange-50",
-      hover: "hover:bg-orange-50",
-      border: "hover:border-orange-200",
+      icon: "bg-[hsl(var(--accent-orange))] text-[hsl(var(--accent-orange-foreground))]",
+      hover: "hover:bg-[hsl(var(--accent-orange)/0.2)]",
+      border: "hover:border-[hsl(var(--accent-orange-foreground)/0.2)]",
     },
   };
 
@@ -87,13 +87,13 @@ function ActionCard({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="font-medium text-sm truncate">
+                      <p className="font-medium text-sm text-foreground truncate">
                         {title}
                       </p>
                       {comingSoon && (
                         <Badge 
                           variant="outline" 
-                          className="text-[10px] h-4 px-1 whitespace-nowrap"
+                          className="text-[10px] h-4 px-1 whitespace-nowrap border-border"
                         >
                           Soon
                         </Badge>
@@ -101,7 +101,7 @@ function ActionCard({
                       {beta && (
                         <Badge 
                           variant="secondary" 
-                          className="bg-purple-100 text-purple-700 text-[10px] h-4 px-1"
+                          className="bg-badge-purple text-badge-purple-foreground text-[10px] h-4 px-1"
                         >
                           Beta
                         </Badge>
@@ -118,16 +118,16 @@ function ActionCard({
         </TooltipTrigger>
         <TooltipContent 
           side="bottom" 
-          className="max-w-[300px] p-3"
+          className="max-w-[300px] p-3 text-white"
           sideOffset={5}
         >
           <div className="space-y-2">
             <p className="font-medium text-sm">{title}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-white/80">
               {tooltip}
             </p>
             {disabled && comingSoon && (
-              <p className="text-xs text-purple-600 mt-1.5">
+              <p className="text-xs text-white mt-1.5">
                 This feature is coming soon! Stay tuned for updates.
               </p>
             )}

@@ -6,9 +6,12 @@ export default function DocumentCards({ selectedType, onCardClick, onSubTypeClic
   return (
     <>
       <div className="mb-4 text-center">
-        <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500" />
-        <h1 className="mb-1 text-xl font-bold tracking-tight">What type of document do you need?</h1>
-        <p className="text-xs text-muted-foreground">Select a document type to get started with AI-powered generation.</p>
+        <h1 className="mb-1 text-xl font-bold tracking-tight text-foreground">
+          What type of document do you need?
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Select a document type to get started with AI-powered generation.
+        </p>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2">

@@ -220,7 +220,7 @@ export default function AdminPanel() {
   return (
     <main className="flex-1 p-4 md:p-6 max-w-6xl mx-auto w-full">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
@@ -231,7 +231,7 @@ export default function AdminPanel() {
         </TabsList>
 
         <TabsContent value="users">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="bg-background rounded-lg shadow border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -268,11 +268,11 @@ export default function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="announcements" className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4">Create New Announcement</h2>
+          <div className="bg-background rounded-lg shadow border border-border p-4">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Create New Announcement</h2>
             <form onSubmit={createAnnouncement} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Title</label>
                 <Input
                   value={newAnnouncement.title}
                   onChange={(e) => setNewAnnouncement({
@@ -283,7 +283,7 @@ export default function AdminPanel() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Content</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Content</label>
                 <Textarea
                   value={newAnnouncement.content}
                   onChange={(e) => setNewAnnouncement({
@@ -294,7 +294,7 @@ export default function AdminPanel() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Link (optional)</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Link (optional)</label>
                 <Input
                   value={newAnnouncement.link}
                   onChange={(e) => setNewAnnouncement({
@@ -307,11 +307,11 @@ export default function AdminPanel() {
             </form>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="bg-background rounded-lg shadow border border-border">
             {announcements.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-12 space-y-3">
                 <img src="/megaphone.png" className="h-12 w-12" alt="Megaphone" />
-                <h3 className="font-semibold text-lg">No announcements yet</h3>
+                <h3 className="font-semibold text-lg text-foreground">No announcements yet</h3>
                 <p className="text-sm text-muted-foreground">
                   Create your first announcement using the form above.
                 </p>
@@ -354,14 +354,14 @@ export default function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="feedback">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="bg-background rounded-lg shadow border border-border">
             {isFeedbackLoading ? (
               <div className="flex items-center justify-center p-8">
                 <Loading />
               </div>
             ) : feedbackError ? (
               <div className="flex flex-col items-center justify-center p-8 text-center">
-                <p className="text-red-500 mb-4">{feedbackError}</p>
+                <p className="text-destructive mb-4">{feedbackError}</p>
                 <Button 
                   variant="outline" 
                   onClick={fetchFeedback}
@@ -372,9 +372,9 @@ export default function AdminPanel() {
             ) : feedback.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-12">
                 <div className="rounded-full bg-muted p-3 mb-3">
-                  <MessageSquare className="h-6 w-6" />
+                  <MessageSquare className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-lg">No feedback yet</h3>
+                <h3 className="font-semibold text-lg text-foreground">No feedback yet</h3>
                 <p className="text-sm text-muted-foreground">
                   When users submit feedback, it will appear here.
                 </p>

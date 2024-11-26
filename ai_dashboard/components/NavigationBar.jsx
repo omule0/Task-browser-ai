@@ -57,7 +57,7 @@ export function NavigationBar() {
   if (!isMobile) return null;
 
   return (
-    <div className="bg-background border-b md:hidden">
+    <div className="bg-background border-border border-b md:hidden">
       <div className="flex items-center h-12 px-4">
         <div className="flex items-center gap-2">
           <Sheet>
@@ -67,15 +67,17 @@ export function NavigationBar() {
                 size="icon"
                 className="hover:bg-accent"
               >
-                <ChevronLeftIcon className="h-4 w-4" />
+                <ChevronLeftIcon className="h-4 w-4 text-foreground" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <SheetHeader className="h-12 border-b px-4 flex items-center">
-                <SheetTitle className="text-sm font-medium">{currentPage}</SheetTitle>
+            <SheetContent side="left" className="w-64 p-0 bg-background">
+              <SheetHeader className="h-12 border-b border-border px-4 flex items-center p-4">
+                <SheetTitle className="text-sm font-medium text-foreground">
+                  {currentPage}
+                </SheetTitle>
               </SheetHeader>
 
-              <div className="p-4 border-b">
+              <div className="p-4 border-b border-border">
                 <WorkspaceSwitcher />
               </div>
 
@@ -87,7 +89,7 @@ export function NavigationBar() {
                   >
                     <Button
                       variant={item.isActive ? "secondary" : "ghost"}
-                      className="w-full justify-start gap-2"
+                      className="w-full justify-start gap-2 text-foreground"
                     >
                       {item.icon}
                       <span className="text-sm">{item.label}</span>
@@ -97,7 +99,7 @@ export function NavigationBar() {
               </nav>
             </SheetContent>
           </Sheet>
-          <span className="text-sm font-medium">{currentPage}</span>
+          <span className="text-sm font-medium text-foreground">{currentPage}</span>
         </div>
       </div>
     </div>
