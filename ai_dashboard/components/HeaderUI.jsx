@@ -19,10 +19,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { HeaderTokenUsage } from "@/components/HeaderTokenUsage";
 import { useAnnouncements } from "@/components/AnnouncementsProvider";
 import { createClient } from "@/utils/supabase/client";
@@ -90,10 +90,10 @@ export function HeaderUI({ user, logout }) {
                     </Button>
                   </Link>
                 )}
-                <HoverCard onOpenChange={(open) => {
+                <Popover onOpenChange={(open) => {
                   if (open) markAsRead();
                 }}>
-                  <HoverCardTrigger asChild>
+                  <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
                       <img src="/megaphone.png" className="h-5 w-5 dark:invert" alt="Megaphone" />
                       {unreadCount > 0 && (
@@ -102,8 +102,8 @@ export function HeaderUI({ user, logout }) {
                         </span>
                       )}
                     </Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80">
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
                     <div className="space-y-4">
                       <div className="font-medium text-foreground">Latest Announcements</div>
                       {announcements.length === 0 ? (
@@ -153,8 +153,8 @@ export function HeaderUI({ user, logout }) {
                         </Link>
                       </div>
                     </div>
-                  </HoverCardContent>
-                </HoverCard>
+                  </PopoverContent>
+                </Popover>
                 <Link href="/help">
                   <Button variant="ghost" size="icon">
                     <HelpCircleIcon className="h-8 w-8" />
@@ -163,10 +163,10 @@ export function HeaderUI({ user, logout }) {
                 <ModeToggle />
               </div>
               <div className="hidden md:block">
-                <HoverCard onOpenChange={(open) => {
+                <Popover onOpenChange={(open) => {
                   if (open) markAsRead();
                 }}>
-                  <HoverCardTrigger asChild>
+                  <PopoverTrigger asChild>
                     <Avatar className="cursor-pointer h-8 w-8">
                       {user.user_metadata.avatar_url ? (
                         <AvatarImage src={user.user_metadata.avatar_url} alt="Profile" />
@@ -176,8 +176,8 @@ export function HeaderUI({ user, logout }) {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-64">
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64">
                     <Link href="/profile" className="block mb-2">
                       <div className="font-medium text-foreground">
                         {user.user_metadata.full_name || "Profile"}
@@ -199,8 +199,8 @@ export function HeaderUI({ user, logout }) {
                         <span>Sign out</span>
                       </button>
                     </form>
-                  </HoverCardContent>
-                </HoverCard>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="md:hidden flex items-center gap-2">
