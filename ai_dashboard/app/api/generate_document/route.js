@@ -93,6 +93,7 @@ export async function POST(req) {
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 90000,
       chunkOverlap: 4000,
+      separators: ["\n\n", "\n", ".", " "],
     });
 
     // Split all contents into chunks
@@ -105,7 +106,7 @@ export async function POST(req) {
     // Initialize ChatOpenAI with structured output and callbacks
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
-      temperature: 0,
+      temperature: 0.7,
       callbacks: [{
         handleLLMEnd(output) {
           if (output.llmOutput?.tokenUsage) {

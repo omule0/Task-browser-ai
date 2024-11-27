@@ -83,15 +83,21 @@ export function FeedbackDialog({ onFeedbackSubmitted }) {
               onValueChange={setRating}
               className="flex flex-wrap gap-4 sm:flex-nowrap sm:space-x-4"
             >
-              {[1, 2, 3, 4, 5].map((value) => (
+              {[
+                { value: "1", emoji: "😡", label: "Terrible" },
+                { value: "2", emoji: "😞", label: "Poor" },
+                { value: "3", emoji: "😑", label: "Okay" },
+                { value: "4", emoji: "😃", label: "Good" },
+                { value: "5", emoji: "🤩", label: "Amazing" }
+              ].map(({ value, emoji, label }) => (
                 <div key={value} className="flex items-center space-x-2">
                   <RadioGroupItem 
-                    value={value.toString()} 
+                    value={value} 
                     id={`r${value}`}
-                    className="h-5 w-5" // Slightly larger touch target
+                    className="h-5 w-5"
                   />
-                  <Label htmlFor={`r${value}`} className="text-base">
-                    {value}
+                  <Label htmlFor={`r${value}`} className="text-base flex items-center gap-1">
+                    {emoji} <span className="sr-only">{label}</span>
                   </Label>
                 </div>
               ))}
