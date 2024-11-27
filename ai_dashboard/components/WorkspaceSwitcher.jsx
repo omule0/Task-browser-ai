@@ -10,7 +10,7 @@ import {
 import { Box, ChevronDown, PlusCircle } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
 
-export function WorkspaceSwitcher({ onAction, isCollapsed }) {
+export function WorkspaceSwitcher({ onAction, isCollapsed, isMobileNav }) {
   const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export function WorkspaceSwitcher({ onAction, isCollapsed }) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={!isMobileNav}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
