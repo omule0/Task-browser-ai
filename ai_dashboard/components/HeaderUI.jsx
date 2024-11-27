@@ -27,11 +27,13 @@ import { HeaderTokenUsage } from "@/components/HeaderTokenUsage";
 import { useAnnouncements } from "@/components/AnnouncementsProvider";
 import { createClient } from "@/utils/supabase/client";
 import { ModeToggle } from "@/components/mode-toggle";
+import { usePathname } from "next/navigation";
 
 export function HeaderUI({ user, logout }) {
   const { announcements, unreadCount, markAsRead } = useAnnouncements();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -59,6 +61,8 @@ export function HeaderUI({ user, logout }) {
     await logout(formData);
   };
 
+  const isActive = (path) => pathname === path;
+
   return (
     <header className="border-b bg-background">
       <div className="container flex h-12 items-center justify-between px-4">
@@ -72,10 +76,24 @@ export function HeaderUI({ user, logout }) {
           {user ? (
             <>
               <nav className="hidden md:flex items-center gap-6 mr-4">
-                <Link href="/#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                <Link 
+                  href="/integrations" 
+                  className={`text-sm font-medium transition-colors ${
+                    isActive('/integrations') 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-primary'
+                  }`}
+                >
                   Integrations
                 </Link>
-                <Link href="/#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                <Link 
+                  href="/templates" 
+                  className={`text-sm font-medium transition-colors ${
+                    isActive('/templates') 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-primary'
+                  }`}
+                >
                   Templates
                 </Link>
                 <HeaderTokenUsage />
@@ -84,7 +102,11 @@ export function HeaderUI({ user, logout }) {
               <div className="hidden md:flex items-center gap-2">
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="ghost" size="icon" className="relative">
+                    <Button 
+                      variant={isActive('/admin') ? "secondary" : "ghost"} 
+                      size="icon" 
+                      className={`relative ${isActive('/admin') ? 'bg-accent' : ''}`}
+                    >
                       <Settings className="h-5 w-5" />
                       <span className="sr-only">Admin Panel</span>
                     </Button>
@@ -156,7 +178,11 @@ export function HeaderUI({ user, logout }) {
                   </PopoverContent>
                 </Popover>
                 <Link href="/help">
-                  <Button variant="ghost" size="icon">
+                  <Button 
+                    variant={isActive('/help') ? "secondary" : "ghost"} 
+                    size="icon"
+                    className={isActive('/help') ? 'bg-accent' : ''}
+                  >
                     <HelpCircleIcon className="h-8 w-8" />
                   </Button>
                 </Link>
@@ -216,36 +242,56 @@ export function HeaderUI({ user, logout }) {
                       <SheetTitle>Menu</SheetTitle>
                     </SheetHeader>
                     <nav className="flex flex-col gap-4">
-                      <Link href="/#" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                      <Link 
+                        href="/integrations" 
+                        className={`text-sm font-medium ${isActive('/integrations') ? 'text-primary' : ''}`} 
+                        onClick={() => setIsOpen(false)}
+                      >
                         Integrations
                       </Link>
-                      <Link href="/#" className="text-sm font-medium" onClick={() => setIsOpen(false)}>
+                      <Link 
+                        href="/templates" 
+                        className={`text-sm font-medium ${isActive('/templates') ? 'text-primary' : ''}`} 
+                        onClick={() => setIsOpen(false)}
+                      >
                         Templates
                       </Link>
                     </nav>
                     <Separator className="my-4" />
                     <div className="flex flex-col gap-4">
                       <Link href="/announcements" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="justify-start w-full">
+                        <Button 
+                          variant="ghost" 
+                          className={`justify-start w-full ${isActive('/announcements') ? 'bg-accent' : ''}`}
+                        >
                           <img src="/megaphone.png" className="h-5 w-5 dark:invert" alt="Megaphone" />
                           Announcements
                         </Button>
                       </Link>
                       <Link href="/help" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="justify-start w-full">
+                        <Button 
+                          variant="ghost" 
+                          className={`justify-start w-full ${isActive('/help') ? 'bg-accent' : ''}`}
+                        >
                           <HelpCircleIcon className="mr-2 h-5 w-5" />
                           Help
                         </Button>
                       </Link>
                       <Link href="/workspacesettings" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="justify-start w-full">
+                        <Button 
+                          variant="ghost" 
+                          className={`justify-start w-full ${isActive('/workspacesettings') ? 'bg-accent' : ''}`}
+                        >
                           <SettingsIcon className="mr-2 h-5 w-5" />
                           Workspace Settings
                         </Button>
                       </Link>
                       {isAdmin && (
                         <Link href="/admin" onClick={() => setIsOpen(false)}>
-                          <Button variant="ghost" className="justify-start w-full">
+                          <Button 
+                            variant="ghost" 
+                            className={`justify-start w-full ${isActive('/admin') ? 'bg-accent' : ''}`}
+                          >
                             <Settings className="mr-2 h-4 w-4" />
                             Admin Panel
                           </Button>
