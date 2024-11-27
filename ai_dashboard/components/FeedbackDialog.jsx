@@ -10,7 +10,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 import { customToast } from "@/components/ui/toast-theme";
@@ -78,30 +77,26 @@ export function FeedbackDialog({ onFeedbackSubmitted }) {
         <div className="grid gap-4 py-2 sm:py-4">
           <div className="space-y-2">
             <Label>How would you rate your experience?</Label>
-            <RadioGroup
-              value={rating}
-              onValueChange={setRating}
-              className="flex flex-wrap gap-4 sm:flex-nowrap sm:space-x-4"
-            >
+            <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:space-x-4">
               {[
-                { value: "1", emoji: "😡", label: "Terrible" },
-                { value: "2", emoji: "😞", label: "Poor" },
-                { value: "3", emoji: "😑", label: "Okay" },
-                { value: "4", emoji: "😃", label: "Good" },
-                { value: "5", emoji: "🤩", label: "Amazing" }
-              ].map(({ value, emoji, label }) => (
-                <div key={value} className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value={value} 
-                    id={`r${value}`}
-                    className="h-5 w-5"
-                  />
-                  <Label htmlFor={`r${value}`} className="text-base flex items-center gap-1">
-                    {emoji} <span className="sr-only">{label}</span>
-                  </Label>
-                </div>
+                { value: "1", emoji: "😡" },
+                { value: "2", emoji: "😞" },
+                { value: "3", emoji: "😑" },
+                { value: "4", emoji: "😃" },
+                { value: "5", emoji: "🤩" }
+              ].map(({ value, emoji }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRating(value)}
+                  className={`text-2xl transition-transform hover:scale-125 ${
+                    rating === value ? 'scale-125' : ''
+                  }`}
+                >
+                  {emoji}
+                </button>
               ))}
-            </RadioGroup>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="feedback">Additional feedback (optional)</Label>
