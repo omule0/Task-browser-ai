@@ -17,7 +17,7 @@ import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Copy, ArrowLeft, Save } from "lucide-react";
+import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
 import { createClient } from "@/utils/supabase/client";
@@ -31,6 +31,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ReactMarkdown from 'react-markdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 // Add this before SchemaNode component
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
@@ -214,6 +221,7 @@ export default function SchemaGenerator() {
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat/schema-generator",
@@ -409,7 +417,7 @@ export default function SchemaGenerator() {
         </div>
 
         {/* Flow diagram */}
-        <div className="w-2/3 h-full bg-muted/10">
+        <div className="w-2/3 h-full bg-muted/10 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -427,34 +435,54 @@ export default function SchemaGenerator() {
           >
             <Background color="#ccc" gap={16} />
             <Controls />
-            <Panel position="top-right" className="space-x-2">
-              <Button
-                size="sm"
-                variant={layout === 'TB' ? 'default' : 'outline'}
-                onClick={() => onLayout('TB')}
-              >
-                Vertical Layout
-              </Button>
-              <Button
-                size="sm"
-                variant={layout === 'LR' ? 'default' : 'outline'}
-                onClick={() => onLayout('LR')}
-              >
-                Horizontal Layout
-              </Button>
-              {currentSchema && (
-                <Button
-                  size="sm"
-                  onClick={() => setSaveDialogOpen(true)}
-                  className="ml-4"
-                  disabled={!canSave}
-                  title={!user ? "Please login to save schemas" : ""}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Schema
-                </Button>
-              )}
-            </Panel>
+            
+            {/* Add Floating Action Button */}
+            <div className="fixed bottom-8 right-8 z-50">
+              <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="lg"
+                    className="h-14 w-14 rounded-full shadow-lg"
+                  >
+                    {isMenuOpen ? (
+                      <ChevronUp className="h-6 w-6" />
+                    ) : (
+                      <MoreHorizontal className="h-6 w-6" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => onLayout('LR')}
+                    className="cursor-pointer"
+                  >
+                    <LayoutTemplate className="mr-2 h-4 w-4" />
+                    Vertical Layout
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onLayout('TB')}
+                    className="cursor-pointer"
+                  >
+                    <LayoutTemplate className="mr-2 h-4 w-4 rotate-90" />
+                    Horizontal Layout
+                  </DropdownMenuItem>
+                  
+                  {currentSchema && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setSaveDialogOpen(true)}
+                        className="cursor-pointer"
+                        disabled={!canSave}
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Schema
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </ReactFlow>
         </div>
       </div>
