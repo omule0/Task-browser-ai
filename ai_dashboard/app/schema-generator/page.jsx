@@ -17,9 +17,19 @@ import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Copy, ArrowLeft } from "lucide-react";
+import { MessageCircle, Copy, ArrowLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
+import { createClient } from "@/utils/supabase/client";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Add this before SchemaNode component
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
@@ -183,7 +193,14 @@ export default function SchemaGenerator() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [layout, setLayout] = useState('TB'); // Track current layout direction
+  const [layout, setLayout] = useState('TB');
+  const [currentSchema, setCurrentSchema] = useState(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [schemaName, setSchemaName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat/schema-generator",
   });
@@ -204,6 +221,44 @@ export default function SchemaGenerator() {
     setEdges([...layoutedEdges]);
   }, [nodes, edges]);
 
+  const handleSaveSchema = async () => {
+    if (!currentSchema || !schemaName.trim() || !user) {
+      customToast.error('Please login to save schemas');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+      
+      const { data: savedSchema, error } = await supabase
+        .from('report_schemas')
+        .insert([
+          {
+            name: schemaName.trim(),
+            schema: currentSchema,
+            nodes: nodes,
+            edges: edges,
+            layout: layout,
+            user_id: user.id
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      customToast.success('Schema saved successfully!');
+      setSaveDialogOpen(false);
+      setSchemaName('');
+    } catch (error) {
+      console.error('Error saving schema:', error);
+      customToast.error(error.message || 'Failed to save schema');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Update flow when new message is received
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
@@ -212,8 +267,8 @@ export default function SchemaGenerator() {
         const schemaMatch = lastMessage.content.match(/```json\n([\s\S]*?)\n```/);
         if (schemaMatch) {
           const schema = JSON.parse(schemaMatch[1]);
+          setCurrentSchema(schema); // Store the current schema
           const flow = convertSchemaToFlow(schema);
-          // Apply current layout to new nodes
           const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
             flow.nodes,
             flow.edges,
@@ -227,6 +282,27 @@ export default function SchemaGenerator() {
       }
     }
   }, [messages, setNodes, setEdges, layout]);
+
+  // Update user effect
+  useEffect(() => {
+    const supabase = createClient();
+    
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Disable save button if user is not logged in
+  const canSave = user && currentSchema && !isSaving;
 
   return (
     <ReactFlowProvider>
@@ -307,10 +383,56 @@ export default function SchemaGenerator() {
               >
                 Horizontal Layout
               </Button>
+              {currentSchema && (
+                <Button
+                  size="sm"
+                  onClick={() => setSaveDialogOpen(true)}
+                  className="ml-4"
+                  disabled={!canSave}
+                  title={!user ? "Please login to save schemas" : ""}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Schema
+                </Button>
+              )}
             </Panel>
           </ReactFlow>
         </div>
       </div>
+
+      {/* Save Schema Dialog */}
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Schema</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="schema-name">Schema Name</Label>
+              <Input
+                id="schema-name"
+                value={schemaName}
+                onChange={(e) => setSchemaName(e.target.value)}
+                placeholder="Enter a name for your schema"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSaveDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveSchema}
+              disabled={!schemaName.trim() || isSaving}
+            >
+              {isSaving ? 'Saving...' : 'Save Schema'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ReactFlowProvider>
   );
 } 
