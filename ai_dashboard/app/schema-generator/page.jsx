@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ReactMarkdown from 'react-markdown';
 
 // Add this before SchemaNode component
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
@@ -192,9 +193,12 @@ const convertSchemaToFlow = (schema) => {
 // Add this helper function to process message content
 const processMessageContent = (message) => {
   if (message.role === 'assistant') {
-    // Remove JSON schema block from display
-    const contentWithoutSchema = message.content.replace(/```json\n[\s\S]*?\n```/g, '');
-    return contentWithoutSchema.trim();
+    // Remove JSON schema block from display but keep markdown formatting
+    const contentWithoutSchema = message.content
+      .replace(/```json\n[\s\S]*?\n```/g, '')
+      .replace(/```typescript\n[\s\S]*?\n```/g, '')
+      .trim();
+    return contentWithoutSchema;
   }
   return message.content;
 };
@@ -358,8 +362,30 @@ export default function SchemaGenerator() {
                       `}>
                         {message.role === "user" ? "You" : "AI"}
                       </div>
-                      <div className="flex-1">
-                        {content}
+                      <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
+                        {message.role === "user" ? (
+                          content
+                        ) : (
+                          <ReactMarkdown
+                            components={{
+                              // Customize markdown components
+                              h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-md font-semibold mb-2">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                              li: ({ children }) => <li className="mb-1">{children}</li>,
+                              p: ({ children }) => <p className="mb-2">{children}</p>,
+                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              code: ({ children }) => (
+                                <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>
+                              ),
+                            }}
+                          >
+                            {content}
+                          </ReactMarkdown>
+                        )}
                       </div>
                     </div>
                   </Card>

@@ -25,7 +25,7 @@ export async function POST(req) {
     - Set additionalProperties to false for strict object validation
     
     Example format:
-    Here's a JSON schema for your report...
+    Here's a schema for your report...
     
     \`\`\`json
     {
