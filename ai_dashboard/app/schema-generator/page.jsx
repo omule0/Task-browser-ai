@@ -224,7 +224,7 @@ export default function SchemaGenerator() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [layout, setLayout] = useState('TB');
+  const [layout, setLayout] = useState('LR');
   const [currentSchema, setCurrentSchema] = useState(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [schemaName, setSchemaName] = useState('');
@@ -403,22 +403,6 @@ export default function SchemaGenerator() {
 
         {/* Flow diagram */}
         <div className="w-2/3 h-full bg-muted/10 relative">
-          {currentSchema && (
-            <Card className="absolute top-4 left-4 right-4 p-4 bg-primary/10 border-primary/20">
-              <div className="flex gap-3">
-                <Info className="h-5 w-5 text-primary mt-0.5" />
-                <div className="space-y-1">
-                  <h3 className="font-medium text-foreground">Schema Visualization</h3>
-                  <p className="text-sm text-muted-foreground">
-                    This is a visual representation of your report structure. You can:
-                    <span className="block mt-1">• Change layout using the floating menu</span>
-                    <span className="block">• Save the schema when you're satisfied</span>
-                    <span className="block">• Use it to generate reports later</span>
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
