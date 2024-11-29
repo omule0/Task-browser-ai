@@ -39,15 +39,15 @@ export default function GenerateReport() {
 
         if (!data || data.length === 0) {
           setIsRedirecting(true);
-          customToast.info("Please create a schema first");
+          customToast.info("Please create a Template first");
           setTimeout(() => {
             router.push('/schema-generator');
           }, 1500);
           return;
         }
       } catch (error) {
-        console.error('Error loading schemas:', error);
-        customToast.error('Failed to load schemas');
+        console.error('Error loading templates:', error);
+        customToast.error('Failed to load templates');
       } finally {
         setIsLoadingSchemas(false);
       }
@@ -111,7 +111,7 @@ export default function GenerateReport() {
 
   const handleGenerate = async () => {
     if (!selectedSchema || selectedFiles.length === 0) {
-      customToast.error('Please select a schema and at least one file');
+      customToast.error('Please select a Template and at least one file');
       return;
     }
 
@@ -169,10 +169,10 @@ export default function GenerateReport() {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <Loading />
         <p className="mt-4 text-muted-foreground animate-pulse">
-          Redirecting to Schema Generator...
+          Redirecting to Template Generator...
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          You need to create a schema before generating a report
+          You need to create a Template before generating a report
         </p>
       </div>
     );
@@ -193,7 +193,7 @@ export default function GenerateReport() {
           </Button>
           <h1 className="text-2xl font-bold">Generate Report</h1>
           <p className="text-muted-foreground">
-            Select a schema and files to generate a new report
+            Select a Template and files to generate a new report
           </p>
         </div>
         
@@ -203,7 +203,7 @@ export default function GenerateReport() {
           variant="outline"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Create New Schema
+          Create New Template
         </Button>
       </div>
 
@@ -213,7 +213,7 @@ export default function GenerateReport() {
           {/* Schema Selection */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Select Schema</h2>
+              <h2 className="text-lg font-semibold">Select Template</h2>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
@@ -221,8 +221,8 @@ export default function GenerateReport() {
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[300px] p-3">
                     <p className="text-sm">
-                      Choose a schema that defines the structure of your report. 
-                      Each schema determines how your report will be organized and what information it will contain.
+                      Choose a template that defines the structure of your report. 
+                      Each template determines how your report will be organized and what information it will contain.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -276,7 +276,7 @@ export default function GenerateReport() {
                   <TooltipContent className="max-w-[300px] p-3">
                     <p className="text-sm">
                       Select files that contain the information you want to include in your report. 
-                      The AI will analyze these files to generate content following your chosen schema structure.
+                      The AI will analyze these files to generate content following your chosen template structure.
                     </p>
                   </TooltipContent>
                 </Tooltip>

@@ -282,14 +282,14 @@ export default function SchemaGenerator() {
 
       if (error) throw error;
 
-      customToast.success('Schema saved successfully!');
+      customToast.success('Template saved successfully!');
       setSaveDialogOpen(false);
       setSchemaName('');
       setSaveSuccess(true);
       setShowSuccessDialog(true);
     } catch (error) {
-      console.error('Error saving schema:', error);
-      customToast.error(error.message || 'Failed to save schema');
+      console.error('Error saving Template:', error);
+      customToast.error(error.message || 'Failed to save template');
     } finally {
       setIsSaving(false);
     }
@@ -314,7 +314,7 @@ export default function SchemaGenerator() {
           setEdges(layoutedEdges);
         }
       } catch (error) {
-        console.error('Failed to parse schema:', error);
+        console.error('Failed to parse template:', error);
       }
     }
   }, [messages, setNodes, setEdges, layout]);
@@ -356,8 +356,8 @@ export default function SchemaGenerator() {
             )}
           </div>
           
-          <h1 className="text-xl font-bold mb-2">Schema Generator</h1>
-          <p className="text-muted-foreground text-sm mb-2">Describe the report you want to generate and see it visualized as a schema.</p>
+          <h1 className="text-xl font-bold mb-2">Template Generator</h1>
+          <p className="text-muted-foreground text-sm mb-2">Describe the report you want to generate and see it visualized as a template.</p>
 
           <div className="space-y-4">
             <div className="h-[50vh] overflow-y-auto">
@@ -395,7 +395,7 @@ export default function SchemaGenerator() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <Textarea value={input} onChange={handleInputChange} placeholder="Describe your report requirements..." className="min-h-[100px]" />
               <Button type="submit" disabled={isLoading}>
-                <MessageCircle className="w-4 h-4 mr-2" />{isLoading ? "Generating..." : "Generate Schema"}
+                <MessageCircle className="w-4 h-4 mr-2" />{isLoading ? "Generating..." : "Generate Template"}
               </Button>
             </form>
           </div>
@@ -461,7 +461,7 @@ export default function SchemaGenerator() {
                         disabled={!canSave}
                       >
                         <Save className="mr-2 h-4 w-4" />
-                        Save Schema
+                        Save Template
                       </DropdownMenuItem>
                     </>
                   )}
@@ -482,16 +482,16 @@ export default function SchemaGenerator() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save Schema</DialogTitle>
+            <DialogTitle>Save Template</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="schema-name">Schema Name</Label>
+              <Label htmlFor="schema-name">Template Name</Label>
               <Input
                 id="schema-name"
                 value={schemaName}
                 onChange={(e) => setSchemaName(e.target.value)}
-                placeholder="Enter a name for your schema"
+                placeholder="Enter a name for your template"
               />
             </div>
           </div>
@@ -506,7 +506,7 @@ export default function SchemaGenerator() {
               onClick={handleSaveSchema}
               disabled={!schemaName.trim() || isSaving}
             >
-              {isSaving ? 'Saving...' : 'Save Schema'}
+              {isSaving ? 'Saving...' : 'Save Template'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -516,9 +516,9 @@ export default function SchemaGenerator() {
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Schema Saved Successfully!</AlertDialogTitle>
+            <AlertDialogTitle>Template Saved Successfully!</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to generate a report using this schema now?
+              Would you like to generate a report using this template now?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

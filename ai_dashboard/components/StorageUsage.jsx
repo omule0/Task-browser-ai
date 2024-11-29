@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export function StorageUsage({ refresh }) {
