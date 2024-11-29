@@ -9,8 +9,10 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge,
-  ReactFlowProvider
+  ReactFlowProvider,
+  Panel
 } from 'reactflow';
+import dagre from '@dagrejs/dagre';
 import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,19 +21,78 @@ import { MessageCircle, Copy, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
 
+// Add this before SchemaNode component
+const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir: direction });
+
+  // Set node dimensions
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { 
+      width: 250, 
+      height: node.data.type === 'object' ? 120 : 80 
+    });
+  });
+
+  // Add edges to dagre
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Let dagre do its magic
+  dagre.layout(dagreGraph);
+
+  // Get new nodes with updated positions
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - (250 / 2),
+        y: nodeWithPosition.y - (node.data.type === 'object' ? 60 : 40),
+      },
+      // Update source/target positions based on direction
+      targetPosition: direction === 'TB' ? Position.Top : Position.Left,
+      sourcePosition: direction === 'TB' ? Position.Bottom : Position.Right,
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
 // Custom node component for schema properties
 const SchemaNode = memo(({ data }) => {
+  const nodeClasses = {
+    root: "px-4 py-3 shadow-lg rounded-lg border-2",
+    section: "px-4 py-2 shadow-md rounded-md border",
+    property: "px-3 py-2 shadow-sm rounded-md border"
+  };
+
+  const getBgColor = () => {
+    switch (data.nodeType) {
+      case 'root':
+        return 'bg-primary/10 border-primary';
+      case 'section':
+        return 'bg-card border-border';
+      default:
+        return 'bg-background border-muted';
+    }
+  };
+
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400">
+    <div className={`${nodeClasses[data.nodeType || 'property']} ${getBgColor()}`}>
       <Handle type="target" position={Position.Top} />
       <div className="flex flex-col">
         <div className="font-bold">{data.label}</div>
         {data.description && (
-          <div className="text-gray-500 text-sm">{data.description}</div>
+          <div className="text-muted-foreground text-sm">{data.description}</div>
         )}
         {data.type && (
-          <div className="text-xs font-mono bg-gray-100 px-2 py-1 mt-2 rounded">
+          <div className="text-xs font-mono bg-muted px-2 py-1 mt-2 rounded">
             {data.type}
+            {data.required && <span className="text-red-500 ml-1">*</span>}
           </div>
         )}
       </div>
@@ -46,46 +107,72 @@ const nodeTypes = {
   schema: SchemaNode
 };
 
-// Convert JSON schema to nodes and edges
+// Convert JSON schema to nodes and edges with improved layout
 const convertSchemaToFlow = (schema) => {
   const nodes = [];
   const edges = [];
-  let yOffset = 0;
 
-  const processProperty = (name, property, parentId = null) => {
+  const processProperty = (name, property, parentId = null, level = 0) => {
     const id = `${name}-${Math.random()}`;
-    
+    const isRoot = level === 0;
+
+    // Handle different types of properties
+    const processPropertyType = () => {
+      if (property.type === 'object' && property.properties) {
+        return 'object';
+      } else if (property.type === 'array' && property.items) {
+        if (property.items.type === 'object') {
+          return 'array[object]';
+        }
+        return `array[${property.items.type}]`;
+      }
+      return property.type;
+    };
+
+    // Add node for current property
     nodes.push({
       id,
       type: 'schema',
-      position: { x: 0, y: yOffset },
+      position: { x: 0, y: 0 }, // Position will be set by dagre
       data: {
         label: name,
         description: property.description,
-        type: property.type
+        type: processPropertyType(),
+        required: schema.required?.includes(name),
+        nodeType: isRoot ? 'root' : property.type === 'object' ? 'section' : 'property'
       }
     });
 
-    yOffset += 100;
-
+    // Connect to parent if exists
     if (parentId) {
       edges.push({
         id: `${parentId}-${id}`,
         source: parentId,
-        target: id
+        target: id,
+        type: 'smoothstep',
+        animated: property.type === 'object'
       });
     }
 
-    if (property.properties) {
+    // Process nested properties
+    if (property.type === 'object' && property.properties) {
       Object.entries(property.properties).forEach(([childName, childProp]) => {
-        processProperty(childName, childProp, id);
+        processProperty(childName, childProp, id, level + 1);
+      });
+    }
+
+    // Process array items if they're objects with properties
+    if (property.type === 'array' && property.items?.type === 'object' && property.items.properties) {
+      Object.entries(property.items.properties).forEach(([childName, childProp]) => {
+        processProperty(`${name}[].${childName}`, childProp, id, level + 1);
       });
     }
   };
 
+  // Process all root properties
   if (schema.properties) {
     Object.entries(schema.properties).forEach(([name, property]) => {
-      processProperty(name, property);
+      processProperty(name, property, null, 0);
     });
   }
 
@@ -96,6 +183,7 @@ export default function SchemaGenerator() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [layout, setLayout] = useState('TB'); // Track current layout direction
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat/schema-generator",
   });
@@ -104,24 +192,41 @@ export default function SchemaGenerator() {
     setEdges((eds) => addEdge(params, eds)), [setEdges]
   );
 
+  // Add layout handler
+  const onLayout = useCallback((direction) => {
+    setLayout(direction);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      nodes,
+      edges,
+      direction
+    );
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
+  }, [nodes, edges]);
+
   // Update flow when new message is received
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.role === 'assistant') {
       try {
-        // Extract JSON schema from markdown code block
         const schemaMatch = lastMessage.content.match(/```json\n([\s\S]*?)\n```/);
         if (schemaMatch) {
           const schema = JSON.parse(schemaMatch[1]);
           const flow = convertSchemaToFlow(schema);
-          setNodes(flow.nodes);
-          setEdges(flow.edges);
+          // Apply current layout to new nodes
+          const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+            flow.nodes,
+            flow.edges,
+            layout
+          );
+          setNodes(layoutedNodes);
+          setEdges(layoutedEdges);
         }
       } catch (error) {
         console.error('Failed to parse schema:', error);
       }
     }
-  }, [messages, setNodes, setEdges]);
+  }, [messages, setNodes, setEdges, layout]);
 
   return (
     <ReactFlowProvider>
@@ -169,7 +274,7 @@ export default function SchemaGenerator() {
         </div>
 
         {/* Flow diagram */}
-        <div className="w-2/3 h-full">
+        <div className="w-2/3 h-full bg-muted/10">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -178,9 +283,31 @@ export default function SchemaGenerator() {
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             fitView
+            minZoom={0.1}
+            maxZoom={1.5}
+            defaultEdgeOptions={{
+              type: 'smoothstep',
+              style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
+            }}
           >
-            <Background />
+            <Background color="#ccc" gap={16} />
             <Controls />
+            <Panel position="top-right" className="space-x-2">
+              <Button
+                size="sm"
+                variant={layout === 'TB' ? 'default' : 'outline'}
+                onClick={() => onLayout('TB')}
+              >
+                Vertical Layout
+              </Button>
+              <Button
+                size="sm"
+                variant={layout === 'LR' ? 'default' : 'outline'}
+                onClick={() => onLayout('LR')}
+              >
+                Horizontal Layout
+              </Button>
+            </Panel>
           </ReactFlow>
         </div>
       </div>
