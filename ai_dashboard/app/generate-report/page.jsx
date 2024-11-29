@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Plus, Info } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import SelectFiles from "@/app/create-document/components/SelectFiles";
 import { useWorkspace } from "@/context/workspace-context";
 import { Loading } from "@/components/ui/loading";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function GenerateReport() {
   const router = useRouter();
@@ -208,9 +209,39 @@ export default function GenerateReport() {
 
       {!generatedReport ? (
         <>
+          {/* Add Info Card */}
+          <Card className="p-4 bg-primary/10 border-primary/20">
+            <div className="flex gap-3">
+              <Info className="h-5 w-5 text-primary mt-0.5" />
+              <div className="space-y-2">
+                <h3 className="font-medium text-foreground">How to Generate a Report</h3>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>1. Select a saved schema that matches your report needs</p>
+                  <p>2. Choose relevant files to provide context for the report</p>
+                  <p>3. Click Generate to create your report based on the schema and files</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Schema Selection */}
           <section className="space-y-4">
-            <h2 className="text-lg font-semibold">Select Schema</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Select Schema</h2>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[300px] p-3">
+                    <p className="text-sm">
+                      Choose a schema that defines the structure of your report. 
+                      Each schema determines how your report will be organized and what information it will contain.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             {isLoadingSchemas ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
@@ -249,7 +280,22 @@ export default function GenerateReport() {
 
           {/* File Selection */}
           <section className="space-y-4">
-            <h2 className="text-lg font-semibold">Select Files</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Select Files</h2>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[300px] p-3">
+                    <p className="text-sm">
+                      Select files that contain the information you want to include in your report. 
+                      The AI will analyze these files to generate content following your chosen schema structure.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <SelectFiles
               isLoadingFiles={isLoadingFiles}
               files={files}

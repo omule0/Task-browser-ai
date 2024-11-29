@@ -17,7 +17,7 @@ import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp, ArrowRight } from "lucide-react";
+import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp, ArrowRight, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
 import { createClient } from "@/utils/supabase/client";
@@ -346,77 +346,44 @@ export default function SchemaGenerator() {
         {/* Chat sidebar */}
         <div className="w-1/3 p-4 border-r">
           <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+            <Button variant="ghost" onClick={() => router.back()}>
+              <ArrowLeft className="w-4 h-4 mr-2" />Back
             </Button>
             {saveSuccess && (
-              <Button
-                onClick={() => router.push('/generate-report')}
-                className="bg-primary text-primary-foreground"
-              >
-                Generate Report
-                <ArrowRight className="w-4 h-4 ml-2" />
+              <Button onClick={() => router.push('/generate-report')} className="bg-primary text-primary-foreground">
+                Generate Report<ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
           </div>
           
-          <h1 className="text-2xl font-bold mb-4">Schema Generator</h1>
-          <p className="text-muted-foreground mb-4">
-            Describe your report requirements and see them visualized as a schema.
-          </p>
+          <h1 className="text-xl font-bold mb-2">Schema Generator</h1>
+          <p className="text-muted-foreground text-sm mb-2">Describe the report you want to generate and see it visualized as a schema.</p>
 
           <div className="space-y-4">
-            <div className="h-[60vh] overflow-y-auto">
+            <div className="h-[50vh] overflow-y-auto">
               {messages.map((message) => {
                 const content = processMessageContent(message);
-                // Don't render empty messages
                 if (!content) return null;
-                
                 return (
-                  <Card 
-                    key={message.id} 
-                    className={`p-4 mb-4 ${
-                      message.role === "user" 
-                        ? "bg-primary/5" 
-                        : "bg-background"
-                    }`}
-                  >
+                  <Card key={message.id} className={`p-4 mb-4 ${message.role === "user" ? "bg-primary/5" : "bg-background"}`}>
                     <div className="flex items-start gap-2">
-                      <div className={`
-                        text-xs uppercase font-medium px-2 py-1 rounded
-                        ${message.role === "user" 
-                          ? "bg-primary/10 text-primary" 
-                          : "bg-muted text-muted-foreground"}
-                      `}>
+                      <div className={`text-xs uppercase font-medium px-2 py-1 rounded ${message.role === "user" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                         {message.role === "user" ? "You" : "AI"}
                       </div>
                       <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
-                        {message.role === "user" ? (
-                          content
-                        ) : (
-                          <ReactMarkdown
-                            components={{
-                              // Customize markdown components
-                              h1: ({ children }) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
-                              h2: ({ children }) => <h2 className="text-md font-semibold mb-2">{children}</h2>,
-                              h3: ({ children }) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
-                              ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                              li: ({ children }) => <li className="mb-1">{children}</li>,
-                              p: ({ children }) => <p className="mb-2">{children}</p>,
-                              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                              em: ({ children }) => <em className="italic">{children}</em>,
-                              code: ({ children }) => (
-                                <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>
-                              ),
-                            }}
-                          >
-                            {content}
-                          </ReactMarkdown>
+                        {message.role === "user" ? content : (
+                          <ReactMarkdown components={{
+                            h1: ({children}) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
+                            h2: ({children}) => <h2 className="text-md font-semibold mb-2">{children}</h2>,
+                            h3: ({children}) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
+                            ul: ({children}) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                            ol: ({children}) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                            li: ({children}) => <li className="mb-1">{children}</li>,
+                            p: ({children}) => <p className="mb-2">{children}</p>,
+                            strong: ({children}) => <strong className="font-semibold">{children}</strong>,
+                            em: ({children}) => <em className="italic">{children}</em>,
+                            code: ({children}) => <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>,
+                          }}>{content}</ReactMarkdown>
                         )}
                       </div>
                     </div>
@@ -426,15 +393,9 @@ export default function SchemaGenerator() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Textarea
-                value={input}
-                onChange={handleInputChange}
-                placeholder="Describe your report requirements..."
-                className="min-h-[100px]"
-              />
+              <Textarea value={input} onChange={handleInputChange} placeholder="Describe your report requirements..." className="min-h-[100px]" />
               <Button type="submit" disabled={isLoading}>
-                <MessageCircle className="w-4 h-4 mr-2" />
-                {isLoading ? "Generating..." : "Generate Schema"}
+                <MessageCircle className="w-4 h-4 mr-2" />{isLoading ? "Generating..." : "Generate Schema"}
               </Button>
             </form>
           </div>
@@ -442,6 +403,22 @@ export default function SchemaGenerator() {
 
         {/* Flow diagram */}
         <div className="w-2/3 h-full bg-muted/10 relative">
+          {currentSchema && (
+            <Card className="absolute top-4 left-4 right-4 p-4 bg-primary/10 border-primary/20">
+              <div className="flex gap-3">
+                <Info className="h-5 w-5 text-primary mt-0.5" />
+                <div className="space-y-1">
+                  <h3 className="font-medium text-foreground">Schema Visualization</h3>
+                  <p className="text-sm text-muted-foreground">
+                    This is a visual representation of your report structure. You can:
+                    <span className="block mt-1">• Change layout using the floating menu</span>
+                    <span className="block">• Save the schema when you're satisfied</span>
+                    <span className="block">• Use it to generate reports later</span>
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
