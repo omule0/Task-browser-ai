@@ -209,20 +209,6 @@ export default function GenerateReport() {
 
       {!generatedReport ? (
         <>
-          {/* Add Info Card */}
-          <Card className="p-4 bg-primary/10 border-primary/20">
-            <div className="flex gap-3">
-              <Info className="h-5 w-5 text-primary mt-0.5" />
-              <div className="space-y-2">
-                <h3 className="font-medium text-foreground">How to Generate a Report</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>1. Select a saved schema that matches your report needs</p>
-                  <p>2. Choose relevant files to provide context for the report</p>
-                  <p>3. Click Generate to create your report based on the schema and files</p>
-                </div>
-              </div>
-            </div>
-          </Card>
 
           {/* Schema Selection */}
           <section className="space-y-4">
