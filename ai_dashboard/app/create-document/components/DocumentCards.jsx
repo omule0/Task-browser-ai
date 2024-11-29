@@ -1,8 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { documentTypes, subTypes } from "../constants/constants";
+import { useRouter } from "next/navigation";
 
 export default function DocumentCards({ selectedType, onCardClick, onSubTypeClick }) {
+  const router = useRouter();
+
+  const handleCardClick = (doc) => {
+    if (doc.disabled) return;
+    
+    if (doc.isCustom) {
+      router.push('/generate-report');
+    } else {
+      onCardClick(doc.title);
+    }
+  };
+
   return (
     <>
       <div className="mb-4 text-center">
@@ -22,17 +35,19 @@ export default function DocumentCards({ selectedType, onCardClick, onSubTypeClic
               doc.disabled 
                 ? 'opacity-50 cursor-not-allowed' 
                 : 'hover:bg-muted/50 cursor-pointer'
-            } ${selectedType === doc.title ? "bg-muted/50" : ""}`}
-            onClick={() => !doc.disabled && onCardClick(doc.title)}
+            } ${selectedType === doc.title && !doc.isCustom ? "bg-muted/50" : ""}`}
+            onClick={() => handleCardClick(doc)}
           >
             <div className="absolute right-2 top-2">
-              <Checkbox
-                checked={selectedType === doc.title}
-                onCheckedChange={() => !doc.disabled && onCardClick(doc.title)}
-                onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4"
-                disabled={doc.disabled}
-              />
+              {!doc.isCustom && (
+                <Checkbox
+                  checked={selectedType === doc.title}
+                  onCheckedChange={() => !doc.disabled && onCardClick(doc.title)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-4 w-4"
+                  disabled={doc.disabled}
+                />
+              )}
             </div>
             <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
               {doc.icon}

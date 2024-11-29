@@ -17,7 +17,7 @@ import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp } from "lucide-react";
+import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
 import { createClient } from "@/utils/supabase/client";
@@ -222,6 +222,7 @@ export default function SchemaGenerator() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat/schema-generator",
@@ -273,6 +274,7 @@ export default function SchemaGenerator() {
       customToast.success('Schema saved successfully!');
       setSaveDialogOpen(false);
       setSchemaName('');
+      setSaveSuccess(true);
     } catch (error) {
       console.error('Error saving schema:', error);
       customToast.error(error.message || 'Failed to save schema');
@@ -331,14 +333,24 @@ export default function SchemaGenerator() {
       <div className="flex h-screen">
         {/* Chat sidebar */}
         <div className="w-1/3 p-4 border-r">
-          <Button
-            variant="ghost"
-            className="mb-4"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            {saveSuccess && (
+              <Button
+                onClick={() => router.push('/generate-report')}
+                className="bg-primary text-primary-foreground"
+              >
+                Generate Report
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
           
           <h1 className="text-2xl font-bold mb-4">Schema Generator</h1>
           <p className="text-muted-foreground mb-4">
@@ -488,7 +500,13 @@ export default function SchemaGenerator() {
       </div>
 
       {/* Save Schema Dialog */}
-      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+      <Dialog 
+        open={saveDialogOpen} 
+        onOpenChange={(open) => {
+          setSaveDialogOpen(open);
+          if (!open) setSaveSuccess(false);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Schema</DialogTitle>

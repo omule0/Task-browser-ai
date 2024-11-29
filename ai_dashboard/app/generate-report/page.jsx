@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Plus } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import SelectFiles from "@/app/create-document/components/SelectFiles";
 import { useWorkspace } from "@/context/workspace-context";
@@ -33,6 +33,13 @@ export default function GenerateReport() {
 
         if (error) throw error;
         setSchemas(data || []);
+
+        // If no schemas exist, redirect to schema generator
+        if (!data || data.length === 0) {
+          customToast.info("Please create a schema first");
+          router.push('/schema-generator');
+          return;
+        }
       } catch (error) {
         console.error('Error loading schemas:', error);
         customToast.error('Failed to load schemas');
@@ -42,7 +49,7 @@ export default function GenerateReport() {
     };
 
     loadSchemas();
-  }, []);
+  }, [router]);
 
   // Load files when workspace changes
   useEffect(() => {
@@ -168,6 +175,15 @@ export default function GenerateReport() {
             Select a schema and files to generate a new report
           </p>
         </div>
+        
+        {/* Add Create Schema button */}
+        <Button
+          onClick={() => router.push('/schema-generator')}
+          variant="outline"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create New Schema
+        </Button>
       </div>
 
       {!generatedReport ? (
