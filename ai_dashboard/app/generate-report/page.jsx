@@ -11,6 +11,43 @@ import { useWorkspace } from "@/context/workspace-context";
 import { Loading } from "@/components/ui/loading";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+const RecursiveJsonView = ({ data }) => {
+  if (typeof data === 'string') {
+    return <p className="whitespace-pre-wrap">{data}</p>;
+  }
+
+  if (Array.isArray(data)) {
+    return (
+      <div className="space-y-2">
+        {data.map((item, index) => (
+          <div key={index} className="border-l-2 border-primary/30 pl-2">
+            <RecursiveJsonView data={item} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (typeof data === 'object' && data !== null) {
+    return (
+      <div className="space-y-2">
+        {Object.entries(data).map(([key, value]) => (
+          <div key={key} className="border-l border-primary/20 pl-3">
+            <div className="font-medium text-sm text-muted-foreground mb-1">
+              {key.replace(/_/g, ' ')}:
+            </div>
+            <div className="pl-2">
+              <RecursiveJsonView data={value} />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <span>{String(data)}</span>;
+};
+
 export default function GenerateReport() {
   const router = useRouter();
   const { currentWorkspace } = useWorkspace();
@@ -322,9 +359,16 @@ export default function GenerateReport() {
           <Card className="p-6">
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <h2 className="text-xl font-bold mb-4">Generated Report</h2>
-              <pre className="p-4 bg-muted rounded-lg overflow-auto">
-                {JSON.stringify(generatedReport, null, 2)}
-              </pre>
+              <div className="space-y-4">
+                {Object.entries(generatedReport).map(([section, content]) => (
+                  <div key={section} className="border rounded-lg p-4">
+                    <h3 className="text-lg font-semibold capitalize mb-2">
+                      {section.replace(/_/g, ' ')}
+                    </h3>
+                    <RecursiveJsonView data={content} />
+                  </div>
+                ))}
+              </div>
             </div>
           </Card>
         </>
