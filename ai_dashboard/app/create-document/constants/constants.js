@@ -3,7 +3,7 @@ import { FileText, FileIcon, LineChart, BarChart, Settings } from "lucide-react"
 export const documentTypes = [
   { icon: <FileText className="h-6 w-6" />, title: "Report" },
   { 
-    icon: <Settings className="h-6 w-6" />, 
+    icon: <img src="/customize.png" alt="Customize" className="h-6 w-6 dark:invert" />,
     title: "Custom Report",
     description: "Generate a report using your own custom schema",
     isCustom: true 

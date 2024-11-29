@@ -8,6 +8,7 @@ import { ArrowLeft, FileText, Loader2, Plus } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import SelectFiles from "@/app/create-document/components/SelectFiles";
 import { useWorkspace } from "@/context/workspace-context";
+import { Loading } from "@/components/ui/loading";
 
 export default function GenerateReport() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function GenerateReport() {
   const [isLoadingFiles, setIsLoadingFiles] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Load saved schemas
   useEffect(() => {
@@ -34,10 +36,12 @@ export default function GenerateReport() {
         if (error) throw error;
         setSchemas(data || []);
 
-        // If no schemas exist, redirect to schema generator
         if (!data || data.length === 0) {
+          setIsRedirecting(true);
           customToast.info("Please create a schema first");
-          router.push('/schema-generator');
+          setTimeout(() => {
+            router.push('/schema-generator');
+          }, 1500);
           return;
         }
       } catch (error) {
@@ -51,7 +55,7 @@ export default function GenerateReport() {
     loadSchemas();
   }, [router]);
 
-  // Load files when workspace changes
+  // Load files effect
   useEffect(() => {
     const loadFiles = async () => {
       if (!currentWorkspace) return;
@@ -158,6 +162,22 @@ export default function GenerateReport() {
     }
   };
 
+  // Render loading/redirect state
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loading />
+        <p className="mt-4 text-muted-foreground animate-pulse">
+          Redirecting to Schema Generator...
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You need to create a schema before generating a report
+        </p>
+      </div>
+    );
+  }
+
+  // Main render
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
       <div className="flex items-center justify-between">

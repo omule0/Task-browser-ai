@@ -38,6 +38,16 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Add this before SchemaNode component
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
@@ -223,6 +233,7 @@ export default function SchemaGenerator() {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat/schema-generator",
@@ -275,6 +286,7 @@ export default function SchemaGenerator() {
       setSaveDialogOpen(false);
       setSchemaName('');
       setSaveSuccess(true);
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error saving schema:', error);
       customToast.error(error.message || 'Failed to save schema');
@@ -538,6 +550,33 @@ export default function SchemaGenerator() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Success Dialog */}
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Schema Saved Successfully!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to generate a report using this schema now?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowSuccessDialog(false)}>
+              Continue Working
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSuccessDialog(false);
+                router.push('/generate-report');
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Generate Report
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ReactFlowProvider>
   );
 } 
