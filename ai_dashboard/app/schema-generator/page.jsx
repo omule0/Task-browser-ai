@@ -189,6 +189,16 @@ const convertSchemaToFlow = (schema) => {
   return { nodes, edges };
 };
 
+// Add this helper function to process message content
+const processMessageContent = (message) => {
+  if (message.role === 'assistant') {
+    // Remove JSON schema block from display
+    const contentWithoutSchema = message.content.replace(/```json\n[\s\S]*?\n```/g, '');
+    return contentWithoutSchema.trim();
+  }
+  return message.content;
+};
+
 export default function SchemaGenerator() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -325,13 +335,36 @@ export default function SchemaGenerator() {
 
           <div className="space-y-4">
             <div className="h-[60vh] overflow-y-auto">
-              {messages.map((message) => (
-                <Card key={message.id} className="p-4 mb-4">
-                  <div className={message.role === "user" ? "font-medium" : ""}>
-                    {message.content}
-                  </div>
-                </Card>
-              ))}
+              {messages.map((message) => {
+                const content = processMessageContent(message);
+                // Don't render empty messages
+                if (!content) return null;
+                
+                return (
+                  <Card 
+                    key={message.id} 
+                    className={`p-4 mb-4 ${
+                      message.role === "user" 
+                        ? "bg-primary/5" 
+                        : "bg-background"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className={`
+                        text-xs uppercase font-medium px-2 py-1 rounded
+                        ${message.role === "user" 
+                          ? "bg-primary/10 text-primary" 
+                          : "bg-muted text-muted-foreground"}
+                      `}>
+                        {message.role === "user" ? "You" : "AI"}
+                      </div>
+                      <div className="flex-1">
+                        {content}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
