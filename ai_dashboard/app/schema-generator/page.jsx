@@ -370,29 +370,19 @@ export default function SchemaGenerator() {
               </Button>
             </Panel>
 
-            {saveSuccess && (
-              <Panel position="top-right" className="m-4">
-                <Button 
-                  onClick={() => router.push('/generate-report')} 
-                  className="bg-primary text-primary-foreground"
-                >
-                  Generate Report<ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Panel>
-            )}
-            
-            {/* Add Floating Action Button */}
-            <div className="fixed bottom-8 right-8 z-40">
+            {/* Move the action buttons to top-right corner */}
+            <Panel position="top-right" className="m-4 flex gap-2">
+              {/* Layout and Save Actions */}
               <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    size="lg"
-                    className="h-14 w-14 rounded-full shadow-lg"
+                    size="icon"
+                    className="h-10 w-10 rounded-full shadow-lg"
                   >
                     {isMenuOpen ? (
-                      <ChevronUp className="h-6 w-6" />
+                      <ChevronUp className="h-4 w-4" />
                     ) : (
-                      <MoreHorizontal className="h-6 w-6" />
+                      <MoreHorizontal className="h-4 w-4" />
                     )}
                   </Button>
                 </DropdownMenuTrigger>
@@ -427,7 +417,17 @@ export default function SchemaGenerator() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+
+              {/* Generate Report Button */}
+              {saveSuccess && (
+                <Button 
+                  onClick={() => router.push('/generate-report')} 
+                  className="bg-primary text-primary-foreground"
+                >
+                  Generate Report<ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </Panel>
           </ReactFlow>
         </div>
 
