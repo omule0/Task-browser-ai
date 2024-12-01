@@ -37,7 +37,7 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, 
       </span>
       {subItems && !isCollapsed && (
         <ChevronRightIcon
-          className={`ml-auto h-4 w-4 transition-transform ${
+          className={`ml-auto h-4 w-4 transition-transform duration-200 ${
             isSubMenuOpen ? "rotate-90" : ""
           }`}
         />
@@ -49,8 +49,8 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, 
     <Button
       variant={isActive ? "secondary" : "ghost"}
       className={`w-full justify-start hover:bg-accent transition-all ${
-        isActive ? "bg-primary/10 text-primary border-l-4 border-primary" : ""
-      }`}
+        isActive && !subItems ? "bg-primary/10 text-primary border-l-4 border-primary" : ""
+      } ${subItems ? "cursor-pointer" : ""}`}
       asChild={!!href && !subItems}
       onClick={() => subItems && setIsSubMenuOpen(!isSubMenuOpen)}
     >
@@ -77,23 +77,27 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, 
         button
       )}
       
-      {subItems && !isCollapsed && isSubMenuOpen && (
-        <div className="ml-4 mt-1 space-y-1">
-          {subItems.map((item, index) => (
-            <Button
-              key={index}
-              variant={item.isActive ? "secondary" : "ghost"}
-              className={`w-full justify-start pl-8 hover:bg-accent transition-all ${
-                item.isActive ? "bg-primary/10 text-primary" : ""
-              }`}
-              asChild
-            >
-              <Link href={item.href}>
-                {item.icon}
-                <span className="ml-2">{item.label}</span>
-              </Link>
-            </Button>
-          ))}
+      {subItems && !isCollapsed && (
+        <div className={`overflow-hidden transition-all duration-200 ${
+          isSubMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}>
+          <div className="ml-4 mt-1 space-y-1 border-l-[1px] border-border pl-2">
+            {subItems.map((item, index) => (
+              <Button
+                key={index}
+                variant={item.isActive ? "secondary" : "ghost"}
+                className={`w-full justify-start hover:bg-accent/50 transition-all ${
+                  item.isActive ? "bg-primary/5 text-primary" : "text-muted-foreground"
+                } text-sm`}
+                asChild
+              >
+                <Link href={item.href}>
+                  {item.icon}
+                  <span className="ml-2">{item.label}</span>
+                </Link>
+              </Button>
+            ))}
+          </div>
         </div>
       )}
     </div>

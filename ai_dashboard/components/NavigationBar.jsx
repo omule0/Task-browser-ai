@@ -110,16 +110,16 @@ export function NavigationBar() {
                     <WorkspaceSwitcher isMobileNav={true} />
                   </div>
 
-                  <nav className="flex-1 p-4 space-y-1">
+                  <nav className="flex-1 p-4 space-y-2">
                     {navigationItems.map((item, index) => (
                       <div key={index}>
                         {item.subItems ? (
                           <div className="space-y-1">
-                            <div className="flex items-center px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                            <div className="flex items-center px-2 py-2 text-sm font-medium text-foreground bg-accent/50 rounded-md">
                               {item.icon}
                               <span className="ml-2">{item.label}</span>
                             </div>
-                            <div className="ml-4 space-y-1">
+                            <div className="ml-4 space-y-1 border-l-[1px] border-border pl-2">
                               {item.subItems.map((subItem, subIndex) => (
                                 <Link 
                                   key={subIndex} 
@@ -127,7 +127,11 @@ export function NavigationBar() {
                                   legacyBehavior
                                   passHref
                                 >
-                                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                  <NavigationMenuLink className={`
+                                    ${navigationMenuTriggerStyle()} 
+                                    ${subItem.isActive ? 'bg-primary/5 text-primary' : 'text-muted-foreground'}
+                                    justify-start h-9 px-2
+                                  `}>
                                     <div className="flex items-center gap-2">
                                       {subItem.icon}
                                       <span className="text-sm">{subItem.label}</span>
@@ -143,7 +147,11 @@ export function NavigationBar() {
                             legacyBehavior
                             passHref
                           >
-                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                            <NavigationMenuLink className={`
+                              ${navigationMenuTriggerStyle()} 
+                              ${item.isActive ? 'bg-primary/5 text-primary' : ''}
+                              justify-start
+                            `}>
                               <div className="flex items-center gap-2">
                                 {item.icon}
                                 <span className="text-sm">{item.label}</span>
