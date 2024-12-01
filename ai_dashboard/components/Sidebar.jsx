@@ -22,7 +22,9 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }) {
+export function SidebarItem({ icon, label, isActive = false, href, isCollapsed, subItems }) {
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
+  
   const ButtonContent = () => (
     <>
       {icon}
@@ -33,6 +35,13 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
       >
         {label}
       </span>
+      {subItems && !isCollapsed && (
+        <ChevronRightIcon
+          className={`ml-auto h-4 w-4 transition-transform ${
+            isSubMenuOpen ? "rotate-90" : ""
+          }`}
+        />
+      )}
     </>
   );
 
@@ -42,9 +51,10 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
       className={`w-full justify-start hover:bg-accent transition-all ${
         isActive ? "bg-primary/10 text-primary border-l-4 border-primary" : ""
       }`}
-      asChild={!!href}
+      asChild={!!href && !subItems}
+      onClick={() => subItems && setIsSubMenuOpen(!isSubMenuOpen)}
     >
-      {href ? (
+      {href && !subItems ? (
         <Link href={href}>
           <ButtonContent />
         </Link>
@@ -54,17 +64,40 @@ export function SidebarItem({ icon, label, isActive = false, href, isCollapsed }
     </Button>
   );
 
-  // Only wrap with HoverCard if sidebar is collapsed
-  return isCollapsed ? (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        {button}
-      </HoverCardTrigger>
-      <HoverCardContent side="right" align="start" className="w-auto">
-        {label}
-      </HoverCardContent>
-    </HoverCard>
-  ) : button;
+  return (
+    <div>
+      {isCollapsed && !subItems ? (
+        <HoverCard>
+          <HoverCardTrigger asChild>{button}</HoverCardTrigger>
+          <HoverCardContent side="right" align="start" className="w-auto">
+            {label}
+          </HoverCardContent>
+        </HoverCard>
+      ) : (
+        button
+      )}
+      
+      {subItems && !isCollapsed && isSubMenuOpen && (
+        <div className="ml-4 mt-1 space-y-1">
+          {subItems.map((item, index) => (
+            <Button
+              key={index}
+              variant={item.isActive ? "secondary" : "ghost"}
+              className={`w-full justify-start pl-8 hover:bg-accent transition-all ${
+                item.isActive ? "bg-primary/10 text-primary" : ""
+              }`}
+              asChild
+            >
+              <Link href={item.href}>
+                {item.icon}
+                <span className="ml-2">{item.label}</span>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function Sidebar() {
@@ -104,8 +137,29 @@ export function Sidebar() {
     {
       icon: <FileText className="h-4 w-4" />,
       label: "Documents",
-      href: "/documents",
-      isActive: pathname === "/documents",
+      isActive: pathname.startsWith("/documents") || 
+               pathname === "/schema-generator" || 
+               pathname === "/view-schemas",
+      subItems: [
+        {
+          icon: <FileText className="h-4 w-4" />,
+          label: "View Documents",
+          href: "/documents",
+          isActive: pathname === "/documents",
+        },
+        {
+          icon: <LayoutDashboard className="h-4 w-4" />,
+          label: "Template Generator",
+          href: "/schema-generator",
+          isActive: pathname === "/schema-generator",
+        },
+        {
+          icon: <FileIcon className="h-4 w-4" />,
+          label: "View Templates",
+          href: "/view-schemas",
+          isActive: pathname === "/view-schemas",
+        },
+      ],
     },
   ];
 
@@ -154,6 +208,7 @@ export function Sidebar() {
                   isActive={item.isActive}
                   href={item.href}
                   isCollapsed={isCollapsed}
+                  subItems={item.subItems}
                 />
               ))}
             </nav>

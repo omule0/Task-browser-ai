@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon, HomeIcon, FileText, FileIcon, LayoutDashboardIcon, SettingsIcon } from "lucide-react";
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  HomeIcon, 
+  FileText, 
+  FileIcon, 
+  LayoutDashboard, 
+  SettingsIcon 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import {
@@ -43,8 +51,30 @@ export function NavigationBar() {
     {
       label: "Documents",
       href: "/documents",
-      isActive: pathname === "/documents",
+      isActive: pathname.startsWith("/documents") || 
+               pathname === "/schema-generator" || 
+               pathname === "/view-schemas",
       icon: <FileText className="h-4 w-4" />,
+      subItems: [
+        {
+          label: "All Documents",
+          href: "/documents",
+          icon: <FileText className="h-4 w-4" />,
+          isActive: pathname === "/documents",
+        },
+        {
+          label: "Schema Generator",
+          href: "/schema-generator",
+          icon: <LayoutDashboard className="h-4 w-4" />,
+          isActive: pathname === "/schema-generator",
+        },
+        {
+          label: "View Schemas",
+          href: "/view-schemas",
+          icon: <FileIcon className="h-4 w-4" />,
+          isActive: pathname === "/view-schemas",
+        },
+      ],
     },
     {
       label: "Settings",
@@ -82,19 +112,46 @@ export function NavigationBar() {
 
                   <nav className="flex-1 p-4 space-y-1">
                     {navigationItems.map((item, index) => (
-                      <Link 
-                        key={index} 
-                        href={item.href}
-                        legacyBehavior
-                        passHref
-                      >
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                          <div className="flex items-center gap-2">
-                            {item.icon}
-                            <span className="text-sm">{item.label}</span>
+                      <div key={index}>
+                        {item.subItems ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                              {item.icon}
+                              <span className="ml-2">{item.label}</span>
+                            </div>
+                            <div className="ml-4 space-y-1">
+                              {item.subItems.map((subItem, subIndex) => (
+                                <Link 
+                                  key={subIndex} 
+                                  href={subItem.href}
+                                  legacyBehavior
+                                  passHref
+                                >
+                                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                    <div className="flex items-center gap-2">
+                                      {subItem.icon}
+                                      <span className="text-sm">{subItem.label}</span>
+                                    </div>
+                                  </NavigationMenuLink>
+                                </Link>
+                              ))}
+                            </div>
                           </div>
-                        </NavigationMenuLink>
-                      </Link>
+                        ) : (
+                          <Link 
+                            href={item.href}
+                            legacyBehavior
+                            passHref
+                          >
+                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                              <div className="flex items-center gap-2">
+                                {item.icon}
+                                <span className="text-sm">{item.label}</span>
+                              </div>
+                            </NavigationMenuLink>
+                          </Link>
+                        )}
+                      </div>
                     ))}
                   </nav>
                 </NavigationMenuContent>
