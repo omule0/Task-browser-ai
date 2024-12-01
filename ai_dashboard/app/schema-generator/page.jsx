@@ -345,7 +345,7 @@ export default function SchemaGenerator() {
     <ReactFlowProvider>
       <div className="h-screen">
         {/* Flow diagram - now takes full width */}
-        <div className="w-full h-full bg-muted/10 relative">
+        <div className="w-full h-[calc(100vh-100px)] bg-muted/10 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
