@@ -17,7 +17,7 @@ import 'reactflow/dist/style.css';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp, ArrowRight, Info } from "lucide-react";
+import { MessageCircle, Copy, ArrowLeft, Save, MoreHorizontal, LayoutTemplate, ChevronUp, ArrowRight, Info, Minus, X, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { customToast } from "@/components/ui/toast-theme";
 import { createClient } from "@/utils/supabase/client";
@@ -342,67 +342,9 @@ export default function SchemaGenerator() {
 
   return (
     <ReactFlowProvider>
-      <div className="flex h-screen">
-        {/* Chat sidebar */}
-        <div className="w-1/3 p-4 border-r">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" onClick={() => router.back()}>
-              <ArrowLeft className="w-4 h-4 mr-2" />Back
-            </Button>
-            {saveSuccess && (
-              <Button onClick={() => router.push('/generate-report')} className="bg-primary text-primary-foreground">
-                Generate Report<ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
-          </div>
-          
-          <h1 className="text-xl font-bold mb-2">Template Generator</h1>
-          <p className="text-muted-foreground text-sm mb-2">Describe the report you want to generate and see it visualized as a template.</p>
-
-          <div className="space-y-4">
-            <div className="h-[50vh] overflow-y-auto">
-              {messages.map((message) => {
-                const content = processMessageContent(message);
-                if (!content) return null;
-                return (
-                  <Card key={message.id} className={`p-4 mb-4 ${message.role === "user" ? "bg-primary/5" : "bg-background"}`}>
-                    <div className="flex items-start gap-2">
-                      <div className={`text-xs uppercase font-medium px-2 py-1 rounded ${message.role === "user" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                        {message.role === "user" ? "You" : "AI"}
-                      </div>
-                      <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
-                        {message.role === "user" ? content : (
-                          <ReactMarkdown components={{
-                            h1: ({children}) => <h1 className="text-lg font-bold mb-2">{children}</h1>,
-                            h2: ({children}) => <h2 className="text-md font-semibold mb-2">{children}</h2>,
-                            h3: ({children}) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
-                            ul: ({children}) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                            ol: ({children}) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                            li: ({children}) => <li className="mb-1">{children}</li>,
-                            p: ({children}) => <p className="mb-2">{children}</p>,
-                            strong: ({children}) => <strong className="font-semibold">{children}</strong>,
-                            em: ({children}) => <em className="italic">{children}</em>,
-                            code: ({children}) => <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>,
-                          }}>{content}</ReactMarkdown>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Textarea value={input} onChange={handleInputChange} placeholder="Describe your report requirements..." className="min-h-[100px]" />
-              <Button type="submit" disabled={isLoading}>
-                <MessageCircle className="w-4 h-4 mr-2" />{isLoading ? "Generating..." : "Generate Template"}
-              </Button>
-            </form>
-          </div>
-        </div>
-
-        {/* Flow diagram */}
-        <div className="w-2/3 h-full bg-muted/10 relative">
+      <div className="h-screen">
+        {/* Flow diagram - now takes full width */}
+        <div className="w-full h-full bg-muted/10 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -421,8 +363,26 @@ export default function SchemaGenerator() {
             <Background color="#ccc" gap={16} />
             <Controls />
             
+            {/* Back button in top-left corner */}
+            <Panel position="top-left" className="m-4">
+              <Button variant="ghost" onClick={() => router.back()}>
+                <ArrowLeft className="w-4 h-4 mr-2" />Back
+              </Button>
+            </Panel>
+
+            {saveSuccess && (
+              <Panel position="top-right" className="m-4">
+                <Button 
+                  onClick={() => router.push('/generate-report')} 
+                  className="bg-primary text-primary-foreground"
+                >
+                  Generate Report<ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Panel>
+            )}
+            
             {/* Add Floating Action Button */}
-            <div className="fixed bottom-8 right-8 z-50">
+            <div className="fixed bottom-8 right-8 z-40">
               <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -470,16 +430,19 @@ export default function SchemaGenerator() {
             </div>
           </ReactFlow>
         </div>
+
+        {/* Custom Chat Widget */}
+        <CustomChatWidget
+          messages={messages}
+          input={input}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Save Schema Dialog */}
-      <Dialog 
-        open={saveDialogOpen} 
-        onOpenChange={(open) => {
-          setSaveDialogOpen(open);
-          if (!open) setSaveSuccess(false);
-        }}
-      >
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Template</DialogTitle>
@@ -539,5 +502,118 @@ export default function SchemaGenerator() {
         </AlertDialogContent>
       </AlertDialog>
     </ReactFlowProvider>
+  );
+}
+
+// Add this new component for the chat functionality
+function CustomChatWidget({ messages, input, handleInputChange, handleSubmit, isLoading }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
+
+  const toggleChat = () => {
+    if (isMinimized) {
+      setIsMinimized(false);
+    } else {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const minimizeChat = () => {
+    setIsMinimized(true);
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-4">
+      {!isOpen && showWelcomeMessage && (
+        <Card className="w-[300px] p-4 shadow-lg animate-in slide-in-from-bottom-2 duration-300 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-6 w-6 rounded-full"
+            onClick={() => setShowWelcomeMessage(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <p className="text-base pr-6">
+            Describe your report template and I'll help you create it! Start a chat to begin{" "}
+            <span role="img" aria-label="pointing finger">
+              👆
+            </span>
+          </p>
+        </Card>
+      )}
+
+      {isOpen && !isMinimized && (
+        <Card className="w-[380px] h-[600px] shadow-lg animate-in zoom-in-90 duration-300">
+          <div className="relative h-full flex flex-col">
+            {/* Header */}
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="rounded-full"
+                onClick={minimizeChat}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="rounded-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-auto p-4 pt-16">
+              {messages.map((message) => {
+                const content = processMessageContent(message);
+                if (!content) return null;
+                return (
+                  <Card key={message.id} className={`p-4 mb-4 ${message.role === "user" ? "bg-primary/5" : "bg-background"}`}>
+                    <div className="flex items-start gap-2">
+                      <div className={`text-xs uppercase font-medium px-2 py-1 rounded ${message.role === "user" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        {message.role === "user" ? "You" : "AI"}
+                      </div>
+                      <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown>{content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Input form */}
+            <form onSubmit={handleSubmit} className="p-4 border-t">
+              <div className="flex gap-2">
+                <Textarea 
+                  value={input} 
+                  onChange={handleInputChange} 
+                  placeholder="Describe your report requirements..."
+                  className="min-h-[80px]"
+                />
+                <Button type="submit" disabled={isLoading}>
+                  <MessageCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+          </div>
+        </Card>
+      )}
+      
+      {(isMinimized || !isOpen) && (
+        <Button
+          size="icon"
+          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90"
+          onClick={toggleChat}
+        >
+          <MessageSquare className="h-6 w-6" />
+        </Button>
+      )}
+    </div>
   );
 } 
