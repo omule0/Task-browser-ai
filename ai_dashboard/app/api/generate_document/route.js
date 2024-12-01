@@ -106,7 +106,7 @@ export async function POST(req) {
     // Initialize ChatOpenAI with structured output and callbacks
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
-      temperature: 0.7,
+      temperature: 0,
       callbacks: [{
         handleLLMEnd(output) {
           if (output.llmOutput?.tokenUsage) {

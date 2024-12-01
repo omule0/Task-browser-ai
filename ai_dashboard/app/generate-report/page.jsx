@@ -182,7 +182,9 @@ export default function GenerateReport() {
           schema: processedSchema,
           reportData: {
             files: fileContents,
-            workspaceId: currentWorkspace.id
+            workspaceId: currentWorkspace.id,
+            selectedFiles: selectedFiles,
+            schemaName: selectedSchema.name
           }
         }),
       });

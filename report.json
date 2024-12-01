@@ -1,32 +1,137 @@
 {
-  "keyFindings": [
-    {
-      "content": "China-Africa engagement has considerably expanded over the past decade, with close linkages between trade, investment and finance.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+  "template": {
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+      "title",
+      "date",
+      "abstract",
+      "researchMethods",
+      "targetAudience",
+      "findings"
+    ],
+    "properties": {
+      "date": {
+        "type": "string",
+        "format": "date",
+        "description": "The date when the research was conducted."
+      },
+      "title": {
+        "type": "string",
+        "description": "The title of the research report."
+      },
+      "abstract": {
+        "type": "string",
+        "description": "A brief summary of the research findings and objectives."
+      },
+      "findings": {
+        "type": "object",
+        "required": [
+          "productConcept",
+          "emotionalAppeal",
+          "industryReports",
+          "challenges"
+        ],
+        "properties": {
+          "challenges": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Challenges faced by SMEs in the integration process."
+          },
+          "productConcept": {
+            "type": "string",
+            "description": "Description of the product concept developed through the research."
+          },
+          "emotionalAppeal": {
+            "type": "string",
+            "description": "Explanation of how the product speaks to customer emotions."
+          },
+          "industryReports": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Reports referenced during the research."
+          }
+        },
+        "additionalProperties": false
+      },
+      "targetAudience": {
+        "type": "object",
+        "required": ["demographics", "psychographics"],
+        "properties": {
+          "demographics": {
+            "type": "object",
+            "required": ["ageRange", "gender", "location"],
+            "properties": {
+              "gender": {
+                "type": "string",
+                "description": "The gender distribution of the target audience."
+              },
+              "ageRange": {
+                "type": "string",
+                "description": "The age range of the target audience."
+              },
+              "location": {
+                "type": "string",
+                "description": "Geographic location of the target audience."
+              }
+            },
+            "additionalProperties": false
+          },
+          "psychographics": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Psychographic traits of the target audience."
+          }
+        },
+        "additionalProperties": false
+      },
+      "researchMethods": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Methods used to conduct the research."
+      }
     },
-    {
-      "content": "Chinese FDI in Africa has increased rapidly since 2004, with investments in infrastructure, particularly energy and transportation, helping to address physical infrastructure constraints faced by many African countries.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    "additionalProperties": false
+  },
+  "sourceFiles": 1,
+  "generatedContent": {
+    "date": "Information not available in source documents",
+    "title": "Vertical and Horizontal Integration in Media Institutions – A Focus on Film",
+    "abstract": "This report explores the concepts of vertical and horizontal integration within the film industry, examining how these structures influence the production and consumption of media texts. It highlights the implications for audience construction and the emotional gratifications experienced by viewers.",
+    "findings": {
+      "challenges": [
+        "Balancing the needs of diverse audience groups in a horizontally integrated environment",
+        "Maintaining production quality while maximizing profits through mass production"
+      ],
+      "productConcept": "The Classical Hollywood Narrative and high concept films that appeal to broad audiences through familiar structures and genres.",
+      "emotionalAppeal": "The emotional appeal lies in the social pleasures of watching films in groups and the comfort derived from familiar narrative structures.",
+      "industryReports": [
+        "Vertical integration allowed studios to control production, distribution, and exhibition, leading to the creation of films designed to attract the largest audience possible.",
+        "Horizontal integration has shifted the focus to catering to diverse audience needs across multiple media formats."
+      ]
     },
-    {
-      "content": "Chinese trade has contributed to economic growth in Africa, with Chinese FDI becoming a significant source of job creation in several countries. As Chinese investment increases, African firms need to remain competitive and take advantage of opportunities to integrate into global value chains.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
-    }
-  ],
-  "mainInsights": [
-    {
-      "content": "The changing nature of Chinese investment offers substantial opportunities to African countries, as well as some challenges. African countries have a unique opportunity to attract strategic, job-creating investment from China, but they need to act now and put in place a supportive policy framework.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
+    "targetAudience": {
+      "demographics": {
+        "gender": "Information not available in source documents",
+        "ageRange": "Information not available in source documents",
+        "location": "Information not available in source documents"
+      },
+      "psychographics": [
+        "Fans of blockbuster films",
+        "Audience members seeking social experiences through film viewing",
+        "Consumers interested in related media products (e.g., video games, merchandise)"
+      ]
     },
-    {
-      "content": "There is scope for China's considerable investments in Africa to have greater impact on economic transformation and export diversification. Improvements in the business climate could attract more large Chinese firms to invest in Africa, bringing with them access to technology, skills and training, and knowledge transfer.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
-    }
-  ],
-  "recommendations": [
-    {
-      "content": "African countries should create a conducive climate for investment, from China or elsewhere, by putting in place a supportive policy framework; lowering transport and energy costs; eliminating formal and informal barriers to trade; increasing the flexibility of labor markets; and ensuring effective competition policies. These policies will also help African firms to increase productivity and competitiveness.",
-      "source": "Chunk 1: China-Africa engagement has \r\nconsiderably expanded over \r\nthe past decade.  Since its inception \r\ni..."
-    }
-  ]
+    "researchMethods": [
+      "Case studies of major film companies like Sony Corporation",
+      "Analysis of audience engagement and consumption patterns across different media formats",
+      "Evaluation of historical trends in film production and distribution"
+    ]
+  },
+  "metadata": {
+    "processedChunks": 5,
+    "template_name": "Custom Template",
+    "source_count": 1,
+    "generation_date": "2024-12-01T11:44:02.365Z"
+  }
 }
