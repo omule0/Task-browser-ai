@@ -3,14 +3,16 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Eye, Trash2, FileEdit } from "lucide-react";
+import { ArrowLeft, Eye, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ReactFlow, { 
   Background, 
   Controls,
   ReactFlowProvider,
   Panel,
-  MiniMap
+  MiniMap,
+  Handle,
+  Position
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import {
@@ -25,6 +27,44 @@ import {
 } from "@/components/ui/alert-dialog";
 import { customToast } from "@/components/ui/toast-theme";
 import { SchemaNode } from "../schema-generator/page"; // You'll need to export SchemaNode from schema-generator
+
+const PreviewSchemaNode = ({ data }) => {
+  const nodeClasses = {
+    root: "px-4 py-3 shadow-lg rounded-lg border-2",
+    section: "px-4 py-2 shadow-md rounded-md border",
+    property: "px-3 py-2 shadow-sm rounded-md border"
+  };
+
+  const getBgColor = () => {
+    switch (data.nodeType) {
+      case 'root':
+        return 'bg-primary/10 border-primary';
+      case 'section':
+        return 'bg-card border-border';
+      default:
+        return 'bg-background border-muted';
+    }
+  };
+
+  return (
+    <div className={`${nodeClasses[data.nodeType || 'property']} ${getBgColor()}`}>
+      <Handle type="target" position={Position.Top} />
+      <div className="flex flex-col">
+        <div className="font-bold">{data.label}</div>
+        {data.description && (
+          <div className="text-muted-foreground text-sm">{data.description}</div>
+        )}
+        {data.type && (
+          <div className="text-xs font-mono bg-muted px-2 py-1 mt-2 rounded">
+            {data.type}
+            {data.required && <span className="text-red-500 ml-1">*</span>}
+          </div>
+        )}
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+};
 
 export default function ViewSchemas() {
   const router = useRouter();
@@ -86,7 +126,7 @@ export default function ViewSchemas() {
   };
 
   const nodeTypes = {
-    schema: SchemaNode
+    schema: PreviewSchemaNode
   };
 
   if (loading) {
@@ -131,13 +171,6 @@ export default function ViewSchemas() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => router.push(`/schema-generator?edit=${schema.id}`)}
-                  >
-                    <FileEdit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
                     className="text-destructive"
                     onClick={() => {
                       setSchemaToDelete(schema);
@@ -162,23 +195,36 @@ export default function ViewSchemas() {
         </div>
       )}
 
-      {/* Preview Modal */}
+      {/* Improved Preview Modal */}
       {selectedSchema && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
           <div className="fixed inset-4 bg-background border rounded-lg shadow-lg flex flex-col">
             <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{selectedSchema.name}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSelectedSchema(null)}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+              <div>
+                <h2 className="text-xl font-semibold">{selectedSchema.name}</h2>
+                <p className="text-sm text-muted-foreground">
+                  Created: {new Date(selectedSchema.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => router.push(`/generate-report?template=${selectedSchema.id}`)}
+                  className="bg-primary text-primary-foreground"
+                >
+                  Generate Report
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedSchema(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="flex-1 p-4">
               <ReactFlowProvider>
-                <div className="w-full h-full">
+                <div className="w-full h-full bg-muted/5 rounded-lg">
                   <ReactFlow
                     nodes={selectedSchema.nodes}
                     edges={selectedSchema.edges}
@@ -188,11 +234,30 @@ export default function ViewSchemas() {
                     maxZoom={1.5}
                     defaultEdgeOptions={{
                       type: 'smoothstep',
-                      style: { stroke: 'hsl(var(--muted-foreground))', strokeWidth: 2 },
+                      style: { 
+                        stroke: 'hsl(var(--muted-foreground))', 
+                        strokeWidth: 2,
+                        animated: true 
+                      },
+                    }}
+                    zoomOnScroll={false}
+                    panOnScroll={true}
+                    selectionOnDrag={false}
+                    nodesDraggable={false}
+                    nodesConnectable={false}
+                    elementsSelectable={false}
+                    fitViewOptions={{
+                      padding: 0.5,
+                      maxZoom: 1
                     }}
                   >
-                    <Background color="#ccc" gap={16} />
-                    <Controls />
+                    <Background 
+                      color="hsl(var(--muted-foreground))" 
+                      gap={16} 
+                      size={1}
+                      style={{ opacity: 0.1 }}
+                    />
+                    <Controls showInteractive={false} />
                     <MiniMap 
                       nodeColor={(node) => {
                         switch (node.data.nodeType) {
@@ -207,6 +272,15 @@ export default function ViewSchemas() {
                       nodeStrokeWidth={3}
                       zoomable
                       pannable
+                      position="bottom-left"
+                      className="!left-12 !bottom-2"
+                      style={{ 
+                        width: 200, 
+                        height: 150,
+                        backgroundColor: 'hsl(var(--background))',
+                        borderRadius: '0.5rem',
+                        border: '1px solid hsl(var(--border))'
+                      }}
                     />
                   </ReactFlow>
                 </div>
