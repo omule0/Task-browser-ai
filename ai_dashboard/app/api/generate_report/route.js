@@ -4,7 +4,6 @@ import { createClient } from "@/utils/supabase/server";
 import { isTokenLimitExceeded, isApproachingTokenLimit, fetchTotalTokenUsage } from "@/utils/tokenLimits";
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { formatDocumentsAsString } from "langchain/util/document";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { z } from "zod";
 
@@ -216,13 +215,46 @@ Generate a complete report following the specified structure and using informati
       throw new Error('Generated report does not match template structure');
     }
 
+    // Save report to database with correct structure
+    const { data: savedReport, error: saveError } = await supabase
+      .from('generated_reports')
+      .insert({
+        user_id: user.id,
+        workspace_id: reportData.workspaceId,
+        document_type: 'Report',
+        sub_type: 'custom_report',
+        content: {
+          template: jsonSchema,
+          sourceFiles: reportData.files.length,
+          generatedContent: report,
+          metadata: {  // Include metadata inside content object
+            processedChunks: processedChunks.length,
+            template_name: jsonSchema.name || 'Custom Template',
+            source_count: reportData.files.length,
+            generation_date: new Date().toISOString()
+          }
+        },
+        report_data: report,
+        token_usage: totalTokens.totalTokens,
+        source_files: reportData.files.map((_, index) => `Document ${index + 1}`)
+      })
+      .select()
+      .single();
+
+    if (saveError) {
+      console.error('Error saving report:', saveError);
+      throw new Error('Failed to save generated report');
+    }
+
     // Log token usage
     const { error: logError } = await supabase
       .from('token_usage_logs')
       .insert({
         user_id: user.id,
+        workspace_id: reportData.workspaceId,
         tokens_used: totalTokens.totalTokens,
-        usage_type: 'report_generation'
+        usage_type: 'report_generation',
+        document_id: savedReport.id
       });
 
     if (logError) throw logError;
@@ -231,9 +263,11 @@ Generate a complete report following the specified structure and using informati
       JSON.stringify({ 
         success: true, 
         report,
+        reportId: savedReport.id,
         metadata: {
           processedChunks: processedChunks.length,
-          totalTokens: totalTokens.totalTokens
+          totalTokens: totalTokens.totalTokens,
+          savedAt: savedReport.created_at
         }
       }),
       { 
