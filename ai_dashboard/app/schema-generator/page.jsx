@@ -10,7 +10,8 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   ReactFlowProvider,
-  Panel
+  Panel,
+  MiniMap
 } from 'reactflow';
 import dagre from '@dagrejs/dagre';
 import 'reactflow/dist/style.css';
@@ -363,6 +364,25 @@ export default function SchemaGenerator() {
             <Background color="#ccc" gap={16} />
             <Controls />
             
+            <MiniMap 
+              nodeColor={(node) => {
+                switch (node.data.nodeType) {
+                  case 'root':
+                    return 'hsl(var(--primary))';
+                  case 'section':
+                    return 'hsl(var(--card))';
+                  default:
+                    return 'hsl(var(--muted))';
+                }
+              }}
+              nodeStrokeWidth={3}
+              zoomable
+              pannable
+              position="bottom-left"
+              className="bg-background border border-border rounded-lg !left-12 !bottom-2"
+              style={{ width: 200, height: 150 }}
+            />
+
             {/* Back button in top-left corner */}
             <Panel position="top-left" className="m-4">
               <Button variant="ghost" onClick={() => router.back()}>
