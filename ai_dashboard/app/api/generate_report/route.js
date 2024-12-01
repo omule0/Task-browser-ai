@@ -1,64 +1,260 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { ChatOpenAI } from "@langchain/openai";
+import { createClient } from "@/utils/supabase/server";
+import { isTokenLimitExceeded, isApproachingTokenLimit, fetchTotalTokenUsage } from "@/utils/tokenLimits";
+import { StructuredOutputParser } from "@langchain/core/output_parsers";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { formatDocumentsAsString } from "langchain/util/document";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { z } from "zod";
+
+// Helper function for user-friendly error messages
+function getHumanFriendlyError(error) {
+  const errorPatterns = {
+    'context length': 'Your input is too long. Please reduce the number of files or their size.',
+    'rate limit': 'We\'re processing too many requests. Please wait a moment and try again.',
+    'invalid_api_key': 'There was an authentication error. Please contact support.',
+    'Failed to generate': 'Unable to generate the report. Please try with different files or template.',
+    'Failed to parse': 'The generated content did not meet the template requirements. Please try again.',
+    'OutputParserException': 'The generated content format was invalid. Please try again with a different template.',
+  };
+
+  // Check if error message matches any known patterns
+  for (const [pattern, message] of Object.entries(errorPatterns)) {
+    if (error.message.toLowerCase().includes(pattern.toLowerCase())) {
+      return message;
+    }
+  }
+
+  // Default error message
+  return 'There was an error generating your report. Please try again or contact support if the issue persists.';
+}
+
+// Helper function to convert JSON schema to Zod schema
+function jsonSchemaToZod(schema) {
+  if (!schema || typeof schema !== 'object') {
+    throw new Error('Invalid schema format');
+  }
+
+  // Handle different types
+  switch (schema.type) {
+    case 'object':
+      const properties = {};
+      const required = schema.required || [];
+      
+      Object.entries(schema.properties || {}).forEach(([key, value]) => {
+        properties[key] = jsonSchemaToZod(value);
+      });
+      
+      let zodObject = z.object(properties);
+      if (!schema.additionalProperties) {
+        zodObject = zodObject.strict();
+      }
+      return zodObject;
+
+    case 'array':
+      return z.array(jsonSchemaToZod(schema.items));
+
+    case 'string':
+      return z.string();
+
+    case 'number':
+      return z.number();
+
+    case 'boolean':
+      return z.boolean();
+
+    case 'null':
+      return z.null();
+
+    default:
+      return z.any();
+  }
+}
 
 export async function POST(req) {
   try {
-    const { schema, reportData } = await req.json();
-
-    // Generate the report content
-    const { textStream } = await streamText({
-      model: openai('gpt-4o-mini'),
-      system: `You are an expert report generator. Your task is to generate a report that follows the provided JSON schema structure exactly.
-      Make sure all required fields are filled and the data types match the schema specifications.
-      Generate realistic and coherent content that maintains consistency throughout the report.
-      Use the provided file contents as context for generating the report.
-      IMPORTANT: Return ONLY the JSON content without any markdown formatting or code blocks.`,
-      messages: [
-        {
-          role: 'user',
-          content: `Generate a report following this schema: ${JSON.stringify(schema)}
-          Using this context from the files: ${reportData.files.join('\n\n')}
-          Remember to return ONLY the JSON content, no markdown or code blocks.`
-        }
-      ],
-      temperature: 0.7,
-    });
-
-    // Get the complete response
-    let reportContent = '';
-    for await (const chunk of textStream) {
-      reportContent += chunk;
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("Unauthorized");
     }
 
-    // Clean up the content by removing any markdown formatting
-    const cleanContent = reportContent
-      .replace(/```json\n?/g, '')  // Remove ```json
-      .replace(/```\n?/g, '')      // Remove closing ```
-      .trim();                     // Remove extra whitespace
+    const { schema: jsonSchema, reportData } = await req.json();
 
-    // Parse and validate the generated report
-    try {
-      const report = JSON.parse(cleanContent);
-      return Response.json({
-        success: true,
-        report
-      });
-    } catch (parseError) {
-      console.error('Failed to parse report:', parseError);
-      console.error('Content:', cleanContent); // Log the content for debugging
-      return Response.json(
-        { 
-          error: 'Generated content is not valid JSON',
-          content: cleanContent // Include the content in error response for debugging
-        },
-        { status: 500 }
+    // Check token limits first
+    const tokenUsage = await fetchTotalTokenUsage(supabase, user.id);
+    if (isTokenLimitExceeded(tokenUsage)) {
+      return new Response(
+        JSON.stringify({
+          warning: "Token limit exceeded",
+          details: "You have reached your token usage limit. Please contact support to increase your limit.",
+          warningType: 'TokenLimitWarning'
+        }),
+        { status: 200 }
       );
     }
+
+    if (isApproachingTokenLimit(tokenUsage)) {
+      return new Response(
+        JSON.stringify({
+          warning: "Approaching token limit",
+          details: "You are approaching your token limit. Please contact support to increase your limit.",
+          warningType: 'ApproachingLimitWarning'
+        }),
+        { status: 200 }
+      );
+    }
+
+    // Initialize token tracking
+    let totalTokens = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0
+    };
+
+    // Validate file contents
+    if (!reportData.files || reportData.files.length === 0) {
+      throw new Error('No file contents provided');
+    }
+
+    // Initialize text splitter with smaller chunks for better context handling
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 4000, // Reduced chunk size for better processing
+      chunkOverlap: 200,
+      separators: ["\n\n", "\n", ".", "!", "?", ";", ":", " ", ""],
+    });
+
+    // Process and organize file contents
+    const processedChunks = [];
+    for (const content of reportData.files) {
+      const chunks = await textSplitter.splitText(content);
+      processedChunks.push(...chunks);
+    }
+
+    // Combine chunks with metadata
+    const contextString = processedChunks
+      .map((chunk, index) => `[Document ${index + 1}]\n${chunk}\n`)
+      .join('\n---\n');
+
+    // Create a more detailed prompt template
+    const prompt = ChatPromptTemplate.fromMessages([
+      ["system", `You are an expert report generator. Your task is to create a comprehensive report based on the provided documents.
+
+Instructions:
+1. Carefully analyze all provided document contents
+2. Extract relevant information that matches the required report structure
+3. Ensure all sections of the report are filled with accurate information from the source documents
+4. Maintain consistency throughout the report
+5. Use direct quotes or paraphrase when appropriate
+6. If information for a section is not found in the documents, indicate "Information not available in source documents"
+
+Format your response according to these specifications:
+{format_instructions}
+
+Remember: All information must be derived from the provided documents. Do not make assumptions or add external information.`],
+      ["human", `Please generate a report based on the following source documents:
+
+Source Documents:
+{context}
+
+Generate a complete report following the specified structure and using information from these documents.`]
+    ]);
+
+    // Initialize model with lower temperature for more factual output
+    const model = new ChatOpenAI({
+      modelName: "gpt-4o-mini",
+      temperature: 0.3, // Reduced for more consistent output
+      callbacks: [{
+        handleLLMEnd(output) {
+          if (output.llmOutput?.tokenUsage) {
+            totalTokens.promptTokens += output.llmOutput.tokenUsage.promptTokens || 0;
+            totalTokens.completionTokens += output.llmOutput.tokenUsage.completionTokens || 0;
+            totalTokens.totalTokens += output.llmOutput.tokenUsage.totalTokens || 0;
+          }
+        },
+      }]
+    });
+
+    // Convert schema and create parser
+    let zodSchema;
+    try {
+      zodSchema = jsonSchemaToZod(jsonSchema);
+    } catch (schemaError) {
+      console.error('Schema conversion error:', schemaError);
+      throw new Error('Invalid schema format');
+    }
+
+    const parser = StructuredOutputParser.fromZodSchema(zodSchema);
+
+    // Create chain with better context handling
+    const chain = RunnableSequence.from([
+      {
+        context: async () => contextString,
+        format_instructions: async () => parser.getFormatInstructions(),
+      },
+      prompt,
+      model,
+      parser
+    ]);
+
+    // Generate report with error handling
+    let report;
+    try {
+      report = await chain.invoke({});
+    } catch (generationError) {
+      console.error('Report generation error:', generationError);
+      throw new Error('Failed to generate report: ' + generationError.message);
+    }
+
+    // Validate report structure
+    try {
+      zodSchema.parse(report);
+    } catch (validationError) {
+      console.error('Report validation error:', validationError);
+      throw new Error('Generated report does not match template structure');
+    }
+
+    // Log token usage
+    const { error: logError } = await supabase
+      .from('token_usage_logs')
+      .insert({
+        user_id: user.id,
+        tokens_used: totalTokens.totalTokens,
+        usage_type: 'report_generation'
+      });
+
+    if (logError) throw logError;
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        report,
+        metadata: {
+          processedChunks: processedChunks.length,
+          totalTokens: totalTokens.totalTokens
+        }
+      }),
+      { 
+        headers: { "Content-Type": "application/json" } 
+      }
+    );
+
   } catch (error) {
-    console.error('Error generating report:', error);
-    return Response.json(
-      { error: 'Failed to generate report' },
-      { status: 500 }
+    console.error("Error generating report:", error);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: "Failed to generate report", 
+        details: getHumanFriendlyError(error),
+        technicalDetails: error.message,
+        errorType: error.name || 'UnknownError'
+      }),
+      { 
+        status: 500, 
+        headers: { "Content-Type": "application/json" } 
+      }
     );
   }
 } 

@@ -170,23 +170,39 @@ export default function GenerateReport() {
         })
       );
 
+      // Ensure schema is properly formatted for the API
+      const processedSchema = selectedSchema.schema;
+
       const response = await fetch('/api/generate_report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          schema: selectedSchema.schema,
+          schema: processedSchema,
           reportData: {
             files: fileContents,
           }
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to generate report');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || 'Failed to generate report');
+      }
 
       const data = await response.json();
-      if (data.success) {
+      
+      // Handle token limit warnings
+      if (data.warning) {
+        customToast.warning(data.details);
+        if (data.warningType === 'TokenLimitWarning') {
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      if (data.success && data.report) {
         setGeneratedReport(data.report);
         customToast.success('Report generated successfully');
       } else {
@@ -194,7 +210,7 @@ export default function GenerateReport() {
       }
     } catch (error) {
       console.error('Error generating report:', error);
-      customToast.error('Failed to generate report');
+      customToast.error(error.message || 'Failed to generate report');
     } finally {
       setIsGenerating(false);
     }
