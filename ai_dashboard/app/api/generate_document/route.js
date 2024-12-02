@@ -196,7 +196,10 @@ export async function POST(req) {
     if (logError) throw logError;
 
 
-    return new Response(JSON.stringify(report), {
+    return new Response(JSON.stringify({
+      report: report,
+      metadata: metadata
+    }), {
       headers: { "Content-Type": "application/json" },
     });
 
