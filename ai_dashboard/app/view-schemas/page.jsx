@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { customToast } from "@/components/ui/toast-theme";
-import { SchemaNode } from "../schema-generator/page"; // You'll need to export SchemaNode from schema-generator
+import { Loading } from "@/components/ui/loading";
 
 const PreviewSchemaNode = ({ data }) => {
   const nodeClasses = {
@@ -131,9 +131,7 @@ export default function ViewSchemas() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <Loading/>
     );
   }
 
