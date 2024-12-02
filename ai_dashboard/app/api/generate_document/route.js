@@ -93,7 +93,7 @@ export async function POST(req) {
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 90000,
       chunkOverlap: 4000,
-      separators: ["\n\n", "\n", ".", " "],
+      separators: ["\n\n", "\n", ".", " ", "?", "!", ";"],
     });
 
     // Split all contents into chunks
@@ -161,10 +161,10 @@ export async function POST(req) {
     }
 
     // Combine the results
-    const combinedReport = combineReports(processedChunks, documentType, subType);
+    const { report, metadata } = combineReports(processedChunks, documentType, subType);
 
     // After generating the report, first insert it into the database
-    const { data: report, error: insertError } = await supabase
+    const { data: reportData, error: insertError } = await supabase
       .from('generated_reports')
       .insert({
         user_id: user.id,
@@ -172,7 +172,8 @@ export async function POST(req) {
         document_type: documentType,
         sub_type: subType,
         content: content,
-        report_data: combinedReport,
+        report_data: report,
+        metadata: metadata,
         source_files: selectedFiles,
         token_usage: totalTokens.totalTokens > 0 ? totalTokens : null
       })
@@ -189,20 +190,13 @@ export async function POST(req) {
         workspace_id: workspaceId,
         tokens_used: totalTokens.totalTokens,
         usage_type: 'document_generation',
-        document_id: report.id  // Use the ID from the inserted report
+        document_id: reportData.id  // Use the ID from the inserted report
       });
 
     if (logError) throw logError;
 
-    // Log the token usage for debugging
-    // console.log("Token usage logged:", {
-    //   reportId: report.id,
-    //   totalTokens,
-    //   userId: user.id,
-    //   workspaceId
-    // });
 
-    return new Response(JSON.stringify(combinedReport), {
+    return new Response(JSON.stringify(report), {
       headers: { "Content-Type": "application/json" },
     });
 
@@ -225,12 +219,14 @@ export async function POST(req) {
 }
 
 function combineReports(chunks) {
-  const sourceMap = new Map();
+  const metadata = {
+    sources: {}
+  };
   
   const combined = chunks.reduce((acc, chunk, index) => {
     const sourceInfo = {
       chunkIndex: `Source [${index + 1}]`,
-      preview: truncateText(chunk.sourceText, 150)
+      preview: chunk.sourceText
     };
 
     Object.entries(chunk).forEach(([key, value]) => {
@@ -240,63 +236,77 @@ function combineReports(chunks) {
         // For title, only use the first occurrence
         if (!acc[key]) {
           acc[key] = value;
-          sourceMap.set(key, [sourceInfo]);
+          metadata.sources[key] = [sourceInfo];
         }
         return;
       }
 
       if (Array.isArray(value)) {
-        // For array fields, add source with text preview
-        const itemsWithSource = value.map(item => ({
-          ...item,
-          source: sourceInfo
-        }));
-        acc[key] = [...(acc[key] || []), ...itemsWithSource];
-      } else if (typeof value === 'object' && value !== null) {
-        // For nested objects, recursively add source
-        const processNestedObject = (obj) => {
-          const processed = {};
-          Object.entries(obj).forEach(([nestedKey, nestedValue]) => {
-            if (Array.isArray(nestedValue)) {
-              processed[nestedKey] = nestedValue.map(item => 
-                typeof item === 'object' ? { ...item, source: sourceInfo } : item
-              );
-            } else if (typeof nestedValue === 'object' && nestedValue !== null) {
-              processed[nestedKey] = processNestedObject(nestedValue);
-            } else {
-              processed[nestedKey] = nestedValue;
-            }
-          });
-          return { ...processed, source: sourceInfo };
-        };
+        // For array fields, store source in metadata
+        const itemsWithoutSource = value.map(item => {
+          const { source, ...itemWithoutSource } = item;
+          return itemWithoutSource;
+        });
+        acc[key] = [...(acc[key] || []), ...itemsWithoutSource];
         
+        // Store source information in metadata
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push({
+          ...sourceInfo,
+          itemIndexes: value.map((_, idx) => acc[key].length - value.length + idx)
+        });
+      } else if (typeof value === 'object' && value !== null) {
+        // For nested objects, separate metadata
+        const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
         acc[key] = {
           ...(acc[key] || {}),
-          ...processNestedObject(value)
+          ...processedObject
         };
+        
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push({
+          ...sourceInfo,
+          ...objectMetadata
+        });
       } else {
-        // For simple fields, track source in sourceMap
+        // For simple fields
         acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
-        sourceMap.set(key, [
-          ...(sourceMap.get(key) || []),
-          sourceInfo
-        ]);
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push(sourceInfo);
       }
     });
     return acc;
   }, {});
 
-  // Add source information for simple fields
-  Object.keys(combined).forEach(key => {
-    if (typeof combined[key] === 'string') {
-      combined[key] = {
-        content: combined[key],
-        sources: sourceMap.get(key)
-      };
+  return { report: combined, metadata };
+}
+
+// Add this helper function
+function processNestedObject(obj, sourceInfo) {
+  const processed = {};
+  const metadata = {};
+
+  Object.entries(obj).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      processed[key] = value.map(item => {
+        if (typeof item === 'object') {
+          const { source, ...itemWithoutSource } = item;
+          return itemWithoutSource;
+        }
+        return item;
+      });
+      metadata[key] = { type: 'array', items: value.length };
+    } else if (typeof value === 'object' && value !== null) {
+      const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
+      processed[key] = processedObject;
+      metadata[key] = objectMetadata;
+    } else {
+      processed[key] = value;
+      metadata[key] = { type: 'simple' };
     }
   });
 
-  return combined;
+  return { processedObject: processed, objectMetadata: metadata };
 }
 
 // Helper function to truncate text and add ellipsis
