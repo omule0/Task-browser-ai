@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit3, MessageCircle, Plus } from "lucide-react";
 
 const JsonRenderer = ({ data, level = 0 }) => {
@@ -66,10 +67,12 @@ export default function ReportViewer({ report, onBack }) {
         </div>
       </header>
 
+      <Separator className="my-4" />
+
       {/* Main Content Area */}
       <div className="flex relative">
         {/* Document Content */}
-        <main className="flex-1 bg-white rounded-lg border p-8">
+        <main className="flex-1 bg-white">
           <JsonRenderer data={report} />
         </main>
 
