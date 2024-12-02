@@ -81,6 +81,102 @@ function jsonSchemaToZod(schema) {
   }
 }
 
+// Add this function near the top with other helper functions
+function processNestedObject(obj, sourceInfo) {
+  const processed = {};
+  const metadata = {};
+
+  Object.entries(obj).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      processed[key] = value.map(item => {
+        if (typeof item === 'object') {
+          const { source, ...itemWithoutSource } = item;
+          return itemWithoutSource;
+        }
+        return item;
+      });
+      metadata[key] = { type: 'array', items: value.length };
+    } else if (typeof value === 'object' && value !== null) {
+      const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
+      processed[key] = processedObject;
+      metadata[key] = objectMetadata;
+    } else {
+      processed[key] = value;
+      metadata[key] = { type: 'simple' };
+    }
+  });
+
+  return { processedObject: processed, objectMetadata: metadata };
+}
+
+// Add this function to combine chunks and track sources
+function combineReports(chunks) {
+  const metadata = {
+    sources: {}
+  };
+  
+  const combined = chunks.reduce((acc, chunk, index) => {
+    const sourceInfo = {
+      chunkIndex: `Source [${index + 1}]`,
+      preview: chunk.sourceText
+    };
+
+    Object.entries(chunk).forEach(([key, value]) => {
+      if (key === 'sourceText') return;
+
+      if (Array.isArray(value)) {
+        // For array fields, ensure each item is properly handled
+        const itemsWithoutSource = value.map(item => {
+          // If item is a string, return it directly
+          if (typeof item === 'string') return item;
+          
+          // If item is an object with numbered keys (like your case), join them
+          if (typeof item === 'object' && !Array.isArray(item)) {
+            // Check if it's a character-split object
+            const keys = Object.keys(item).every(k => !isNaN(parseInt(k)));
+            if (keys) {
+              return Object.values(item).join('');
+            }
+            // Otherwise handle as normal object
+            const { source, ...itemWithoutSource } = item;
+            return itemWithoutSource;
+          }
+          return item;
+        });
+        
+        acc[key] = [...(acc[key] || []), ...itemsWithoutSource];
+        
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push({
+          ...sourceInfo,
+          itemIndexes: value.map((_, idx) => acc[key].length - value.length + idx)
+        });
+      } else if (typeof value === 'object' && value !== null) {
+        // For nested objects, separate metadata
+        const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
+        acc[key] = {
+          ...(acc[key] || {}),
+          ...processedObject
+        };
+        
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push({
+          ...sourceInfo,
+          ...objectMetadata
+        });
+      } else {
+        // For simple fields
+        acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
+        metadata.sources[key] = metadata.sources[key] || [];
+        metadata.sources[key].push(sourceInfo);
+      }
+    });
+    return acc;
+  }, {});
+
+  return { report: combined, metadata };
+}
+
 export async function POST(req) {
   try {
     const supabase = await createClient();
@@ -240,6 +336,14 @@ Generate a complete report following the specified structure and using informati
       throw new Error("Generated report does not match template structure");
     }
 
+    // After generating the report, process it to include source tracking
+    const processedReport = combineReports([
+      {
+        ...report,
+        sourceText: contextString
+      }
+    ]);
+
     // Save report to database with correct structure and actual file IDs
     const { data: savedReport, error: saveError } = await supabase
       .from("generated_reports")
@@ -249,19 +353,18 @@ Generate a complete report following the specified structure and using informati
         document_type: "Report",
         sub_type: "custom_report",
         content: reportData.schemaName,
-        report_data: {
+        report_data: processedReport.report,
+        metadata: {
           template: {
             id: jsonSchema.id,
             name: jsonSchema.name || "Custom Template",
             schema: jsonSchema
           },
-          generatedContent: report,
-          metadata: {
-            processedChunks: processedChunks.length,
-            template_name: jsonSchema.name || "Custom Template",
-            source_count: reportData.files.length,
-            generation_date: new Date().toISOString(),
-          }
+          sources: processedReport.metadata.sources,
+          processedChunks: processedChunks.length,
+          template_name: jsonSchema.name || "Custom Template",
+          source_count: reportData.files.length,
+          generation_date: new Date().toISOString(),
         },
         token_usage: totalTokens.totalTokens > 0 ? totalTokens : null,
         source_files: reportData.selectedFiles,
