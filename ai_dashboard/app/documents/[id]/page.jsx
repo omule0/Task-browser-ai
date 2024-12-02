@@ -2,19 +2,13 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import BuysideDueDiligence from "./buyside-due-diligence";
-import ResearchReport from "./research-report";
-import SellsideDueDiligence from "./sellside-due-diligence";
-import BusinessPlan from "./business-plan";
-import EquityInvestmentAnalyst from "./equity-investment-analyst";
-import CreditInvestmentAnalyst from "./credit-investment-analyst";
+import ReportViewer from "@/app/generate-report/components/ReportViewer";
+import { useRouter } from "next/navigation";
 
 export default function DocumentView() {
   const params = useParams();
+  const router = useRouter();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,54 +39,12 @@ export default function DocumentView() {
   if (loading) return <Loading />;
   if (!report) return <div className="text-foreground">Report not found</div>;
 
-  const renderReport = () => {
-    switch (report.sub_type) {
-      case "Buyside Due Diligence":
-        return <BuysideDueDiligence report={report.report_data} />;
-      case "Research report":
-        return <ResearchReport report={report.report_data} />;
-      case "Sellside Due Diligence":
-        return <SellsideDueDiligence report={report.report_data} />;
-      case "Equity Investment Analyst Report":
-        return <EquityInvestmentAnalyst report={report.report_data} />;
-      case "Credit Investment Analyst Report":
-        return <CreditInvestmentAnalyst report={report.report_data} />;
-      case "Business Plan":
-        return <BusinessPlan report={report.report_data} />;
-      default:
-        return <div className="max-w-6xl mx-auto px-6 text-foreground">
-          This report type is not yet supported.
-        </div>;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-card border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/documents">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-xl font-semibold text-foreground">
-                  {report.sub_type}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Created on {new Date(report.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="py-6 printable-report">
-        {renderReport()}
-      </div>
+    <div className="min-h-screen bg-background p-6">
+      <ReportViewer 
+        report={report.report_data} 
+        onBack={() => router.push('/documents')}
+      />
     </div>
   );
 }

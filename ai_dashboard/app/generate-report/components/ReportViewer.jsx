@@ -38,7 +38,7 @@ const JsonRenderer = ({ data, level = 0 }) => {
   return null;
 };
 
-export default function ReportViewer({ report, onBack }) {
+export default function ReportViewer({ report, onBack, title, createdAt }) {
   return (
     <div className="w-full">
       {/* Top Navigation */}
@@ -53,10 +53,12 @@ export default function ReportViewer({ report, onBack }) {
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Generated Report</h1>
-            <p className="text-sm text-muted-foreground">
-              View and share your generated report
-            </p>
+            <h1 className="text-2xl font-bold">{title || "Generated Report"}</h1>
+            {createdAt && (
+              <p className="text-sm text-muted-foreground">
+                Created on {new Date(createdAt).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
