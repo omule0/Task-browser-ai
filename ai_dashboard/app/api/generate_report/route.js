@@ -255,7 +255,6 @@ Generate a complete report following the specified structure and using informati
             name: jsonSchema.name || "Custom Template",
             schema: jsonSchema
           },
-          sourceFiles: reportData.selectedFiles,
           generatedContent: report,
           metadata: {
             processedChunks: processedChunks.length,

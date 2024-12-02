@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Loader2, Plus, Info } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Plus, Info, Edit3, MessageCircle, X } from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import SelectFiles from "@/app/create-document/components/SelectFiles";
 import { useWorkspace } from "@/context/workspace-context";
 import { Loading } from "@/components/ui/loading";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import ReportViewer from "./components/ReportViewer";
 
 const RecursiveJsonView = ({ data }) => {
   if (typeof data === 'string') {
@@ -237,34 +238,32 @@ export default function GenerateReport() {
   // Main render
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold">Generate Report</h1>
-          <p className="text-muted-foreground">
-            Select a Template and files to generate a new report
-          </p>
-        </div>
-        
-        {/* Add Create Schema button */}
-        <Button
-          onClick={() => router.push('/schema-generator')}
-          variant="outline"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Template
-        </Button>
-      </div>
-
       {!generatedReport ? (
         <>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                onClick={() => router.back()}
+                className="mb-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <h1 className="text-2xl font-bold">Generate Report</h1>
+              <p className="text-muted-foreground">
+                Select a Template and files to generate a new report
+              </p>
+            </div>
+            
+            <Button
+              onClick={() => router.push('/schema-generator')}
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Template
+            </Button>
+          </div>
 
           {/* Schema Selection */}
           <section className="space-y-4">
@@ -365,32 +364,10 @@ export default function GenerateReport() {
           </div>
         </>
       ) : (
-        <>
-          <Button
-            variant="outline"
-            onClick={() => setGeneratedReport(null)}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Selection
-          </Button>
-
-          <Card className="p-6">
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <h2 className="text-xl font-bold mb-4">Generated Report</h2>
-              <div className="space-y-4">
-                {Object.entries(generatedReport).map(([section, content]) => (
-                  <div key={section} className="border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold capitalize mb-2">
-                      {section.replace(/_/g, ' ')}
-                    </h3>
-                    <RecursiveJsonView data={content} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </>
+        <ReportViewer 
+          report={generatedReport} 
+          onBack={() => setGeneratedReport(null)} 
+        />
       )}
     </div>
   );
