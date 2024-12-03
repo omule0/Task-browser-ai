@@ -1,12 +1,7 @@
-import { createClient } from "@/utils/supabase/server";
+"use client";
 import { HeaderUI } from "./HeaderUI";
 import { logout } from "@/app/logout/actions";
 
-export async function Header() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export function Header({ user }) {
   return <HeaderUI user={user} logout={logout} />;
 }

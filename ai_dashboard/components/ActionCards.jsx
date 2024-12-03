@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useState } from "react";
-import { SearchIcon, BarChartIcon, UploadIcon, FileIcon } from "lucide-react";
+import { SearchIcon, BarChartIcon, UploadIcon, FileIcon, MessageSquare } from "lucide-react";
 import { UploadSidebar } from "./UploadSidebar";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const container = {
   hidden: { opacity: 0 },
@@ -180,6 +181,14 @@ export function ActionCards({ onUploadSuccess }) {
       comingSoon: true,
     },
     
+    {
+      icon: <MessageSquare />,
+      title: "PDF Chat",
+      description: "Chat with your PDF documents",
+      tooltip: "Chat with your PDF documents using AI-powered conversation. Ask questions and get instant answers.",
+      variant: "default",
+      onClick: () => router.push('/pdf-chat'),
+    },
   ];
 
   return (
