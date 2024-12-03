@@ -22,6 +22,12 @@ import { Loader2, Upload } from "lucide-react";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { format } from 'date-fns';
 import dynamic from 'next/dynamic';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
@@ -594,18 +600,73 @@ export default function PDFChat() {
               <p className="text-sm font-medium text-gray-500 mb-2">Suggested Questions:</p>
               <div className="space-y-1.5">
                 {suggestedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                    onClick={() => {
-                      setInputMessage(question);
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-purple-500 mt-0.5">•</span>
-                      <span className="line-clamp-2">{question}</span>
-                    </div>
-                  </button>
+                  <TooltipProvider key={index} delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                          onClick={() => {
+                            // Set the input message and immediately send it
+                            setInputMessage(question);
+                            // We need to create a new message and send it manually
+                            // since setInputMessage is asynchronous
+                            const newMessage = {
+                              role: 'user',
+                              content: question
+                            };
+                            setMessages(prev => [...prev, newMessage]);
+                            setIsLoading(true);
+
+                            // Send the message
+                            (async () => {
+                              try {
+                                const supabase = createClient();
+                                const { data: { user } } = await supabase.auth.getUser();
+
+                                const response = await fetch('/api/pdf-chat', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    messages: [...messages, newMessage],
+                                    fileId: `${currentWorkspace.id}/${user.id}/${selectedFile.name}`,
+                                    workspaceId: currentWorkspace.id,
+                                    userId: user.id
+                                  })
+                                });
+
+                                if (!response.ok) throw new Error('Failed to get response');
+                                
+                                const data = await response.json();
+                                
+                                setMessages(prev => [...prev, {
+                                  role: 'assistant',
+                                  content: data.response
+                                }]);
+                              } catch (error) {
+                                console.error('Chat error:', error);
+                                customToast.error('Failed to get response');
+                              } finally {
+                                setIsLoading(false);
+                                setInputMessage(''); // Clear input after sending
+                              }
+                            })();
+                          }}
+                          disabled={isLoading}
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="text-purple-500 mt-0.5">•</span>
+                            <span className="line-clamp-2">{question}</span>
+                          </div>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        side="left" 
+                        className="max-w-[300px] break-words"
+                      >
+                        {question}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ))}
               </div>
             </div>
