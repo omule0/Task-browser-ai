@@ -45,6 +45,7 @@ export default function PDFChat() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
+  const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -295,8 +296,11 @@ export default function PDFChat() {
       setSelectedFile(file);
       setPdfUrl(data.signedUrl);
       
-      // Generate initial summary
-      await generateInitialSummary(file);
+      // Generate initial summary and questions
+      await Promise.all([
+        generateInitialSummary(file),
+        generateQuestions(file)
+      ]);
     } catch (error) {
       console.error('Error selecting file:', error);
       customToast.error('Error loading PDF file');
@@ -341,6 +345,41 @@ export default function PDFChat() {
       customToast.error('Failed to generate document summary');
     } finally {
       setIsLoading(false);
+    }
+  }, [currentWorkspace]);
+
+  // Function to generate questions
+  const generateQuestions = useCallback(async (file) => {
+    if (!file || !currentWorkspace) return;
+    
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const response = await fetch('/api/pdf-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [],
+          fileId: `${currentWorkspace.id}/${user.id}/${file.name}`,
+          generateQuestions: true
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate questions');
+      
+      const data = await response.json();
+      
+      // Parse the numbered list into an array
+      const questions = data.suggestedQuestions
+        .split('\n')
+        .filter(line => line.trim())
+        .map(line => line.replace(/^\d+\.\s*/, '').trim());
+      
+      setSuggestedQuestions(questions);
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      customToast.error('Failed to generate questions');
     }
   }, [currentWorkspace]);
 
@@ -549,6 +588,28 @@ export default function PDFChat() {
               )}
             </div>
           </ScrollArea>
+
+          {suggestedQuestions.length > 0 && (
+            <div className="px-4 py-2 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-500 mb-2">Suggested Questions:</p>
+              <div className="space-y-1.5">
+                {suggestedQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                    onClick={() => {
+                      setInputMessage(question);
+                    }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-purple-500 mt-0.5">•</span>
+                      <span className="line-clamp-2">{question}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="p-4 border-t border-gray-200">
             <div className="relative">

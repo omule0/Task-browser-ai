@@ -6,7 +6,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 
 export async function POST(request) {
   try {
-    const { messages, fileId } = await request.json();
+    const { messages, fileId, generateQuestions } = await request.json();
 
     // Initialize Supabase client - make sure to await it
     const supabase = await createClient();
@@ -33,7 +33,32 @@ export async function POST(request) {
       temperature: 0.7,
     });
 
-    // Create prompt template with better context handling
+    if (generateQuestions) {
+      // Template for generating questions
+      const questionTemplate = `Based on the following document content, generate 3 insightful questions that would help understand the key points of the document better. Format the response as a numbered list.
+
+      Document content: {context}
+
+      Generate 3 questions:`;
+
+      const questionPrompt = PromptTemplate.fromTemplate(questionTemplate);
+
+      const questionChain = RunnableSequence.from([
+        {
+          context: () => docContent.content,
+        },
+        questionPrompt,
+        chatModel,
+        new StringOutputParser()
+      ]);
+
+      const suggestedQuestions = await questionChain.invoke({});
+      return new Response(JSON.stringify({ suggestedQuestions }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Regular chat template
     const TEMPLATE = `You are a helpful AI assistant that helps users understand PDF documents.
     Use the following document content to answer questions. If you don't know the answer based on the content, say so.
     
