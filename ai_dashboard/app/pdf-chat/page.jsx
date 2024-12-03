@@ -2,16 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
-  ChevronDown,
   Send,
   Minus,
   PlusIcon,
   RotateCw,
   SearchIcon,
   Plus,
-  FolderPlus,
   ArrowLeft,
   PanelLeftClose,
   PanelLeft,
@@ -28,16 +25,6 @@ import { customToast } from "@/components/ui/toast-theme";
 import { Loader2, Upload } from "lucide-react";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { format } from 'date-fns';
-import dynamic from 'next/dynamic';
-
-const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-    </div>
-  ),
-});
 
 export default function PDFChat() {
   const router = useRouter();
@@ -49,6 +36,8 @@ export default function PDFChat() {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [numPages, setNumPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -298,6 +287,7 @@ export default function PDFChat() {
 
       setSelectedFile(file);
       setPdfUrl(data.signedUrl);
+      setCurrentPage(1);
     } catch (error) {
       console.error('Error selecting file:', error);
       customToast.error('Error loading PDF file');
@@ -397,12 +387,49 @@ export default function PDFChat() {
             <h2 className="text-base font-semibold flex-1">
               {selectedFile ? selectedFile.originalName : 'No file selected'}
             </h2>
+            {selectedFile && (
+              <div className="flex items-center gap-1.5">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <Minus size={14} />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(1)}
+                >
+                  <RotateCw size={14} />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))}
+                  disabled={currentPage >= numPages}
+                >
+                  <PlusIcon size={14} />
+                </Button>
+                <div className="flex items-center gap-1.5 bg-gray-100 rounded-md px-2 py-1">
+                  <span className="text-sm">{currentPage}</span>
+                  <span className="text-sm text-gray-500">/ {numPages}</span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <SearchIcon size={14} />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* PDF Content */}
-          <div className="flex-1 bg-gray-100 flex justify-center overflow-auto">
+          <div className="flex-1 bg-gray-100 p-8 flex justify-center overflow-auto">
             {!selectedFile ? (
-              <div className="flex items-center justify-center w-full p-8">
+              <div className="flex items-center justify-center w-full">
                 <div className="text-center">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-1">No file selected</h3>
@@ -416,9 +443,11 @@ export default function PDFChat() {
                 <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : (
-              <div className="w-full h-full">
-                <PdfViewer url={pdfUrl} />
-              </div>
+              <iframe
+                src={`${pdfUrl}#page=${currentPage}`}
+                className="w-full h-full rounded-lg bg-white shadow-lg"
+                title={selectedFile.originalName}
+              />
             )}
           </div>
         </div>

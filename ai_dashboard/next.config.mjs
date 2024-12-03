@@ -5,13 +5,6 @@ const nextConfig = {
       serverComponentsExternalPackages: ["pdf2json"],
     },
   },
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.node/,
-      use: 'raw-loader',
-    });
-    return config;
-  },
 };
 
 export default nextConfig;
