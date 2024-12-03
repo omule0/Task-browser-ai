@@ -2,6 +2,7 @@
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
+import { WorkspaceProvider } from "@/context/workspace-context";
 
 // Import the fonts directly in this layout to maintain consistent typography
 const geistSans = localFont({
@@ -25,10 +26,12 @@ export default function PDFChatLayout({ children }) {
         enableSystem
         disableTransitionOnChange
       >
-        <div className="h-screen">
-          <Toaster />
-          {children}
-        </div>
+        <WorkspaceProvider>
+          <div className="h-screen">
+            <Toaster />
+            {children}
+          </div>
+        </WorkspaceProvider>
       </ThemeProvider>
     </div>
   );

@@ -17,12 +17,21 @@ import {
   PanelLeft,
 } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { cn } from "@/lib/utils";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { useWorkspace } from "@/context/workspace-context";
+import { useDropzone } from 'react-dropzone';
+import { createClient } from '@/utils/supabase/client';
+import { customToast } from "@/components/ui/toast-theme";
+import { Loader2, Upload } from "lucide-react";
 
 export default function PDFChat() {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { currentWorkspace } = useWorkspace();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -35,6 +44,156 @@ export default function PDFChat() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [router]);
 
+  // Add file upload handler
+  const onDrop = useCallback(async (acceptedFiles) => {
+    try {
+      if (!currentWorkspace) {
+        customToast.error('Please select a workspace first');
+        return;
+      }
+
+      setIsUploading(true);
+      const file = acceptedFiles[0]; // Only handle one file at a time
+
+      const supabase = createClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+
+      // Check storage usage
+      const { data: storageData, error: storageError } = await supabase
+        .from('storage_usage')
+        .select('bytes_used, storage_limit')
+        .eq('user_id', user.id)
+        .single();
+
+      if (storageError && storageError.code !== 'PGRST116') throw storageError;
+
+      const currentUsage = storageData?.bytes_used || 0;
+      const storageLimit = storageData?.storage_limit || 52428800; // 50MB default
+
+      if (currentUsage + file.size > storageLimit) {
+        throw new Error('Upload would exceed your storage limit');
+      }
+
+      // Start progress simulation
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 95) {
+          clearInterval(progressInterval);
+          progress = 95;
+        }
+        setUploadProgress(Math.min(Math.round(progress), 95));
+      }, 300);
+
+      // Parse PDF content
+      const formData = new FormData();
+      formData.append('filepond', file);
+      const parseResponse = await fetch('/api/pdf', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!parseResponse.ok) {
+        throw new Error('PDF parsing failed');
+      }
+      
+      const parsedText = await parseResponse.text();
+
+      // Generate unique filename
+      const timestamp = new Date().getTime();
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const fileName = `${timestamp}-${randomId}-${file.name}`;
+      const filePath = `${currentWorkspace.id}/${user.id}/${fileName}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          metadata: {
+            size: file.size,
+            hasParsedContent: true,
+          }
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Store parsed content
+      const { error: contentError } = await supabase
+        .from('document_content')
+        .insert({
+          file_path: filePath,
+          content: parsedText,
+          workspace_id: currentWorkspace.id,
+          user_id: user.id
+        });
+
+      if (contentError) throw contentError;
+
+      // Update storage usage
+      const { error: updateError } = await supabase.rpc('update_storage_usage', {
+        user_id_input: user.id,
+        bytes_to_add: file.size
+      });
+
+      if (updateError) throw updateError;
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      customToast.success('PDF uploaded successfully');
+
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      customToast.error(error.message || 'Error uploading PDF');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  }, [currentWorkspace]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+    },
+    maxSize: 10485760, // 10MB
+    multiple: false,
+  });
+
+  // Add upload zone to the sidebar
+  const renderUploadZone = () => (
+    <div
+      {...getRootProps()}
+      className={`mx-3 mb-3 border-2 border-dashed rounded-lg p-4 transition-colors ${
+        isDragActive 
+          ? 'border-white/50 bg-white/10' 
+          : 'border-white/20 hover:border-white/30'
+      }`}
+    >
+      <input {...getInputProps()} />
+      <div className="flex flex-col items-center gap-2">
+        {isUploading ? (
+          <>
+            <Loader2 className="h-6 w-6 text-white animate-spin" />
+            <p className="text-sm text-white/70 text-center">
+              Uploading... {uploadProgress}%
+            </p>
+          </>
+        ) : (
+          <>
+            <Upload className="h-6 w-6 text-white/70" />
+            <p className="text-sm text-white/70 text-center">
+              Drop PDF here or click to upload
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex h-screen bg-white text-gray-800">
       {/* Sidebar with reduced width */}
@@ -44,7 +203,8 @@ export default function PDFChat() {
           isSidebarCollapsed ? "w-0 overflow-hidden" : "w-64"
         )}
       >
-        <div className="p-3 flex items-center gap-2">
+        {/* ChatPDF header and back button */}
+        <div className="p-3 flex items-center gap-2 border-b border-white/10">
           <Button 
             variant="ghost" 
             size="icon"
@@ -57,6 +217,15 @@ export default function PDFChat() {
           <span className="font-semibold text-sm">ChatPDF</span>
         </div>
 
+        {/* Workspace switcher */}
+        <div className="p-3">
+          <WorkspaceSwitcher isCollapsed={false} />
+        </div>
+        
+        {/* Upload zone */}
+        {renderUploadZone()}
+
+        {/* Rest of the sidebar content */}
         <div className="p-3 space-y-1.5">
           <Button 
             className="w-full justify-start gap-2 bg-white/10 hover:bg-white/20 text-white border-0 h-8 text-sm" 
