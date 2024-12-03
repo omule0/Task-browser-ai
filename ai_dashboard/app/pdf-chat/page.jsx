@@ -300,24 +300,6 @@ export default function PDFChat() {
         {/* Upload zone */}
         {renderUploadZone()}
 
-        {/* Rest of the sidebar content */}
-        <div className="p-3 space-y-1.5">
-          <Button 
-            className="w-full justify-start gap-2 bg-white/10 hover:bg-white/20 text-white border-0 h-8 text-sm" 
-            variant="outline"
-          >
-            <Plus size={14} />
-            New Chat
-          </Button>
-          <Button 
-            className="w-full justify-start gap-2 bg-white/10 hover:bg-white/20 text-white border-0 h-8 text-sm" 
-            variant="outline"
-          >
-            <FolderPlus size={14} />
-            New Folder
-          </Button>
-        </div>
-
         <ScrollArea className="flex-1 px-3">
           <div className="space-y-1.5 pb-3">
             {loadingFiles ? (
@@ -413,8 +395,16 @@ export default function PDFChat() {
 
         {/* Chat Interface */}
         <div className="w-96 border-l border-gray-200 bg-white flex flex-col">
-          <div className="h-12 border-b border-gray-200 flex items-center px-4">
+          <div className="h-12 border-b border-gray-200 flex items-center justify-between px-4">
             <h2 className="font-semibold">Chat</h2>
+            <Button 
+              size="sm"
+              variant="ghost"
+              className="gap-2 text-sm"
+            >
+              <Plus size={14} />
+              New Chat
+            </Button>
           </div>
 
           <ScrollArea className="flex-1 p-4">
