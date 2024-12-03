@@ -42,6 +42,9 @@ export default function PDFChat() {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [inputMessage, setInputMessage] = useState('');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -285,15 +288,103 @@ export default function PDFChat() {
       
       const { data, error } = await supabase.storage
         .from('documents')
-        .createSignedUrl(`${currentWorkspace.id}/${user.id}/${file.name}`, 3600); // 1 hour expiry
+        .createSignedUrl(`${currentWorkspace.id}/${user.id}/${file.name}`, 3600);
 
       if (error) throw error;
 
       setSelectedFile(file);
       setPdfUrl(data.signedUrl);
+      
+      // Generate initial summary
+      await generateInitialSummary(file);
     } catch (error) {
       console.error('Error selecting file:', error);
       customToast.error('Error loading PDF file');
+    }
+  };
+
+  // Function to generate initial summary when PDF is selected
+  const generateInitialSummary = useCallback(async (file) => {
+    if (!file || !currentWorkspace) return;
+    
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const initialMessage = {
+        role: 'user',
+        content: 'Please provide a brief overview of this document.'
+      };
+      
+      const response = await fetch('/api/pdf-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [initialMessage],
+          fileId: `${currentWorkspace.id}/${user.id}/${file.name}`,
+          workspaceId: currentWorkspace.id,
+          userId: user.id
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate summary');
+      
+      const data = await response.json();
+      
+      setMessages([
+        initialMessage,
+        { role: 'assistant', content: data.response }
+      ]);
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      customToast.error('Failed to generate document summary');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentWorkspace]);
+
+  // Function to handle sending messages
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !selectedFile || !currentWorkspace) return;
+
+    const newMessage = {
+      role: 'user',
+      content: inputMessage
+    };
+
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const response = await fetch('/api/pdf-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, newMessage],
+          fileId: `${currentWorkspace.id}/${user.id}/${selectedFile.name}`,
+          workspaceId: currentWorkspace.id,
+          userId: user.id
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to get response');
+      
+      const data = await response.json();
+      
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.response
+      }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      customToast.error('Failed to get response');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -432,29 +523,30 @@ export default function PDFChat() {
 
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              <div className="flex gap-2 bg-gray-100 rounded-lg p-3">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex-shrink-0"></div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    The paper discusses several key themes regarding China's foreign
-                    policy towards Africa:
-                  </p>
-                  <ul className="mt-2 space-y-2 text-sm">
-                    <li>
-                      1. Multifaceted Interests: China's interests extend beyond
-                      mere access to natural resources...
-                    </li>
-                    <li>
-                      2. Economic Engagement: The paper highlights China's
-                      significant economic presence in Africa...
-                    </li>
-                    <li>
-                      3. Bureaucratic Challenges: The internal bureaucratic
-                      processes within China...
-                    </li>
-                  </ul>
+              {messages.map((message, index) => (
+                <div 
+                  key={index}
+                  className={cn(
+                    "flex gap-2 rounded-lg p-3",
+                    message.role === 'assistant' ? 'bg-gray-100' : 'bg-purple-50'
+                  )}
+                >
+                  <div 
+                    className={cn(
+                      "w-8 h-8 rounded-lg flex-shrink-0",
+                      message.role === 'assistant' ? 'bg-purple-600' : 'bg-purple-400'
+                    )}
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  </div>
                 </div>
-              </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              )}
             </div>
           </ScrollArea>
 
@@ -463,14 +555,29 @@ export default function PDFChat() {
               <Input
                 placeholder="Ask any question..."
                 className="pr-20 bg-gray-100 border-gray-300"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                disabled={isLoading || !selectedFile}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 text-purple-600"
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !selectedFile || !inputMessage.trim()}
                 >
-                  <Send size={16} />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
                 </Button>
               </div>
             </div>
