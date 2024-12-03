@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeft,
+  FileText,
 } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -36,6 +37,10 @@ export default function PDFChat() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [files, setFiles] = useState([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [numPages, setNumPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -269,6 +274,29 @@ export default function PDFChat() {
     return `${nameWithoutExt.slice(0, maxLength - 5)}...${extension}`;
   };
 
+  // Add function to handle file selection
+  const handleFileSelect = async (file) => {
+    try {
+      if (!currentWorkspace) return;
+      
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(`${currentWorkspace.id}/${user.id}/${file.name}`, 3600); // 1 hour expiry
+
+      if (error) throw error;
+
+      setSelectedFile(file);
+      setPdfUrl(data.signedUrl);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error('Error selecting file:', error);
+      customToast.error('Error loading PDF file');
+    }
+  };
+
   return (
     <div className="flex h-screen bg-white text-gray-800">
       {/* Sidebar with reduced width */}
@@ -315,8 +343,12 @@ export default function PDFChat() {
                 <Button
                   key={file.name}
                   variant="outline"
-                  className="w-full justify-start text-white/70 bg-white/10 hover:bg-white/20 border-0 h-auto py-2 px-3 text-sm group"
-                  title={file.originalName} // Add tooltip on hover
+                  className={cn(
+                    "w-full justify-start text-white/70 bg-white/10 hover:bg-white/20 border-0 h-auto py-2 px-3 text-sm group",
+                    selectedFile?.name === file.name && "bg-white/20 border-l-4 border-purple-600"
+                  )}
+                  title={file.originalName}
+                  onClick={() => handleFileSelect(file)}
                 >
                   <div className="flex items-center gap-2 w-full min-w-0">
                     <div className="w-5 h-5 flex-shrink-0">
@@ -356,40 +388,70 @@ export default function PDFChat() {
               {isSidebarCollapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
             </Button>
             <h2 className="text-base font-semibold flex-1">
-              Africa-in-China-web_CMG7.pdf
+              {selectedFile ? selectedFile.originalName : 'No file selected'}
             </h2>
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Minus size={14} />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <RotateCw size={14} />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <PlusIcon size={14} />
-              </Button>
-              <div className="flex items-center gap-1.5 bg-gray-100 rounded-md px-2 py-1">
-                <span className="text-sm">5</span>
-                <span className="text-sm text-gray-500">/ 49</span>
+            {selectedFile && (
+              <div className="flex items-center gap-1.5">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  <Minus size={14} />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(1)}
+                >
+                  <RotateCw size={14} />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))}
+                  disabled={currentPage >= numPages}
+                >
+                  <PlusIcon size={14} />
+                </Button>
+                <div className="flex items-center gap-1.5 bg-gray-100 rounded-md px-2 py-1">
+                  <span className="text-sm">{currentPage}</span>
+                  <span className="text-sm text-gray-500">/ {numPages}</span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <SearchIcon size={14} />
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <SearchIcon size={14} />
-              </Button>
-            </div>
+            )}
           </div>
 
-          <div className="flex-1 bg-gray-100 p-8 flex justify-center">
-            <div className="bg-gray-50 w-full max-w-2xl rounded-lg p-8 text-black">
-              <h1 className="text-4xl font-bold text-center mb-4">
-                AFRICA in CHINA'S
-              </h1>
-              <h1 className="text-4xl font-bold text-center mb-8">
-                FOREIGN POLICY
-              </h1>
-              <p className="text-center text-xl mb-4">YUN SUN</p>
-              <p className="text-center text-gray-500 mt-auto">April 2014</p>
-              <p className="text-center text-xl mt-8">BROOKINGS</p>
-            </div>
+          {/* PDF Content */}
+          <div className="flex-1 bg-gray-100 p-8 flex justify-center overflow-auto">
+            {!selectedFile ? (
+              <div className="flex items-center justify-center w-full">
+                <div className="text-center">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">No file selected</h3>
+                  <p className="text-sm text-gray-500">
+                    Select a PDF file from the sidebar to view it here
+                  </p>
+                </div>
+              </div>
+            ) : !pdfUrl ? (
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <iframe
+                src={`${pdfUrl}#page=${currentPage}`}
+                className="w-full h-full rounded-lg bg-white shadow-lg"
+                title={selectedFile.originalName}
+              />
+            )}
           </div>
         </div>
 
