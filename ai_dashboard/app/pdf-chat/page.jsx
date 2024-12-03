@@ -28,6 +28,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
@@ -582,8 +584,69 @@ export default function PDFChat() {
                       message.role === 'assistant' ? 'bg-purple-600' : 'bg-purple-400'
                     )}
                   />
-                  <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className="flex-1 prose prose-sm max-w-none prose-p:leading-normal prose-pre:my-0 prose-pre:bg-gray-800/75 prose-pre:text-gray-100">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Style links
+                        a: ({ node, ...props }) => (
+                          <a {...props} className="text-purple-600 hover:text-purple-800" target="_blank" rel="noopener noreferrer" />
+                        ),
+                        // Style code blocks
+                        pre: ({ node, ...props }) => (
+                          <pre {...props} className="p-3 rounded-md overflow-auto" />
+                        ),
+                        // Style inline code
+                        code: ({ node, inline, ...props }) => (
+                          <code
+                            {...props}
+                            className={cn(
+                              "text-sm",
+                              inline ? "text-purple-600 bg-purple-50 px-1 py-0.5 rounded" : ""
+                            )}
+                          />
+                        ),
+                        // Style lists
+                        ul: ({ node, ordered, ...props }) => (
+                          <ul {...props} className="list-disc pl-4 my-2" />
+                        ),
+                        ol: ({ node, ordered, ...props }) => (
+                          <ol {...props} className="list-decimal pl-4 my-2" />
+                        ),
+                        // Style paragraphs
+                        p: ({ node, ...props }) => (
+                          <p {...props} className="mb-2 last:mb-0" />
+                        ),
+                        // Style headings
+                        h1: ({ node, ...props }) => (
+                          <h1 {...props} className="text-xl font-bold mb-2" />
+                        ),
+                        h2: ({ node, ...props }) => (
+                          <h2 {...props} className="text-lg font-bold mb-2" />
+                        ),
+                        h3: ({ node, ...props }) => (
+                          <h3 {...props} className="text-base font-bold mb-2" />
+                        ),
+                        // Style blockquotes
+                        blockquote: ({ node, ...props }) => (
+                          <blockquote {...props} className="border-l-4 border-gray-200 pl-4 my-2 italic" />
+                        ),
+                        // Style tables
+                        table: ({ node, ...props }) => (
+                          <div className="overflow-auto my-2">
+                            <table {...props} className="min-w-full divide-y divide-gray-200" />
+                          </div>
+                        ),
+                        th: ({ node, ...props }) => (
+                          <th {...props} className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
+                        ),
+                        td: ({ node, ...props }) => (
+                          <td {...props} className="px-3 py-2 whitespace-nowrap text-sm text-gray-500" />
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
                   </div>
                 </div>
               ))}
