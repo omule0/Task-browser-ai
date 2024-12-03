@@ -25,6 +25,8 @@ import { useDropzone } from 'react-dropzone';
 import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { Loader2, Upload } from "lucide-react";
+import { FileIcon, defaultStyles } from 'react-file-icon';
+import { format } from 'date-fns';
 
 export default function PDFChat() {
   const router = useRouter();
@@ -32,6 +34,8 @@ export default function PDFChat() {
   const { currentWorkspace } = useWorkspace();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [files, setFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(true);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -194,13 +198,84 @@ export default function PDFChat() {
     </div>
   );
 
+  // Add loadFiles function
+  const loadFiles = async () => {
+    try {
+      if (!currentWorkspace) {
+        setFiles([]);
+        return;
+      }
+
+      setLoadingFiles(true);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .list(`${currentWorkspace.id}/${user.id}`);
+
+      if (error) throw error;
+
+      const processedFiles = (data || []).map(file => {
+        const parts = file.name.split('-');
+        const originalName = parts.slice(2).join('-');
+        return {
+          ...file,
+          originalName
+        };
+      });
+
+      const sortedFiles = processedFiles.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      setFiles(sortedFiles);
+    } catch (error) {
+      console.error('Error loading files:', error);
+      customToast.error('Error loading files');
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  // Add useEffect to load files when workspace changes
+  useEffect(() => {
+    if (currentWorkspace) {
+      loadFiles();
+    }
+  }, [currentWorkspace]);
+
+  // Add helper function for file icons
+  const getFileIconProps = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    return {
+      extension,
+      color: 'mistyrose',
+      type: 'acrobat',
+      fold: true,
+      radius: 8,
+    };
+  };
+
+  // Add this helper function to truncate file names
+  const truncateFileName = (fileName, maxLength = 20) => {
+    if (fileName.length <= maxLength) return fileName;
+    
+    const extension = fileName.split('.').pop();
+    const nameWithoutExt = fileName.slice(0, -(extension.length + 1));
+    
+    if (nameWithoutExt.length <= maxLength - 5) return fileName;
+    
+    return `${nameWithoutExt.slice(0, maxLength - 5)}...${extension}`;
+  };
+
   return (
     <div className="flex h-screen bg-white text-gray-800">
       {/* Sidebar with reduced width */}
       <div 
         className={cn(
           "border-r border-gray-200 bg-[#1E1E1E] text-white flex flex-col transition-all duration-300",
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-64"
+          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-72"
         )}
       >
         {/* ChatPDF header and back button */}
@@ -244,13 +319,42 @@ export default function PDFChat() {
         </div>
 
         <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1.5">
-            <Button
-              variant="outline"
-              className="w-full justify-start text-white/70 bg-white/10 hover:bg-white/20 border-0 h-8 text-sm"
-            >
-              Africa-in-China-web_CMG7.pdf
-            </Button>
+          <div className="space-y-1.5 pb-3">
+            {loadingFiles ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-white/70" />
+              </div>
+            ) : files.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-white/70">No files uploaded</p>
+              </div>
+            ) : (
+              files.map((file) => (
+                <Button
+                  key={file.name}
+                  variant="outline"
+                  className="w-full justify-start text-white/70 bg-white/10 hover:bg-white/20 border-0 h-auto py-2 px-3 text-sm group"
+                  title={file.originalName} // Add tooltip on hover
+                >
+                  <div className="flex items-center gap-2 w-full min-w-0">
+                    <div className="w-5 h-5 flex-shrink-0">
+                      <FileIcon
+                        {...getFileIconProps(file.originalName)}
+                        {...defaultStyles}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-sm leading-none mb-1 group-hover:text-white transition-colors">
+                        {truncateFileName(file.originalName)}
+                      </p>
+                      <p className="text-[10px] text-white/50 truncate">
+                        {format(new Date(file.created_at), "MMM d, yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                </Button>
+              ))
+            )}
           </div>
         </ScrollArea>
       </div>
