@@ -2,16 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
-  ChevronDown,
   Send,
-  Minus,
-  PlusIcon,
-  RotateCw,
-  SearchIcon,
   Plus,
-  FolderPlus,
   ArrowLeft,
   PanelLeftClose,
   PanelLeft,
