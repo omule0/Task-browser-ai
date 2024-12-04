@@ -17,6 +17,7 @@ import { FileIcon, defaultStyles } from 'react-file-icon';
 import { format } from 'date-fns';
 import { ChatInterface } from "@/components/pdf-chat/ChatInterface";
 import { PdfSection } from "@/components/pdf-chat/PdfSection";
+import { processDocumentContent } from '@/utils/text-processing';
 
 export default function PDFChat() {
   const router = useRouter();
@@ -266,7 +267,39 @@ export default function PDFChat() {
     return `${nameWithoutExt.slice(0, maxLength - 5)}...${extension}`;
   };
 
-  // Add function to handle file selection
+  // Add this function near the top of your component
+  const checkAndProcessDocument = async (file) => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get document content
+      const { data: docContent, error: docError } = await supabase
+        .from('document_content')
+        .select('content')
+        .eq('file_path', `${currentWorkspace.id}/${user.id}/${file.name}`)
+        .single();
+
+      if (docError) throw docError;
+      if (!docContent) throw new Error('No content found for this document');
+
+      // Process document content (will only process if not already processed)
+      await processDocumentContent(
+        docContent.content,
+        `${currentWorkspace.id}/${user.id}/${file.name}`,
+        currentWorkspace.id,
+        user.id
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error checking/processing document:', error);
+      customToast.error('Error preparing document for chat');
+      return false;
+    }
+  };
+
+  // Update the handleFileSelect function
   const handleFileSelect = async (file) => {
     try {
       if (!currentWorkspace) return;
@@ -274,19 +307,22 @@ export default function PDFChat() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Get signed URL for PDF viewer
       const { data, error } = await supabase.storage
         .from('documents')
         .createSignedUrl(`${currentWorkspace.id}/${user.id}/${file.name}`, 3600);
 
       if (error) throw error;
 
+      // Check and process document if needed
+      const isReady = await checkAndProcessDocument(file);
+      if (!isReady) return;
+
       setSelectedFile(file);
       setPdfUrl(data.signedUrl);
       
-      // Generate initial summary and questions
-      await Promise.all([
-        generateInitialSummary(file),
-      ]);
+      // Generate initial summary
+      await generateInitialSummary(file);
     } catch (error) {
       console.error('Error selecting file:', error);
       customToast.error('Error loading PDF file');

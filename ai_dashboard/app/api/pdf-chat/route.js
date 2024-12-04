@@ -36,9 +36,7 @@ export async function POST(request) {
 
     // Process document if it's the initial greeting
     if (initialGreeting) {
-      await processDocumentContent(docContent.content, fileId, workspaceId, userId);
-
-      // Template for initial greeting with overview
+      // No need to process document here as it's already handled during file selection
       const overviewTemplate = `Analyze the following document content and provide:
       1. A clear, concise overview of its main points and purpose (2-3 sentences)
       2. Three insightful questions that would help understand the key aspects of the document
