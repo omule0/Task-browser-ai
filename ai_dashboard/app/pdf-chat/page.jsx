@@ -437,11 +437,11 @@ export default function PDFChat() {
 
   return (
     <div className="flex h-screen bg-white text-gray-800">
-      {/* Sidebar with reduced width */}
+      {/* Sidebar */}
       <div 
         className={cn(
           "border-r border-gray-200 bg-[#1E1E1E] text-white flex flex-col transition-all duration-300",
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-72"
+          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-[20%]"
         )}
       >
         {/* ChatPDF header and back button */}
@@ -513,8 +513,8 @@ export default function PDFChat() {
 
       {/* Main Content */}
       <div className="flex-1 flex">
-        {/* PDF Viewer */}
-        <div className="flex-1 flex flex-col">
+        {/* PDF Viewer  */}
+        <div className="w-[40%] flex flex-col">
           {/* PDF Header */}
           <div className="flex items-center px-3 py-2 border-b border-gray-200 gap-3">
             <Button
@@ -531,7 +531,7 @@ export default function PDFChat() {
           </div>
 
           {/* PDF Content */}
-          <div className="flex-1 bg-gray-100 flex justify-center overflow-auto">
+          <div className="flex-1 bg-gray-100 flex justify-center overflow-hidden">
             {!selectedFile ? (
               <div className="flex items-center justify-center w-full p-8">
                 <div className="text-center">
@@ -547,7 +547,7 @@ export default function PDFChat() {
                 <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : (
-              <div className="w-full h-full">
+              <div className="w-full h-full relative">
                 <PdfViewer url={pdfUrl} />
               </div>
             )}
@@ -555,7 +555,7 @@ export default function PDFChat() {
         </div>
 
         {/* Chat Interface */}
-        <div className="w-96 border-l border-gray-200 bg-white flex flex-col">
+        <div className="flex-1 border-l border-gray-200 bg-white flex flex-col">
           <div className="h-12 border-b border-gray-200 flex items-center justify-between px-4">
             <h2 className="font-semibold">Chat</h2>
             <Button 
