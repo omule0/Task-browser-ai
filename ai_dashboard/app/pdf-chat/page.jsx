@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   FileText,
+  ChevronDown,
 } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
@@ -54,6 +55,7 @@ export default function PDFChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
+  const [isQuestionsCollapsed, setIsQuestionsCollapsed] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -307,7 +309,6 @@ export default function PDFChat() {
       // Generate initial summary and questions
       await Promise.all([
         generateInitialSummary(file),
-        generateQuestions(file)
       ]);
     } catch (error) {
       console.error('Error selecting file:', error);
@@ -332,7 +333,7 @@ export default function PDFChat() {
           fileId: `${currentWorkspace.id}/${user.id}/${file.name}`,
           workspaceId: currentWorkspace.id,
           userId: user.id,
-          initialGreeting: true  // New flag to indicate we want a greeting
+          initialGreeting: true
         })
       });
 
@@ -346,46 +347,14 @@ export default function PDFChat() {
           content: `👋 Hi! I'm here to help you understand "${file.originalName}". Here's a brief overview:\n\n${data.response}`
         }
       ]);
+
+      // Set suggested questions directly from the initial response
+      setSuggestedQuestions(data.suggestedQuestions);
     } catch (error) {
       console.error('Error generating summary:', error);
       customToast.error('Failed to generate document summary');
     } finally {
       setIsLoading(false);
-    }
-  }, [currentWorkspace]);
-
-  // Function to generate questions
-  const generateQuestions = useCallback(async (file) => {
-    if (!file || !currentWorkspace) return;
-    
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const response = await fetch('/api/pdf-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [],
-          fileId: `${currentWorkspace.id}/${user.id}/${file.name}`,
-          generateQuestions: true
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to generate questions');
-      
-      const data = await response.json();
-      
-      // Parse the numbered list into an array
-      const questions = data.suggestedQuestions
-        .split('\n')
-        .filter(line => line.trim())
-        .map(line => line.replace(/^\d+\.\s*/, '').trim());
-      
-      setSuggestedQuestions(questions);
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      customToast.error('Failed to generate questions');
     }
   }, [currentWorkspace]);
 
@@ -658,8 +627,23 @@ export default function PDFChat() {
 
           {suggestedQuestions.length > 0 && (
             <div className="px-4 py-2 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-500 mb-2">Suggested Questions:</p>
-              <div className="space-y-1.5">
+              <button 
+                onClick={() => setIsQuestionsCollapsed(!isQuestionsCollapsed)}
+                className="w-full flex items-center justify-between text-sm font-medium text-gray-500 mb-2 hover:text-gray-700"
+              >
+                <span>Suggested Questions</span>
+                <ChevronDown 
+                  size={16} 
+                  className={cn(
+                    "transition-transform duration-200",
+                    isQuestionsCollapsed ? "rotate-180" : ""
+                  )}
+                />
+              </button>
+              <div className={cn(
+                "space-y-1.5 transition-all duration-200 overflow-hidden",
+                isQuestionsCollapsed ? "h-0" : "h-auto"
+              )}>
                 {suggestedQuestions.map((question, index) => (
                   <TooltipProvider key={index} delayDuration={300}>
                     <Tooltip>
@@ -667,10 +651,7 @@ export default function PDFChat() {
                         <button
                           className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
                           onClick={() => {
-                            // Set the input message and immediately send it
                             setInputMessage(question);
-                            // We need to create a new message and send it manually
-                            // since setInputMessage is asynchronous
                             const newMessage = {
                               role: 'user',
                               content: question
@@ -678,7 +659,6 @@ export default function PDFChat() {
                             setMessages(prev => [...prev, newMessage]);
                             setIsLoading(true);
 
-                            // Send the message
                             (async () => {
                               try {
                                 const supabase = createClient();
@@ -708,7 +688,7 @@ export default function PDFChat() {
                                 customToast.error('Failed to get response');
                               } finally {
                                 setIsLoading(false);
-                                setInputMessage(''); // Clear input after sending
+                                setInputMessage('');
                               }
                             })();
                           }}

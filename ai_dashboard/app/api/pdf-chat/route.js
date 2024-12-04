@@ -60,11 +60,19 @@ export async function POST(request) {
 
     // Template for initial greeting with overview
     if (initialGreeting) {
-      const overviewTemplate = `Analyze the following document content and provide a clear, concise overview of its main points and purpose. Keep the response brief and informative.
+      const overviewTemplate = `Analyze the following document content and provide:
+      1. A clear, concise overview of its main points and purpose (2-3 sentences)
+      2. Three insightful questions that would help understand the key aspects of the document
 
       Document content: {context}
 
-      Overview:`;
+      Respond in this format:
+      OVERVIEW: [Your overview here]
+
+      SUGGESTED QUESTIONS:
+      1. [First question]
+      2. [Second question]
+      3. [Third question]`;
 
       const overviewPrompt = PromptTemplate.fromTemplate(overviewTemplate);
 
@@ -78,7 +86,19 @@ export async function POST(request) {
       ]);
 
       const response = await overviewChain.invoke({});
-      return new Response(JSON.stringify({ response }), {
+      
+      // Parse the response to extract questions
+      const parts = response.split('SUGGESTED QUESTIONS:');
+      const overview = parts[0].replace('OVERVIEW:', '').trim();
+      const questions = parts[1]
+        ?.split('\n')
+        .filter(line => line.trim())
+        .map(line => line.replace(/^\d+\.\s*/, '').trim()) || [];
+
+      return new Response(JSON.stringify({ 
+        response: overview,
+        suggestedQuestions: questions 
+      }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
