@@ -324,19 +324,15 @@ export default function PDFChat() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      const initialMessage = {
-        role: 'user',
-        content: 'Please provide a brief overview of this document.'
-      };
-      
       const response = await fetch('/api/pdf-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [initialMessage],
+          messages: [],
           fileId: `${currentWorkspace.id}/${user.id}/${file.name}`,
           workspaceId: currentWorkspace.id,
-          userId: user.id
+          userId: user.id,
+          initialGreeting: true  // New flag to indicate we want a greeting
         })
       });
 
@@ -345,8 +341,10 @@ export default function PDFChat() {
       const data = await response.json();
       
       setMessages([
-        initialMessage,
-        { role: 'assistant', content: data.response }
+        { 
+          role: 'assistant', 
+          content: `👋 Hi! I'm here to help you understand "${file.originalName}". Here's a brief overview:\n\n${data.response}`
+        }
       ]);
     } catch (error) {
       console.error('Error generating summary:', error);

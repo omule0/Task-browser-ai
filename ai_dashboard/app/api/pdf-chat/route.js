@@ -6,9 +6,9 @@ import { RunnableSequence } from "@langchain/core/runnables";
 
 export async function POST(request) {
   try {
-    const { messages, fileId, generateQuestions } = await request.json();
+    const { messages, fileId, generateQuestions, initialGreeting } = await request.json();
 
-    // Initialize Supabase client - make sure to await it
+    // Initialize Supabase client
     const supabase = await createClient();
 
     // Get document content
@@ -54,6 +54,31 @@ export async function POST(request) {
 
       const suggestedQuestions = await questionChain.invoke({});
       return new Response(JSON.stringify({ suggestedQuestions }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Template for initial greeting with overview
+    if (initialGreeting) {
+      const overviewTemplate = `Analyze the following document content and provide a clear, concise overview of its main points and purpose. Keep the response brief and informative.
+
+      Document content: {context}
+
+      Overview:`;
+
+      const overviewPrompt = PromptTemplate.fromTemplate(overviewTemplate);
+
+      const overviewChain = RunnableSequence.from([
+        {
+          context: () => docContent.content,
+        },
+        overviewPrompt,
+        chatModel,
+        new StringOutputParser()
+      ]);
+
+      const response = await overviewChain.invoke({});
+      return new Response(JSON.stringify({ response }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
