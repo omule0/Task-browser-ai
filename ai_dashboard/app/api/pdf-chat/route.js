@@ -3,10 +3,11 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
+import { processDocumentContent, retrieveRelevantChunks, formatCitations } from '@/utils/text-processing';
 
 export async function POST(request) {
   try {
-    const { messages, fileId, generateQuestions, initialGreeting } = await request.json();
+    const { messages, fileId, workspaceId, userId, initialGreeting } = await request.json();
 
     // Initialize Supabase client
     const supabase = await createClient();
@@ -29,37 +30,15 @@ export async function POST(request) {
 
     // Initialize chat model
     const chatModel = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+      modelName: "gpt-4",
       temperature: 0.7,
     });
 
-    if (generateQuestions) {
-      // Template for generating questions
-      const questionTemplate = `Based on the following document content, generate 3 insightful questions that would help understand the key points of the document better. Format the response as a numbered list.
-
-      Document content: {context}
-
-      Generate 3 questions:`;
-
-      const questionPrompt = PromptTemplate.fromTemplate(questionTemplate);
-
-      const questionChain = RunnableSequence.from([
-        {
-          context: () => docContent.content,
-        },
-        questionPrompt,
-        chatModel,
-        new StringOutputParser()
-      ]);
-
-      const suggestedQuestions = await questionChain.invoke({});
-      return new Response(JSON.stringify({ suggestedQuestions }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Template for initial greeting with overview
+    // Process document if it's the initial greeting
     if (initialGreeting) {
+      await processDocumentContent(docContent.content, fileId, workspaceId, userId);
+
+      // Template for initial greeting with overview
       const overviewTemplate = `Analyze the following document content and provide:
       1. A clear, concise overview of its main points and purpose (2-3 sentences)
       2. Three insightful questions that would help understand the key aspects of the document
@@ -103,16 +82,29 @@ export async function POST(request) {
       });
     }
 
+    // For regular chat messages, retrieve relevant chunks
+    const lastMessage = messages[messages.length - 1].content;
+    const relevantChunks = await retrieveRelevantChunks(lastMessage, fileId, workspaceId, userId);
+    const citations = formatCitations(relevantChunks);
+
     // Regular chat template
     const TEMPLATE = `You are a helpful AI assistant that helps users understand PDF documents.
-    Use the following document content to answer questions. If you don't know the answer based on the content, say so.
+    Use the following relevant document sections to answer questions. If you don't know the answer based on the content, say so.
     
-    Document content: {context}
+    Relevant sections:
+    {context}
     
     Current conversation:
     {chat_history}
     
     Human: {question}
+
+    Important Instructions:
+    1. Base your answer only on the provided relevant sections
+    2. Include inline citations using [n] format, where n is the citation number
+    3. If you quote directly, use quotation marks and include the citation
+    4. At the end of your response, list the sources used under a "Sources:" section
+    
     Assistant:`;
 
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
@@ -120,9 +112,11 @@ export async function POST(request) {
     // Create the chain
     const chain = RunnableSequence.from([
       {
-        context: () => docContent.content,
+        context: () => relevantChunks.map((doc, i) => 
+          `[${i + 1}] ${doc.pageContent}`
+        ).join('\n\n'),
         chat_history: () => messages.slice(0, -1).map(m => `${m.role}: ${m.content}`).join('\n'),
-        question: () => messages[messages.length - 1].content,
+        question: () => lastMessage,
       },
       prompt,
       chatModel,
@@ -132,7 +126,10 @@ export async function POST(request) {
     // Generate response
     const response = await chain.invoke({});
 
-    return new Response(JSON.stringify({ response }), {
+    return new Response(JSON.stringify({ 
+      response,
+      citations 
+    }), {
       headers: { 'Content-Type': 'application/json' },
     });
 

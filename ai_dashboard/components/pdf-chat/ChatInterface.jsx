@@ -28,6 +28,47 @@ export function ChatInterface({
     handleSendMessage(question);
   };
 
+  const renderMessageContent = (message) => {
+    if (message.role === 'assistant' && message.citations) {
+      return (
+        <div>
+          <div className="prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
+          </div>
+          {message.citations && message.citations.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">Sources:</h4>
+              <div className="space-y-2">
+                {message.citations.map((citation) => (
+                  <div 
+                    key={citation.id}
+                    className="text-sm text-gray-600 bg-gray-50 p-2 rounded"
+                  >
+                    <span className="font-medium text-gray-700">[{citation.id}]</span>
+                    <span className="ml-2">{citation.text.substring(0, 150)}...</span>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Location: {citation.location}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="prose prose-sm max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {message.content}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 border-l border-gray-200 bg-white flex flex-col">
       <div className="h-12 border-b border-gray-200 flex items-center justify-between px-4">
@@ -58,61 +99,8 @@ export function ChatInterface({
                   message.role === 'assistant' ? 'bg-purple-600' : 'bg-purple-400'
                 )}
               />
-              <div className="flex-1 prose prose-sm max-w-none prose-p:leading-normal prose-pre:my-0 prose-pre:bg-gray-800/75 prose-pre:text-gray-100">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    a: ({ node, ...props }) => (
-                      <a {...props} className="text-purple-600 hover:text-purple-800" target="_blank" rel="noopener noreferrer" />
-                    ),
-                    pre: ({ node, ...props }) => (
-                      <pre {...props} className="p-3 rounded-md overflow-auto" />
-                    ),
-                    code: ({ node, inline, ...props }) => (
-                      <code
-                        {...props}
-                        className={cn(
-                          "text-sm",
-                          inline ? "text-purple-600 bg-purple-50 px-1 py-0.5 rounded" : ""
-                        )}
-                      />
-                    ),
-                    ul: ({ node, ordered, ...props }) => (
-                      <ul {...props} className="list-disc pl-4 my-2" />
-                    ),
-                    ol: ({ node, ordered, ...props }) => (
-                      <ol {...props} className="list-decimal pl-4 my-2" />
-                    ),
-                    p: ({ node, ...props }) => (
-                      <p {...props} className="mb-2 last:mb-0" />
-                    ),
-                    h1: ({ node, ...props }) => (
-                      <h1 {...props} className="text-xl font-bold mb-2" />
-                    ),
-                    h2: ({ node, ...props }) => (
-                      <h2 {...props} className="text-lg font-bold mb-2" />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 {...props} className="text-base font-bold mb-2" />
-                    ),
-                    blockquote: ({ node, ...props }) => (
-                      <blockquote {...props} className="border-l-4 border-gray-200 pl-4 my-2 italic" />
-                    ),
-                    table: ({ node, ...props }) => (
-                      <div className="overflow-auto my-2">
-                        <table {...props} className="min-w-full divide-y divide-gray-200" />
-                      </div>
-                    ),
-                    th: ({ node, ...props }) => (
-                      <th {...props} className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
-                    ),
-                    td: ({ node, ...props }) => (
-                      <td {...props} className="px-3 py-2 whitespace-nowrap text-sm text-gray-500" />
-                    ),
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
+              <div className="flex-1">
+                {renderMessageContent(message)}
               </div>
             </div>
           ))}

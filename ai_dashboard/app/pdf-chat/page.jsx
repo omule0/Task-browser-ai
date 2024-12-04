@@ -371,7 +371,8 @@ export default function PDFChat() {
       
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: data.response
+        content: data.response,
+        citations: data.citations
       }]);
     } catch (error) {
       console.error('Chat error:', error);
