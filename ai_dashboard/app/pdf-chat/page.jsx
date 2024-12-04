@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/tooltip";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ChatInterface } from "@/components/pdf-chat/ChatInterface";
 
 const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
@@ -359,16 +360,18 @@ export default function PDFChat() {
   }, [currentWorkspace]);
 
   // Function to handle sending messages
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !selectedFile || !currentWorkspace) return;
+  const handleSendMessage = async (messageText) => {
+    // Use provided message text or input message
+    const message = messageText || inputMessage;
+    if (!message.trim() || !selectedFile || !currentWorkspace) return;
 
     const newMessage = {
       role: 'user',
-      content: inputMessage
+      content: message
     };
 
     setMessages(prev => [...prev, newMessage]);
-    setInputMessage('');
+    setInputMessage(''); // Clear input only if we used it
     setIsLoading(true);
 
     try {
@@ -522,230 +525,17 @@ export default function PDFChat() {
         </div>
 
         {/* Chat Interface */}
-        <div className="flex-1 border-l border-gray-200 bg-white flex flex-col">
-          <div className="h-12 border-b border-gray-200 flex items-center justify-between px-4">
-            <h2 className="font-semibold">Chat</h2>
-            <Button 
-              size="sm"
-              variant="ghost"
-              className="gap-2 text-sm"
-            >
-              <Plus size={14} />
-              New Chat
-            </Button>
-          </div>
-
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div 
-                  key={index}
-                  className={cn(
-                    "flex gap-2 rounded-lg p-3",
-                    message.role === 'assistant' ? 'bg-gray-100' : 'bg-purple-50'
-                  )}
-                >
-                  <div 
-                    className={cn(
-                      "w-8 h-8 rounded-lg flex-shrink-0",
-                      message.role === 'assistant' ? 'bg-purple-600' : 'bg-purple-400'
-                    )}
-                  />
-                  <div className="flex-1 prose prose-sm max-w-none prose-p:leading-normal prose-pre:my-0 prose-pre:bg-gray-800/75 prose-pre:text-gray-100">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        // Style links
-                        a: ({ node, ...props }) => (
-                          <a {...props} className="text-purple-600 hover:text-purple-800" target="_blank" rel="noopener noreferrer" />
-                        ),
-                        // Style code blocks
-                        pre: ({ node, ...props }) => (
-                          <pre {...props} className="p-3 rounded-md overflow-auto" />
-                        ),
-                        // Style inline code
-                        code: ({ node, inline, ...props }) => (
-                          <code
-                            {...props}
-                            className={cn(
-                              "text-sm",
-                              inline ? "text-purple-600 bg-purple-50 px-1 py-0.5 rounded" : ""
-                            )}
-                          />
-                        ),
-                        // Style lists
-                        ul: ({ node, ordered, ...props }) => (
-                          <ul {...props} className="list-disc pl-4 my-2" />
-                        ),
-                        ol: ({ node, ordered, ...props }) => (
-                          <ol {...props} className="list-decimal pl-4 my-2" />
-                        ),
-                        // Style paragraphs
-                        p: ({ node, ...props }) => (
-                          <p {...props} className="mb-2 last:mb-0" />
-                        ),
-                        // Style headings
-                        h1: ({ node, ...props }) => (
-                          <h1 {...props} className="text-xl font-bold mb-2" />
-                        ),
-                        h2: ({ node, ...props }) => (
-                          <h2 {...props} className="text-lg font-bold mb-2" />
-                        ),
-                        h3: ({ node, ...props }) => (
-                          <h3 {...props} className="text-base font-bold mb-2" />
-                        ),
-                        // Style blockquotes
-                        blockquote: ({ node, ...props }) => (
-                          <blockquote {...props} className="border-l-4 border-gray-200 pl-4 my-2 italic" />
-                        ),
-                        // Style tables
-                        table: ({ node, ...props }) => (
-                          <div className="overflow-auto my-2">
-                            <table {...props} className="min-w-full divide-y divide-gray-200" />
-                          </div>
-                        ),
-                        th: ({ node, ...props }) => (
-                          <th {...props} className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" />
-                        ),
-                        td: ({ node, ...props }) => (
-                          <td {...props} className="px-3 py-2 whitespace-nowrap text-sm text-gray-500" />
-                        ),
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          {suggestedQuestions.length > 0 && (
-            <div className="px-4 py-2 border-t border-gray-200">
-              <button 
-                onClick={() => setIsQuestionsCollapsed(!isQuestionsCollapsed)}
-                className="w-full flex items-center justify-between text-sm font-medium text-gray-500 mb-2 hover:text-gray-700"
-              >
-                <span>Suggested Questions</span>
-                <ChevronDown 
-                  size={16} 
-                  className={cn(
-                    "transition-transform duration-200",
-                    isQuestionsCollapsed ? "rotate-180" : ""
-                  )}
-                />
-              </button>
-              <div className={cn(
-                "space-y-1.5 transition-all duration-200 overflow-hidden",
-                isQuestionsCollapsed ? "h-0" : "h-auto"
-              )}>
-                {suggestedQuestions.map((question, index) => (
-                  <TooltipProvider key={index} delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-                          onClick={() => {
-                            setInputMessage(question);
-                            const newMessage = {
-                              role: 'user',
-                              content: question
-                            };
-                            setMessages(prev => [...prev, newMessage]);
-                            setIsLoading(true);
-
-                            (async () => {
-                              try {
-                                const supabase = createClient();
-                                const { data: { user } } = await supabase.auth.getUser();
-
-                                const response = await fetch('/api/pdf-chat', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({
-                                    messages: [...messages, newMessage],
-                                    fileId: `${currentWorkspace.id}/${user.id}/${selectedFile.name}`,
-                                    workspaceId: currentWorkspace.id,
-                                    userId: user.id
-                                  })
-                                });
-
-                                if (!response.ok) throw new Error('Failed to get response');
-                                
-                                const data = await response.json();
-                                
-                                setMessages(prev => [...prev, {
-                                  role: 'assistant',
-                                  content: data.response
-                                }]);
-                              } catch (error) {
-                                console.error('Chat error:', error);
-                                customToast.error('Failed to get response');
-                              } finally {
-                                setIsLoading(false);
-                                setInputMessage('');
-                              }
-                            })();
-                          }}
-                          disabled={isLoading}
-                        >
-                          <div className="flex items-start gap-2">
-                            <span className="text-purple-500 mt-0.5">•</span>
-                            <span className="line-clamp-2">{question}</span>
-                          </div>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent 
-                        side="left" 
-                        className="max-w-[300px] break-words"
-                      >
-                        {question}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="p-4 border-t border-gray-200">
-            <div className="relative">
-              <Input
-                placeholder="Ask any question..."
-                className="pr-20 bg-gray-100 border-gray-300"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                disabled={isLoading || !selectedFile}
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-purple-600"
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !selectedFile || !inputMessage.trim()}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send size={16} />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ChatInterface 
+          messages={messages}
+          isLoading={isLoading}
+          inputMessage={inputMessage}
+          setInputMessage={setInputMessage}
+          handleSendMessage={handleSendMessage}
+          suggestedQuestions={suggestedQuestions}
+          isQuestionsCollapsed={isQuestionsCollapsed}
+          setIsQuestionsCollapsed={setIsQuestionsCollapsed}
+          selectedFile={selectedFile}
+        />
       </div>
     </div>
   );
