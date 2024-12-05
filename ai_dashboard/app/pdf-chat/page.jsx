@@ -34,6 +34,7 @@ export default function PDFChat() {
   const [inputMessage, setInputMessage] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
   const [isQuestionsCollapsed, setIsQuestionsCollapsed] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -302,6 +303,8 @@ export default function PDFChat() {
   // Update the handleFileSelect function
   const handleFileSelect = async (file) => {
     try {
+      setLoadingMessage('Preparing document for analysis...');
+      
       if (!currentWorkspace) return;
       
       const supabase = createClient();
@@ -316,16 +319,24 @@ export default function PDFChat() {
 
       // Check and process document if needed
       const isReady = await checkAndProcessDocument(file);
-      if (!isReady) return;
+      if (!isReady) {
+        setLoadingMessage('Failed to process document. Please try again.');
+        return;
+      }
 
       setSelectedFile(file);
       setPdfUrl(data.signedUrl);
       
       // Generate initial summary
+      setLoadingMessage('Generating document summary...');
       await generateInitialSummary(file);
     } catch (error) {
       console.error('Error selecting file:', error);
+      setLoadingMessage('Error loading PDF file. Please try again.');
       customToast.error('Error loading PDF file');
+    } finally {
+      // Clear loading message after a short delay
+      setTimeout(() => setLoadingMessage(''), 2000);
     }
   };
 
@@ -373,7 +384,6 @@ export default function PDFChat() {
 
   // Function to handle sending messages
   const handleSendMessage = async (messageText) => {
-    // Use provided message text or input message
     const message = messageText || inputMessage;
     if (!message.trim() || !selectedFile || !currentWorkspace) return;
 
@@ -383,8 +393,9 @@ export default function PDFChat() {
     };
 
     setMessages(prev => [...prev, newMessage]);
-    setInputMessage(''); // Clear input only if we used it
+    setInputMessage('');
     setIsLoading(true);
+    setLoadingMessage('Analyzing your question...');
 
     try {
       const supabase = createClient();
@@ -410,16 +421,21 @@ export default function PDFChat() {
         content: data.response,
         citations: data.citations
       }]);
+      setLoadingMessage('');
     } catch (error) {
       console.error('Chat error:', error);
+      setLoadingMessage('Failed to get response. Please try again.');
       customToast.error('Failed to get response');
     } finally {
       setIsLoading(false);
+      setTimeout(() => setLoadingMessage(''), 2000);
     }
   };
 
   // Add a new function to handle creating a new chat
   const handleNewChat = () => {
+    setLoadingMessage('Starting a new chat session...');
+    
     // Reset chat-related states
     setMessages([]);
     setInputMessage('');
@@ -430,6 +446,8 @@ export default function PDFChat() {
     if (selectedFile) {
       generateInitialSummary(selectedFile);
     }
+
+    setTimeout(() => setLoadingMessage(''), 1500);
   };
 
   return (
@@ -530,6 +548,7 @@ export default function PDFChat() {
           setIsQuestionsCollapsed={setIsQuestionsCollapsed}
           selectedFile={selectedFile}
           onNewChat={handleNewChat}
+          loadingMessage={loadingMessage}
         />
       </div>
     </div>

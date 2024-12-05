@@ -17,7 +17,8 @@ export function ChatInterface({
   isQuestionsCollapsed,
   setIsQuestionsCollapsed,
   selectedFile,
-  onNewChat
+  onNewChat,
+  loadingMessage,
 }) {
   const handleQuestionClick = (question) => {
     handleSendMessage(question);
@@ -116,9 +117,12 @@ export function ChatInterface({
               </div>
             </div>
           ))}
-          {isLoading && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          {(isLoading || loadingMessage) && (
+            <div className="flex flex-col items-center justify-center py-4 bg-secondary/50 rounded-lg">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground text-center">
+                {loadingMessage || 'Processing...'}
+              </p>
             </div>
           )}
         </div>
