@@ -2,17 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible";
 import { Send, ChevronDown, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
@@ -136,49 +125,38 @@ export function ChatInterface({
       </ScrollArea>
 
       {suggestedQuestions.length > 0 && (
-        <Collapsible 
-          open={!isQuestionsCollapsed}
-          onOpenChange={setIsQuestionsCollapsed}
-          className="border-t border-border"
-        >
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between px-4 py-2 hover:bg-secondary/50 cursor-pointer">
-              <span className="text-sm font-medium text-muted-foreground">
-                Suggested Questions
-              </span>
-              <ChevronDown 
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  isQuestionsCollapsed ? "rotate-180" : ""
-                )} 
-              />
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="px-4 pb-3 space-y-2">
-              {suggestedQuestions.map((question, index) => (
-                <TooltipProvider key={index}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-left"
-                        onClick={() => handleQuestionClick(question)}
-                        disabled={isLoading}
-                      >
-                        <span className="text-primary mr-2">•</span>
-                        <span className="line-clamp-2 text-sm">{question}</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-xs">
-                      {question}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <div className="px-4 py-2 border-t border-border">
+          <button 
+            onClick={() => setIsQuestionsCollapsed(!isQuestionsCollapsed)}
+            className="w-full flex items-center justify-between text-sm font-medium text-muted-foreground mb-2 hover:text-foreground"
+          >
+            <span>Suggested Questions</span>
+            <ChevronDown 
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isQuestionsCollapsed ? "rotate-180" : ""
+              )} 
+            />
+          </button>
+          <div className={cn(
+            "space-y-1.5 transition-all duration-200 overflow-hidden",
+            isQuestionsCollapsed ? "h-0" : "h-auto"
+          )}>
+            {suggestedQuestions.map((question, index) => (
+              <button
+                key={index}
+                className="w-full text-left px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors"
+                onClick={() => handleQuestionClick(question)}
+                disabled={isLoading}
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">•</span>
+                  <span className="line-clamp-2">{question}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="p-4 border-t border-border">
