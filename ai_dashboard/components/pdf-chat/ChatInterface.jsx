@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, ChevronDown, Loader2, Plus } from "lucide-react";
+import { Send, ChevronDown, Loader2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -22,10 +22,12 @@ export function ChatInterface({
   suggestedQuestions,
   isQuestionsCollapsed,
   setIsQuestionsCollapsed,
-  selectedFile
+  selectedFile,
+  onNewChat
 }) {
   const handleQuestionClick = (question) => {
     handleSendMessage(question);
+    setIsQuestionsCollapsed(true);
   };
 
   const renderMessageContent = (message) => {
@@ -77,6 +79,7 @@ export function ChatInterface({
           size="sm"
           variant="ghost"
           className="gap-2 text-sm"
+          onClick={onNewChat}
         >
           <Plus size={14} />
           New Chat

@@ -418,6 +418,20 @@ export default function PDFChat() {
     }
   };
 
+  // Add a new function to handle creating a new chat
+  const handleNewChat = () => {
+    // Reset chat-related states
+    setMessages([]);
+    setInputMessage('');
+    setSuggestedQuestions([]);
+    setIsLoading(false);
+
+    // If a file is selected, generate an initial greeting
+    if (selectedFile) {
+      generateInitialSummary(selectedFile);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-white text-gray-800">
       {/* Sidebar */}
@@ -515,6 +529,7 @@ export default function PDFChat() {
           isQuestionsCollapsed={isQuestionsCollapsed}
           setIsQuestionsCollapsed={setIsQuestionsCollapsed}
           selectedFile={selectedFile}
+          onNewChat={handleNewChat}
         />
       </div>
     </div>
