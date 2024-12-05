@@ -162,13 +162,13 @@ export function ActionCards({ onUploadSuccess }) {
       beta: true,
     },
     {
-      icon: <SearchIcon />,
-      title: "Search Query",
-      description: "Search through documents",
-      tooltip: "Ask questions about your documents and get instant answers powered by AI. Search through your entire document collection using natural language.",
+      icon: <MessageSquare />,
+      title: "PDF Chat",
+      description: "Chat with your PDF documents",
+      tooltip: "Chat with your PDF documents using AI-powered conversation. Ask questions and get instant answers.",
       variant: "default",
-      disabled: true,
-      comingSoon: true,
+      onClick: () => router.push('/pdf-chat'),
+      beta: true,
     },
     
     {
@@ -181,14 +181,7 @@ export function ActionCards({ onUploadSuccess }) {
       comingSoon: true,
     },
     
-    {
-      icon: <MessageSquare />,
-      title: "PDF Chat",
-      description: "Chat with your PDF documents",
-      tooltip: "Chat with your PDF documents using AI-powered conversation. Ask questions and get instant answers.",
-      variant: "default",
-      onClick: () => router.push('/pdf-chat'),
-    },
+    
   ];
 
   return (
