@@ -1,9 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  ArrowLeft,
-} from "lucide-react";
+import { PdfChatSidebar } from "@/components/pdf-chat/PdfChatSidebar";
+import { ChatInterface } from "@/components/pdf-chat/ChatInterface";
+import { PdfSection } from "@/components/pdf-chat/PdfSection";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { cn } from "@/lib/utils";
@@ -15,8 +13,6 @@ import { customToast } from "@/components/ui/toast-theme";
 import { Loader2, Upload } from "lucide-react";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { format } from 'date-fns';
-import { ChatInterface } from "@/components/pdf-chat/ChatInterface";
-import { PdfSection } from "@/components/pdf-chat/PdfSection";
 import { processDocumentContent } from '@/utils/text-processing';
 
 export default function PDFChat() {
@@ -451,84 +447,19 @@ export default function PDFChat() {
   };
 
   return (
-    <div className="flex h-screen bg-white text-gray-800">
-      {/* Sidebar */}
-      <div 
-        className={cn(
-          "border-r border-gray-200 bg-[#1E1E1E] text-white flex flex-col transition-all duration-300",
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-[20%]"
-        )}
-      >
-        {/* ChatPDF header and back button */}
-        <div className="p-3 flex items-center gap-2 border-b border-white/10">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => router.push('/')}
-            className="mr-1 hover:bg-white/10 text-white h-8 w-8"
-          >
-            <ArrowLeft size={14} />
-          </Button>
-          <div className="w-6 h-6 bg-purple-600 rounded-lg"></div>
-          <span className="font-semibold text-sm">ChatPDF</span>
-        </div>
+    <div className="flex h-screen bg-background text-foreground">
+      <PdfChatSidebar 
+        files={files}
+        loadingFiles={loadingFiles}
+        selectedFile={selectedFile}
+        onFileSelect={handleFileSelect}
+        onUpload={onDrop}
+        isSidebarCollapsed={isSidebarCollapsed}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
+      />
 
-        {/* Workspace switcher */}
-        <div className="p-3">
-          <WorkspaceSwitcher isCollapsed={false} />
-        </div>
-        
-        {/* Upload zone */}
-        {renderUploadZone()}
-
-        <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1.5 pb-3">
-            {loadingFiles ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-white/70" />
-              </div>
-            ) : files.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-sm text-white/70">No files uploaded</p>
-              </div>
-            ) : (
-              files.map((file) => (
-                <Button
-                  key={file.name}
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-white/70 bg-white/10 hover:bg-white/20 border-0 h-auto py-2 px-3 text-sm group",
-                    selectedFile?.name === file.name && "bg-white/20 border-l-4 border-purple-600"
-                  )}
-                  title={file.originalName}
-                  onClick={() => handleFileSelect(file)}
-                >
-                  <div className="flex items-center gap-2 w-full min-w-0">
-                    <div className="w-5 h-5 flex-shrink-0">
-                      <FileIcon
-                        {...getFileIconProps(file.originalName)}
-                        {...defaultStyles}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm leading-none mb-1 group-hover:text-white transition-colors">
-                        {truncateFileName(file.originalName)}
-                      </p>
-                      <p className="text-[10px] text-white/50 truncate">
-                        {format(new Date(file.created_at), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                </Button>
-              ))
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Main Content */}
+      {/* Rest of the existing layout */}
       <div className="flex-1 flex">
-        {/* PDF Section */}
         <PdfSection 
           selectedFile={selectedFile}
           pdfUrl={pdfUrl}
@@ -536,7 +467,6 @@ export default function PDFChat() {
           setIsSidebarCollapsed={setIsSidebarCollapsed}
         />
 
-        {/* Chat Interface */}
         <ChatInterface 
           messages={messages}
           isLoading={isLoading}
