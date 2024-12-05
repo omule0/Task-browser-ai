@@ -31,6 +31,7 @@ export default function PDFChat() {
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
   const [isQuestionsCollapsed, setIsQuestionsCollapsed] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [activeSource, setActiveSource] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -449,6 +450,10 @@ export default function PDFChat() {
     setTimeout(() => setLoadingMessage(''), 1500);
   };
 
+  const handleSourceClick = (citation) => {
+    setActiveSource(citation);
+  };
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       <div className={cn(
@@ -472,6 +477,7 @@ export default function PDFChat() {
           pdfUrl={pdfUrl}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
+          activeSource={activeSource}
         />
 
         <ChatInterface 
@@ -486,6 +492,7 @@ export default function PDFChat() {
           selectedFile={selectedFile}
           onNewChat={handleNewChat}
           loadingMessage={loadingMessage}
+          onSourceClick={handleSourceClick}
         />
       </div>
     </div>

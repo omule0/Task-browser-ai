@@ -225,3 +225,30 @@ body {
   transform: translateY(20px);
   transition: opacity 300ms, transform 300ms;
 }
+
+.source-highlight {
+  animation: pulse 2s infinite;
+  background-color: rgba(255, 255, 0, 0.3) !important;
+  border: 2px solid rgba(255, 200, 0, 0.5) !important;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* Override default search highlight styles */
+.rpv-search__highlight {
+  border-radius: 2px;
+}
+
+.rpv-search__highlight.source-highlight {
+  z-index: 1;
+}

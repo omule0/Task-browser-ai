@@ -17,7 +17,8 @@ export function PdfSection({
   selectedFile,
   pdfUrl,
   isSidebarCollapsed,
-  setIsSidebarCollapsed
+  setIsSidebarCollapsed,
+  activeSource
 }) {
   return (
     <div className="w-[40%] flex flex-col">
@@ -60,7 +61,7 @@ export function PdfSection({
           </div>
         ) : (
           <div className="w-full h-full relative">
-            <PdfViewer url={pdfUrl} />
+            <PdfViewer url={pdfUrl} activeSource={activeSource} />
           </div>
         )}
       </div>

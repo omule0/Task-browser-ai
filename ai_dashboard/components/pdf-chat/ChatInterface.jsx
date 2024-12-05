@@ -19,6 +19,7 @@ export function ChatInterface({
   selectedFile,
   onNewChat,
   loadingMessage,
+  onSourceClick,
 }) {
   const handleQuestionClick = (question) => {
     handleSendMessage(question);
@@ -41,7 +42,8 @@ export function ChatInterface({
                 {message.citations.map((citation) => (
                   <div 
                     key={citation.id}
-                    className="text-sm bg-secondary/50 p-3 rounded-lg border border-border"
+                    className="text-sm bg-secondary/50 p-3 rounded-lg border border-border cursor-pointer hover:bg-secondary/70 transition-colors"
+                    onClick={() => onSourceClick(citation)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs font-medium">
