@@ -44,7 +44,7 @@ export async function processDocumentContent(content, fileId, workspaceId, userI
         workspaceId,
         userId,
         chunkIndex: index,
-        location: `chunk-${index + 1}`,
+        location: `Block-${index + 1}`,
         charLocation: {
           start: content.indexOf(chunk),
           end: content.indexOf(chunk) + chunk.length

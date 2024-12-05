@@ -48,10 +48,21 @@ export function ChatInterface({
                     key={citation.id}
                     className="text-sm text-gray-600 bg-gray-50 p-2 rounded"
                   >
-                    <span className="font-medium text-gray-700">[{citation.id}]</span>
-                    <span className="ml-2">{citation.text.substring(0, 150)}...</span>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Location: {citation.location}
+                    <div className="flex items-start gap-2">
+                      <span className="font-medium text-purple-600 text-xs bg-purple-50 px-1.5 py-0.5 rounded">
+                        Source {citation.id}
+                      </span>
+                      <p className="flex-1">
+                        <span className="text-gray-800 font-medium">Context: </span>
+                        <span className="text-gray-700 line-clamp-2">
+                          {citation.text.length > 250 
+                            ? `${citation.text.substring(0, 250)}...` 
+                            : citation.text}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1.5 pl-8">
+                      <span className="font-medium">Location:</span> {citation.location}
                     </div>
                   </div>
                 ))}
