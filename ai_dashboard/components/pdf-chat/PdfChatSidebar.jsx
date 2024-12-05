@@ -5,11 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   ArrowLeft, 
   Upload, 
-  Loader2, 
-  FileIcon, 
-  X, 
-  PanelLeft, 
-  PanelLeftClose 
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from 'next/navigation';
@@ -18,8 +14,6 @@ import { format } from 'date-fns';
 import { FileIcon as ReactFileIcon, defaultStyles } from 'react-file-icon';
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useWorkspace } from "@/context/workspace-context";
-import { createClient } from '@/utils/supabase/client';
-import { customToast } from "@/components/ui/toast-theme";
 
 export function PdfChatSidebar({
   files, 
@@ -27,13 +21,11 @@ export function PdfChatSidebar({
   selectedFile, 
   onFileSelect, 
   onUpload,
-  isSidebarCollapsed,
-  setIsSidebarCollapsed
+  isUploading,
+  uploadProgress
 }) {
   const router = useRouter();
   const { currentWorkspace } = useWorkspace();
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onUpload,
@@ -98,12 +90,7 @@ export function PdfChatSidebar({
   );
 
   return (
-    <div 
-      className={cn(
-        "border-r border-border bg-secondary/30 text-foreground flex flex-col transition-all duration-300",
-        isSidebarCollapsed ? "w-0 overflow-hidden" : "w-[20%] min-w-[250px]"
-      )}
-    >
+    <div className="w-[20%] min-w-[250px] border-r border-border bg-secondary/30 text-foreground flex flex-col">
       {/* Header */}
       <div className="p-3 flex items-center gap-2 border-b border-border">
         <Button 
@@ -116,14 +103,6 @@ export function PdfChatSidebar({
         </Button>
         <div className="w-6 h-6 bg-primary rounded-lg"></div>
         <span className="font-semibold text-sm">ChatPDF</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto"
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        >
-          {isSidebarCollapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
-        </Button>
       </div>
 
       {/* Workspace Switcher */}

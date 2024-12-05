@@ -8,7 +8,7 @@ const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-full">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   ),
 });
@@ -22,11 +22,17 @@ export function PdfSection({
   return (
     <div className="w-[40%] flex flex-col">
       {/* PDF Header */}
-      <div className="flex items-center px-3 py-2 border-b border-gray-200 gap-3">
+      <div className="flex items-center px-3 py-2 border-b border-border gap-3">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onClick={() => {
+            setIsSidebarCollapsed(!isSidebarCollapsed);
+            // Force layout recalculation after animation
+            setTimeout(() => {
+              window.dispatchEvent(new Event('resize'));
+            }, 300);
+          }}
           className="mr-1 h-8 w-8"
         >
           {isSidebarCollapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
@@ -37,20 +43,20 @@ export function PdfSection({
       </div>
 
       {/* PDF Content */}
-      <div className="flex-1 bg-gray-100 flex justify-center overflow-hidden">
+      <div className="flex-1 bg-secondary/50 flex justify-center overflow-hidden">
         {!selectedFile ? (
           <div className="flex items-center justify-center w-full p-8">
             <div className="text-center">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No file selected</h3>
-              <p className="text-sm text-gray-500">
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-1">No file selected</h3>
+              <p className="text-sm text-muted-foreground">
                 Select a PDF file from the sidebar to view it here
               </p>
             </div>
           </div>
         ) : !pdfUrl ? (
           <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <div className="w-full h-full relative">

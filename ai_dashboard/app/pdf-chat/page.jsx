@@ -43,7 +43,47 @@ export default function PDFChat() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [router]);
 
-  // Add file upload handler
+  // Move loadFiles before onDrop
+  const loadFiles = useCallback(async () => {
+    try {
+      if (!currentWorkspace) {
+        setFiles([]);
+        return;
+      }
+
+      setLoadingFiles(true);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .list(`${currentWorkspace.id}/${user.id}`);
+
+      if (error) throw error;
+
+      const processedFiles = (data || []).map(file => {
+        const parts = file.name.split('-');
+        const originalName = parts.slice(2).join('-');
+        return {
+          ...file,
+          originalName
+        };
+      });
+
+      const sortedFiles = processedFiles.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      setFiles(sortedFiles);
+    } catch (error) {
+      console.error('Error loading files:', error);
+      customToast.error('Error loading files');
+    } finally {
+      setLoadingFiles(false);
+    }
+  }, [currentWorkspace]);
+
+  // Then define onDrop
   const onDrop = useCallback(async (acceptedFiles) => {
     try {
       if (!currentWorkspace) {
@@ -144,6 +184,9 @@ export default function PDFChat() {
       setUploadProgress(100);
       customToast.success('PDF uploaded successfully');
 
+      // Reload files after successful upload
+      await loadFiles();
+
     } catch (error) {
       console.error('Error uploading PDF:', error);
       customToast.error(error.message || 'Error uploading PDF');
@@ -151,7 +194,7 @@ export default function PDFChat() {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [currentWorkspace]);
+  }, [currentWorkspace, loadFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -193,52 +236,12 @@ export default function PDFChat() {
     </div>
   );
 
-  // Add loadFiles function
-  const loadFiles = async () => {
-    try {
-      if (!currentWorkspace) {
-        setFiles([]);
-        return;
-      }
-
-      setLoadingFiles(true);
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .list(`${currentWorkspace.id}/${user.id}`);
-
-      if (error) throw error;
-
-      const processedFiles = (data || []).map(file => {
-        const parts = file.name.split('-');
-        const originalName = parts.slice(2).join('-');
-        return {
-          ...file,
-          originalName
-        };
-      });
-
-      const sortedFiles = processedFiles.sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      );
-
-      setFiles(sortedFiles);
-    } catch (error) {
-      console.error('Error loading files:', error);
-      customToast.error('Error loading files');
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
-
-  // Add useEffect to load files when workspace changes
+  // Keep the useEffect for initial file loading
   useEffect(() => {
     if (currentWorkspace) {
       loadFiles();
     }
-  }, [currentWorkspace]);
+  }, [currentWorkspace, loadFiles]);
 
   // Add helper function for file icons
   const getFileIconProps = (fileName) => {
@@ -448,17 +451,21 @@ export default function PDFChat() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <PdfChatSidebar 
-        files={files}
-        loadingFiles={loadingFiles}
-        selectedFile={selectedFile}
-        onFileSelect={handleFileSelect}
-        onUpload={onDrop}
-        isSidebarCollapsed={isSidebarCollapsed}
-        setIsSidebarCollapsed={setIsSidebarCollapsed}
-      />
+      <div className={cn(
+        "transition-all duration-300",
+        isSidebarCollapsed ? "w-0 overflow-hidden" : "flex"
+      )}>
+        <PdfChatSidebar 
+          files={files}
+          loadingFiles={loadingFiles}
+          selectedFile={selectedFile}
+          onFileSelect={handleFileSelect}
+          onUpload={onDrop}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+        />
+      </div>
 
-      {/* Rest of the existing layout */}
       <div className="flex-1 flex">
         <PdfSection 
           selectedFile={selectedFile}
