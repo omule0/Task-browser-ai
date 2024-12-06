@@ -5,14 +5,11 @@ import { PdfSection } from "@/components/pdf-chat/PdfSection";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { cn } from "@/lib/utils";
-import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useWorkspace } from "@/context/workspace-context";
 import { useDropzone } from 'react-dropzone';
 import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { Loader2, Upload } from "lucide-react";
-import { FileIcon, defaultStyles } from 'react-file-icon';
-import { format } from 'date-fns';
 import { processDocumentContent } from '@/utils/text-processing';
 
 export default function PDFChat() {

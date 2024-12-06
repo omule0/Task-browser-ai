@@ -6,6 +6,7 @@ import { Send, ChevronDown, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ModeToggle } from "@/components/mode-toggle";
 
 export function ChatInterface({
   messages,
@@ -82,14 +83,18 @@ export function ChatInterface({
     <div className="flex-1 border-l border-border bg-background flex flex-col">
       <div className="h-14 border-b border-border flex items-center justify-between px-4">
         <h2 className="text-lg font-semibold">Chat</h2>
-        <Button 
-          variant="ghost"
-          size="sm"
-          onClick={onNewChat}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Chat
-        </Button>
+        <div className="flex items-center gap-2">
+         
+          <Button 
+            variant="ghost"
+            size="sm"
+            onClick={onNewChat}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Chat
+          </Button>
+          <ModeToggle />
+        </div>
       </div>
 
       <ScrollArea className="flex-1 p-4">

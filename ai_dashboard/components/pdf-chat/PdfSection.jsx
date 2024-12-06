@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { PanelLeft, PanelLeftClose, FileText, Loader2 } from "lucide-react";
 import dynamic from 'next/dynamic';
-import { cn } from "@/lib/utils";
 
 const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
@@ -23,7 +22,7 @@ export function PdfSection({
   return (
     <div className="w-[40%] flex flex-col">
       {/* PDF Header */}
-      <div className="flex items-center px-3 py-2 border-b border-border gap-3">
+      <div className="flex items-center px-3 py-2 border-b border-border gap-3 h-14">
         <Button
           variant="ghost"
           size="icon"

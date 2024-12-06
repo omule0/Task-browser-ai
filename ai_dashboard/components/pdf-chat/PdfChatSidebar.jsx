@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -92,7 +92,7 @@ export function PdfChatSidebar({
   return (
     <div className="w-[20%] min-w-[250px] border-r border-border bg-secondary/30 text-foreground flex flex-col">
       {/* Header */}
-      <div className="p-3 flex items-center gap-2 border-b border-border">
+      <div className="p-3 flex items-center gap-2 border-b border-border h-14">
         <Button 
           variant="ghost" 
           size="icon"
