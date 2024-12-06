@@ -137,6 +137,14 @@ export function FilePreview({ refresh }) {
 
       if (updateError) throw updateError;
 
+      // Delete document chunks
+      const { error: chunksDeleteError } = await supabase
+        .from('document_chunks')
+        .delete()
+        .eq('file_id', `${currentWorkspace.id}/${user.id}/${fileName}`);
+
+      if (chunksDeleteError) throw chunksDeleteError;
+
       // Delete parsed content if it exists
       const { error: contentDeleteError } = await supabase
         .from('document_content')

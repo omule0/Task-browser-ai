@@ -100,12 +100,14 @@ export default function FilesPage() {
 
       const fileSize = fileMetadata?.[0]?.metadata?.size || 0;
 
+      // Delete the file from storage
       const { error: deleteError } = await supabase.storage
         .from('documents')
         .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
       if (deleteError) throw deleteError;
 
+      // Update storage usage
       const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
         user_id_input: user.id,
         bytes_to_remove: fileSize
@@ -113,17 +115,25 @@ export default function FilesPage() {
 
       if (updateError) throw updateError;
 
-      setFiles(prev => prev.filter(file => file.name !== fileName));
-      setStorageRefresh(prev => prev + 1);
-      customToast.success('File deleted successfully');
+      // Delete document chunks
+      const { error: chunksDeleteError } = await supabase
+        .from('document_chunks')
+        .delete()
+        .eq('file_id', `${currentWorkspace.id}/${user.id}/${fileName}`);
 
-      // Delete parsed content if it exists
+      if (chunksDeleteError) throw chunksDeleteError;
+
+      // Delete parsed content
       const { error: contentDeleteError } = await supabase
         .from('document_content')
         .delete()
         .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`);
 
       if (contentDeleteError) throw contentDeleteError;
+
+      setFiles(prev => prev.filter(file => file.name !== fileName));
+      setStorageRefresh(prev => prev + 1);
+      customToast.success('File deleted successfully');
 
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -184,50 +194,69 @@ export default function FilesPage() {
       
       setIsDeleting(true);
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      // Get metadata for selected files
-      const { data: fileMetadata } = await supabase.storage
-        .from('documents')
-        .list(`${currentWorkspace.id}/${user.id}`);
+      if (userError) throw userError;
 
-      const selectedFilesMetadata = fileMetadata.filter(file => 
-        selectedFiles.includes(file.name)
-      );
-      const totalSize = selectedFilesMetadata.reduce((acc, file) => 
-        acc + (file.metadata?.size || 0), 0
-      );
+      let totalSize = 0;
+      const deletePromises = selectedFiles.map(async (fileName) => {
+        try {
+          // Get file size for storage calculation
+          const { data: fileMetadata } = await supabase.storage
+            .from('documents')
+            .list(`${currentWorkspace.id}/${user.id}`, {
+              search: fileName
+            });
 
-      // Delete files from storage
-      const deletePromises = selectedFiles.map(fileName => 
-        supabase.storage
-          .from('documents')
-          .remove([`${currentWorkspace.id}/${user.id}/${fileName}`])
-      );
+          const fileSize = fileMetadata?.[0]?.metadata?.size || 0;
+          totalSize += fileSize;
 
-      // Delete parsed content for selected files
-      const contentDeletePromises = selectedFiles.map(fileName =>
-        supabase
-          .from('document_content')
-          .delete()
-          .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`)
-      );
+          // Delete file from storage
+          await supabase.storage
+            .from('documents')
+            .remove([`${currentWorkspace.id}/${user.id}/${fileName}`]);
 
-      // Wait for all deletions to complete
-      await Promise.all([...deletePromises, ...contentDeletePromises]);
+          // Delete document chunks
+          await supabase
+            .from('document_chunks')
+            .delete()
+            .eq('file_id', `${currentWorkspace.id}/${user.id}/${fileName}`);
 
-      // Update storage usage
-      const { error: updateError } = await supabase.rpc('decrease_storage_usage', {
-        user_id_input: user.id,
-        bytes_to_remove: totalSize
+          // Delete parsed content
+          await supabase
+            .from('document_content')
+            .delete()
+            .eq('file_path', `${currentWorkspace.id}/${user.id}/${fileName}`);
+
+          return { success: true, fileName };
+        } catch (error) {
+          return { success: false, fileName, error };
+        }
       });
 
-      if (updateError) throw updateError;
+      const results = await Promise.all(deletePromises);
+      const failures = results.filter(r => !r.success);
+      const successes = results.filter(r => r.success);
 
-      setFiles(files.filter(file => !selectedFiles.includes(file.name)));
-      setSelectedFiles([]);
-      setStorageRefresh(prev => prev + 1);
-      customToast.success(`Successfully deleted ${selectedFiles.length} file(s)`);
+      if (successes.length > 0) {
+        // Update storage usage once for all deleted files
+        await supabase.rpc('decrease_storage_usage', {
+          user_id_input: user.id,
+          bytes_to_remove: totalSize
+        });
+
+        setFiles(prev => prev.filter(file => !selectedFiles.includes(file.name)));
+        setSelectedFiles([]);
+        setStorageRefresh(prev => prev + 1);
+        customToast.success(`Successfully deleted ${successes.length} file(s)`);
+      }
+
+      if (failures.length > 0) {
+        failures.forEach(({ fileName }) => {
+          customToast.error(`Failed to delete ${fileName}`);
+        });
+      }
+
     } catch (error) {
       console.error('Error deleting files:', error);
       customToast.error('Error deleting files');
