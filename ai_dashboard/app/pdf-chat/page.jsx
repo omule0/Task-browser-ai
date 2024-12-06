@@ -453,20 +453,19 @@ export default function PDFChat() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <div className={cn(
-        "transition-all duration-300",
-        isSidebarCollapsed ? "w-0 overflow-hidden" : "flex"
-      )}>
-        <PdfChatSidebar 
-          files={files}
-          loadingFiles={loadingFiles}
-          selectedFile={selectedFile}
-          onFileSelect={handleFileSelect}
-          onUpload={onDrop}
-          isUploading={isUploading}
-          uploadProgress={uploadProgress}
-        />
-      </div>
+      <PdfChatSidebar 
+        className={cn(
+          "transition-all duration-300",
+          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-[20%] min-w-[250px]"
+        )}
+        files={files}
+        loadingFiles={loadingFiles}
+        selectedFile={selectedFile}
+        onFileSelect={handleFileSelect}
+        onUpload={onDrop}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+      />
 
       <div className="flex-1 flex">
         <PdfSection 

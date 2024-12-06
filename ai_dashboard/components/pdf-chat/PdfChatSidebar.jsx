@@ -16,6 +16,7 @@ import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useWorkspace } from "@/context/workspace-context";
 
 export function PdfChatSidebar({
+  className, 
   files, 
   loadingFiles, 
   selectedFile, 
@@ -25,7 +26,6 @@ export function PdfChatSidebar({
   uploadProgress
 }) {
   const router = useRouter();
-  const { currentWorkspace } = useWorkspace();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onUpload,
@@ -90,7 +90,10 @@ export function PdfChatSidebar({
   );
 
   return (
-    <div className="w-[20%] min-w-[250px] border-r border-border bg-secondary/30 text-foreground flex flex-col">
+    <div className={cn(
+      "border-r border-border bg-secondary/30 text-foreground flex flex-col",
+      className
+    )}>
       {/* Header */}
       <div className="p-3 flex items-center gap-2 border-b border-border h-14">
         <Button 
@@ -101,8 +104,7 @@ export function PdfChatSidebar({
         >
           <ArrowLeft size={14} />
         </Button>
-        <div className="w-6 h-6 bg-primary rounded-lg"></div>
-        <span className="font-semibold text-sm">ChatPDF</span>
+        <span className="font-semibold text-sm">Pdf Chat</span>
       </div>
 
       {/* Workspace Switcher */}
