@@ -9,6 +9,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { UploadSidebar } from "@/components/UploadSidebar";
 import { FeedbackDialog } from "@/components/FeedbackDialog";
 import { FeedbackReminder } from "@/components/FeedbackReminder";
+import { ExampleReports } from "@/components/ExampleReports";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -72,12 +73,12 @@ export default function Dashboard() {
           <ActionCards onUploadSuccess={handleUploadSuccess} />
         </section>
 
-        {/* <ExampleReports 
+        <ExampleReports 
           onViewExample={(report) => {
             // Handle viewing example report
             router.push(`/examples/${report.title.toLowerCase().replace(/\s+/g, '-')}`);
           }} 
-        /> */}
+        />
 
         <UploadSidebar 
           isOpen={isUploadSidebarOpen}

@@ -4,16 +4,9 @@ import { Button } from "@/components/ui/button";
 import { FileText, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { exampleReports } from "@/app/examples/constants/examples";
 
-const exampleReports = [
-  {
-    title: "Credit Investment Analysis",
-    description: "Comprehensive credit analysis of Credit Suisse, including financial health, risk assessment, and investment recommendation.",
-    tags: ["Financial Services", "Credit Analysis", "Investment"],
-  },
-];
-
-export function ExampleReports({ onViewExample }) {
+export function ExampleReports() {
   const router = useRouter();
 
   return (
@@ -24,14 +17,18 @@ export function ExampleReports({ onViewExample }) {
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Example Reports</h2>
-        <Button variant="ghost" size="sm">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => router.push('/examples')}
+        >
           View all examples
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {exampleReports.map((report, index) => (
-          <Card key={index} className="p-4 hover:shadow-md transition-shadow">
+        {Object.entries(exampleReports).map(([key, report]) => (
+          <Card key={key} className="p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start gap-3">
               <div className="bg-blue-50 p-2 rounded-lg">
                 <FileText className="w-4 h-4 text-blue-500" />
@@ -42,12 +39,12 @@ export function ExampleReports({ onViewExample }) {
                   {report.description}
                 </p>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {report.tags.map((tag, i) => (
+                  {report.content.industry_analysis?.key_trends?.slice(0, 3).map((trend, i) => (
                     <span
                       key={i}
                       className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded"
                     >
-                      {tag}
+                      {trend}
                     </span>
                   ))}
                 </div>
@@ -55,10 +52,7 @@ export function ExampleReports({ onViewExample }) {
                   variant="ghost"
                   size="sm"
                   className="text-xs"
-                  onClick={() => {
-                    const reportId = report.title.toLowerCase().replace(/\s+/g, '-');
-                    router.push(`/examples?report=${reportId}`);
-                  }}
+                  onClick={() => router.push(`/examples?report=${key}`)}
                 >
                   View example <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
