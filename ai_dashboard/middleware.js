@@ -1,7 +1,17 @@
 import { updateSession } from '@/utils/supabase/middleware'
 
 export async function middleware(request) {
-  // Let updateSession handle the authentication check and redirect
+  // Check if the request is coming from the old domain
+  if (request.headers.get('host') === 'ai-dashboard-zikm5.ondigitalocean.app') {
+    // Create the new URL with the new domain
+    const newUrl = new URL(request.url)
+    newUrl.host = 'ai.digestafrica.com'
+    
+    // Return a redirect response
+    return Response.redirect(newUrl.toString(), 301)
+  }
+
+  // For all other requests, continue with the session update
   return await updateSession(request)
 }
 
