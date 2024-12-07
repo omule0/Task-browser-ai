@@ -5,7 +5,9 @@ export async function middleware(request) {
   if (request.headers.get('host') === 'ai-dashboard-zikm5.ondigitalocean.app') {
     // Create the new URL with the new domain
     const newUrl = new URL(request.url)
+    newUrl.protocol = 'https'
     newUrl.host = 'ai.digestafrica.com'
+    newUrl.port = '' // Remove any port number
     
     // Return a redirect response
     return Response.redirect(newUrl.toString(), 301)
