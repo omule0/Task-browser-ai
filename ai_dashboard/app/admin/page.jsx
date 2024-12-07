@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { customToast } from "@/components/ui/toast-theme";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, AlertTriangle } from "lucide-react";
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -32,6 +32,7 @@ export default function AdminPanel() {
   const [feedback, setFeedback] = useState([]);
   const [feedbackError, setFeedbackError] = useState(null);
   const [isFeedbackLoading, setIsFeedbackLoading] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function AdminPanel() {
     fetchUsers();
     fetchAnnouncements();
     fetchFeedback();
+    fetchMaintenanceStatus();
   }, []);
 
   const checkAdminStatus = async () => {
@@ -201,6 +203,34 @@ export default function AdminPanel() {
     customToast.success("Admin status updated");
   };
 
+  const fetchMaintenanceStatus = async () => {
+    const { data } = await supabase
+      .from('system_status')
+      .select('maintenance_mode')
+      .single();
+    
+    setMaintenanceMode(data?.maintenance_mode || false);
+  };
+
+  const toggleMaintenanceMode = async () => {
+    const { error } = await supabase
+      .from('system_status')
+      .upsert({ 
+        id: 1, // Assuming single row with id 1
+        maintenance_mode: !maintenanceMode 
+      });
+
+    if (error) {
+      customToast.error("Failed to update maintenance status");
+      return;
+    }
+
+    setMaintenanceMode(!maintenanceMode);
+    customToast.success(
+      `Maintenance mode ${!maintenanceMode ? 'enabled' : 'disabled'}`
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -221,6 +251,24 @@ export default function AdminPanel() {
     <main className="flex-1 p-4 md:p-6 max-w-6xl mx-auto w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
+      </div>
+
+      <div className="mb-6 flex items-center justify-between bg-card p-4 rounded-lg border border-border">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className={maintenanceMode ? "text-destructive" : "text-muted-foreground"} />
+          <div>
+            <h3 className="font-semibold">Maintenance Mode</h3>
+            <p className="text-sm text-muted-foreground">
+              {maintenanceMode 
+                ? "Site is currently in maintenance mode" 
+                : "Site is operating normally"}
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={maintenanceMode}
+          onCheckedChange={toggleMaintenanceMode}
+        />
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">

@@ -194,45 +194,6 @@ export default function PDFChat() {
     }
   }, [currentWorkspace, loadFiles]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-    },
-    maxSize: 10485760, // 10MB
-    multiple: false,
-  });
-
-  // Add upload zone to the sidebar
-  const renderUploadZone = () => (
-    <div
-      {...getRootProps()}
-      className={`mx-3 mb-3 border-2 border-dashed rounded-lg p-4 transition-colors ${
-        isDragActive 
-          ? 'border-white/50 bg-white/10' 
-          : 'border-white/20 hover:border-white/30'
-      }`}
-    >
-      <input {...getInputProps()} />
-      <div className="flex flex-col items-center gap-2">
-        {isUploading ? (
-          <>
-            <Loader2 className="h-6 w-6 text-white animate-spin" />
-            <p className="text-sm text-white/70 text-center">
-              Uploading... {uploadProgress}%
-            </p>
-          </>
-        ) : (
-          <>
-            <Upload className="h-6 w-6 text-white/70" />
-            <p className="text-sm text-white/70 text-center">
-              Drop PDF here or click to upload
-            </p>
-          </>
-        )}
-      </div>
-    </div>
-  );
 
   // Keep the useEffect for initial file loading
   useEffect(() => {
@@ -241,29 +202,6 @@ export default function PDFChat() {
     }
   }, [currentWorkspace, loadFiles]);
 
-  // Add helper function for file icons
-  const getFileIconProps = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    return {
-      extension,
-      color: 'mistyrose',
-      type: 'acrobat',
-      fold: true,
-      radius: 8,
-    };
-  };
-
-  // Add this helper function to truncate file names
-  const truncateFileName = (fileName, maxLength = 20) => {
-    if (fileName.length <= maxLength) return fileName;
-    
-    const extension = fileName.split('.').pop();
-    const nameWithoutExt = fileName.slice(0, -(extension.length + 1));
-    
-    if (nameWithoutExt.length <= maxLength - 5) return fileName;
-    
-    return `${nameWithoutExt.slice(0, maxLength - 5)}...${extension}`;
-  };
 
   // Add this function near the top of your component
   const checkAndProcessDocument = async (file) => {

@@ -35,8 +35,60 @@ export async function updateSession(request) {
       }
     )
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Check for maintenance mode
+    const { data: maintenance } = await supabase
+      .from('system_status')
+      .select('maintenance_mode')
+      .single();
+
+    // If trying to access maintenance page when maintenance is off
+    if (request.nextUrl.pathname.startsWith('/maintenance') && 
+        !maintenance?.maintenance_mode) {
+      // Allow admins to view the page
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+
+        if (!profile?.is_admin) {
+          const redirectUrl = new URL('/', request.url);
+          return NextResponse.redirect(redirectUrl);
+        }
+      } else {
+        const redirectUrl = new URL('/', request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
+
+    // If maintenance mode is active, check if user is admin
+    if (maintenance?.maintenance_mode === true && 
+        !request.nextUrl.pathname.startsWith('/maintenance')) {
+      
+      // If no user, redirect to maintenance page
+      if (!user) {
+        const redirectUrl = new URL('/maintenance', request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      // If not admin, redirect to maintenance page
+      if (!profile?.is_admin) {
+        const redirectUrl = new URL('/maintenance', request.url);
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
+
+    const { data: { session }, error: userError } = await supabase.auth.getSession()
 
     // Admin check
     if (request.nextUrl.pathname.startsWith('/admin')) {
