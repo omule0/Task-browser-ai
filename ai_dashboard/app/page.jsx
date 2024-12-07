@@ -73,12 +73,12 @@ export default function Dashboard() {
           <ActionCards onUploadSuccess={handleUploadSuccess} />
         </section>
 
-        <ExampleReports 
+        {/* <ExampleReports 
           onViewExample={(report) => {
             // Handle viewing example report
             router.push(`/examples/${report.title.toLowerCase().replace(/\s+/g, '-')}`);
           }} 
-        />
+        /> */}
 
         <UploadSidebar 
           isOpen={isUploadSidebarOpen}

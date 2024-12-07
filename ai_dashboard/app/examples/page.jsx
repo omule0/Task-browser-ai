@@ -1,14 +1,15 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { exampleReports } from "./constants/examples";
 import ReportViewer from "../generate-report/components/ReportViewer";
 
-export default function ExamplesPage() {
+// Create a separate component for the content that uses useSearchParams
+function ExampleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedReport, setSelectedReport] = useState("credit-investment-analysis");
@@ -22,22 +23,47 @@ export default function ExamplesPage() {
 
   const currentReport = exampleReports[selectedReport];
 
-  const handlePrint = () => {
-    // Store current scroll position
-    const scrollPos = window.scrollY;
-    
-    // Add print-specific class to body
-    document.body.classList.add('printing');
-    
-    // Trigger print
-    window.print();
-    
-    // Clean up after print dialog closes
-    setTimeout(() => {
-      document.body.classList.remove('printing');
-      window.scrollTo(0, scrollPos);
-    }, 100);
-  };
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-140px)]">
+      {/* Sidebar */}
+      <Card className="p-3 lg:col-span-1 lg:sticky lg:top-4 h-fit overflow-hidden">
+        <h2 className="font-semibold mb-2">Report Types</h2>
+        <div className="space-y-1">
+          {Object.entries(exampleReports).map(([key, report]) => (
+            <Button
+              key={key}
+              variant={selectedReport === key ? "default" : "ghost"}
+              className="w-full justify-start text-left whitespace-normal h-auto py-2"
+              size="sm"
+              onClick={() => setSelectedReport(key)}
+            >
+              <FileText className="w-4 h-4 mr-2 shrink-0" />
+              <span className="line-clamp-2">{report.title}</span>
+            </Button>
+          ))}
+        </div>
+      </Card>
+
+      {/* Main Content */}
+      <motion.div
+        key={selectedReport}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="lg:col-span-3"
+      >
+        <ReportViewer 
+          report={currentReport.content}
+          title={currentReport.title}
+          onBack={() => router.back()}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
+// Main page component
+export default function ExamplesPage() {
+  const router = useRouter();
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-4">
@@ -57,40 +83,9 @@ export default function ExamplesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-140px)]">
-        {/* Sidebar */}
-        <Card className="p-3 lg:col-span-1 lg:sticky lg:top-4 h-fit overflow-hidden">
-          <h2 className="font-semibold mb-2">Report Types</h2>
-          <div className="space-y-1">
-            {Object.entries(exampleReports).map(([key, report]) => (
-              <Button
-                key={key}
-                variant={selectedReport === key ? "default" : "ghost"}
-                className="w-full justify-start text-left whitespace-normal h-auto py-2"
-                size="sm"
-                onClick={() => setSelectedReport(key)}
-              >
-                <FileText className="w-4 h-4 mr-2 shrink-0" />
-                <span className="line-clamp-2">{report.title}</span>
-              </Button>
-            ))}
-          </div>
-        </Card>
-
-        {/* Main Content */}
-        <motion.div
-          key={selectedReport}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-3"
-        >
-          <ReportViewer 
-            report={currentReport.content}
-            title={currentReport.title}
-            onBack={() => router.back()}
-          />
-        </motion.div>
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <ExampleContent />
+      </Suspense>
     </div>
   );
 } 
