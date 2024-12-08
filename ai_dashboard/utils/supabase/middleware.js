@@ -35,101 +35,103 @@ export async function updateSession(request) {
       }
     )
 
-    // Get current URL path
-    const path = request.nextUrl.pathname
-
-    // Define routes
-    const isPublicRoute = path.startsWith('/login') ||
-                         path.startsWith('/signup') ||
-                         path.startsWith('/auth') ||
-                         path.startsWith('/confirm-email') ||
-                         path.startsWith('/maintenance')
-    
-    const isMaintenancePage = path.startsWith('/maintenance')
-    const isAdminRoute = path.startsWith('/admin')
-
-    // Get authenticated user and maintenance status
     const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+
+    // Check for maintenance mode first
     const { data: maintenance } = await supabase
       .from('system_status')
       .select('maintenance_mode')
       .single()
 
-    // Function to check if user is admin
-    async function isAdmin(userId) {
+    if (maintenance?.maintenance_mode === true && 
+        !request.nextUrl.pathname.startsWith('/maintenance')) {
+      // If no user, redirect to maintenance
+      if (!user) {
+        return NextResponse.redirect(new URL('/maintenance', request.url))
+      }
+
+      // Check if user is admin
       const { data: profile } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single()
-      return profile?.is_admin === true
-    }
 
-    // 1. Handle maintenance mode
-    if (maintenance?.maintenance_mode === true) {
-      // Allow access to maintenance page
-      if (isMaintenancePage) {
-        return response
-      }
-
-      // If user is logged in, check if they're admin
-      if (user) {
-        const admin = await isAdmin(user.id)
-        if (admin) {
-          return response // Allow admin to access any page during maintenance
-        }
-      }
-
-      // Redirect non-admins to maintenance page
-      if (!isMaintenancePage) {
+      // If not admin, redirect to maintenance
+      if (!profile?.is_admin) {
         return NextResponse.redirect(new URL('/maintenance', request.url))
       }
     }
 
-    // 2. Handle authentication
-    if (!user) {
-      // Allow access to public routes
-      if (isPublicRoute) {
-        return response
+    // Admin check
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (!user) {
+        console.log('No user found, redirecting to login')
+        const redirectUrl = new URL('/login', request.url)
+        return NextResponse.redirect(redirectUrl)
       }
-      // Redirect to login for protected routes
-      return NextResponse.redirect(new URL('/login', request.url))
+
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (profileError || !profile || !profile.is_admin) {
+          console.log('Admin access denied:', { profileError, profile })
+          const redirectUrl = new URL('/', request.url)
+          return NextResponse.redirect(redirectUrl)
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error)
+        const redirectUrl = new URL('/', request.url)
+        return NextResponse.redirect(redirectUrl)
+      }
     }
 
-    // 3. Handle authenticated users
-    if (user) {
-      // Redirect away from public routes if logged in
-      if (path.startsWith('/login') || path.startsWith('/signup')) {
-        return NextResponse.redirect(new URL('/', request.url))
-      }
+    // Check if user has a workspace
+    if (session) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .limit(1)
 
-      // Handle admin routes
-      if (isAdminRoute) {
-        const admin = await isAdmin(user.id)
-        if (!admin) {
-          return NextResponse.redirect(new URL('/', request.url))
-        }
+      // If authenticated but no workspace, redirect to create workspace
+      if ((!workspaces || workspaces.length === 0) && 
+          !request.nextUrl.pathname.startsWith('/create-workspace')) {
+        const redirectUrl = new URL('/create-workspace', request.url)
+        return NextResponse.redirect(redirectUrl)
       }
+    }
 
-      // Check workspace requirement (skip for admin routes)
-      if (!isAdminRoute) {
-        const { data: workspaces } = await supabase
-          .from('workspaces')
-          .select('id')
-          .limit(1)
+    // If user is signed in and trying to access auth pages, redirect to dashboard
+    if (session && (
+      request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/signup') ||
+      request.nextUrl.pathname.startsWith('/confirm-email')
+    )) {
+      const redirectUrl = new URL('/', request.url)
+      return NextResponse.redirect(redirectUrl)
+    }
 
-        if ((!workspaces || workspaces.length === 0) && 
-            !path.startsWith('/create-workspace')) {
-          return NextResponse.redirect(new URL('/create-workspace', request.url))
-        }
-      }
+    // If no session and trying to access protected pages, redirect to login
+    if (!session && 
+      !request.nextUrl.pathname.startsWith('/login') &&
+      !request.nextUrl.pathname.startsWith('/signup') &&
+      !request.nextUrl.pathname.startsWith('/auth') &&
+      !request.nextUrl.pathname.startsWith('/confirm-email') &&
+      !request.nextUrl.pathname.startsWith('/maintenance')
+    ) {
+      const redirectUrl = new URL('/login', request.url)
+      return NextResponse.redirect(redirectUrl)
     }
 
     return response
 
   } catch (e) {
     console.error('Middleware error:', e)
-    // On error, allow the request to proceed
     return NextResponse.next({
       request: {
         headers: request.headers,
