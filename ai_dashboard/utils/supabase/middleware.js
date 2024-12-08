@@ -48,8 +48,8 @@ export async function updateSession(request) {
     const isMaintenancePage = path.startsWith('/maintenance')
     const isAdminRoute = path.startsWith('/admin')
 
-    // Get session and maintenance status
-    const { data: { session } } = await supabase.auth.getSession()
+    // Get authenticated user and maintenance status
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     const { data: maintenance } = await supabase
       .from('system_status')
       .select('maintenance_mode')
@@ -73,8 +73,8 @@ export async function updateSession(request) {
       }
 
       // If user is logged in, check if they're admin
-      if (session) {
-        const admin = await isAdmin(session.user.id)
+      if (user) {
+        const admin = await isAdmin(user.id)
         if (admin) {
           return response // Allow admin to access any page during maintenance
         }
@@ -87,7 +87,7 @@ export async function updateSession(request) {
     }
 
     // 2. Handle authentication
-    if (!session) {
+    if (!user) {
       // Allow access to public routes
       if (isPublicRoute) {
         return response
@@ -97,7 +97,7 @@ export async function updateSession(request) {
     }
 
     // 3. Handle authenticated users
-    if (session) {
+    if (user) {
       // Redirect away from public routes if logged in
       if (path.startsWith('/login') || path.startsWith('/signup')) {
         return NextResponse.redirect(new URL('/', request.url))
@@ -105,7 +105,7 @@ export async function updateSession(request) {
 
       // Handle admin routes
       if (isAdminRoute) {
-        const admin = await isAdmin(session.user.id)
+        const admin = await isAdmin(user.id)
         if (!admin) {
           return NextResponse.redirect(new URL('/', request.url))
         }
