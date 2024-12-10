@@ -12,10 +12,15 @@ import { Minus, Plus } from "lucide-react";
 
 const PdfViewer = ({ url, activeSource = null }) => {
   const containerRef = useRef(null);
+  const [searchAttempts, setSearchAttempts] = useState(0);
+  
   const searchPluginInstance = useRef(
     searchPlugin({
       onHighlightKeyword: (props) => {
         props.highlightEle.classList.add('source-highlight');
+        props.highlightEle.style.backgroundColor = 'rgba(255, 255, 0, 0.4)';
+        props.highlightEle.style.borderRadius = '2px';
+        props.highlightEle.style.padding = '2px 0';
       },
     })
   ).current;
@@ -29,14 +34,72 @@ const PdfViewer = ({ url, activeSource = null }) => {
     searchPluginInstance.clearHighlights();
   }, [searchPluginInstance]);
 
-  const highlightText = useCallback((text) => {
-    if (!text || !containerRef.current) return;
+  // New function to clean and normalize text for searching
+  const normalizeText = (text) => {
+    return text
+      .replace(/\s+/g, ' ')        // Replace multiple spaces with single space
+      .replace(/[^\w\s\d]/g, ' ')  // Replace special characters with spaces, keep numbers
+      .trim()                      // Remove leading/trailing spaces
+      .toLowerCase();              // Convert to lowercase
+  };
+
+  // Modified findBestMatch function to prioritize longer matches
+  const findBestMatch = (sourceText) => {
+    const words = normalizeText(sourceText).split(' ');
+    const searchPhrases = [];
+    
+    // Try the full text first (up to a reasonable length)
+    if (words.length <= 15) {
+      searchPhrases.push(words.join(' '));
+    }
+    
+    // Try larger chunks
+    if (words.length > 15) {
+      // First 15 words
+      searchPhrases.push(words.slice(0, 15).join(' '));
+      // Last 15 words
+      searchPhrases.push(words.slice(-15).join(' '));
+    }
+    
+    // Add smaller fallback phrases
+    for (let i = 0; i < Math.min(words.length - 2, 5); i++) {
+      searchPhrases.push(words.slice(i, i + 3).join(' '));
+    }
+    
+    return searchPhrases;
+  };
+
+  const highlightText = useCallback(async (text, attempt = 0) => {
+    if (!text || !containerRef.current) return false;
     
     clearHighlights();
-    searchPluginInstance.highlight({
-      keyword: text.substring(0, 50),
-      matchCase: true,
-    });
+    
+    const searchPhrases = findBestMatch(text);
+    const currentPhrase = searchPhrases[attempt % searchPhrases.length];
+    
+    if (!currentPhrase) return false;
+
+    console.log(`Attempting to highlight: "${currentPhrase}"`);
+
+    try {
+      await searchPluginInstance.highlight({
+        keyword: currentPhrase,
+        matchCase: false,
+      });
+
+      // Check if highlight was successful
+      const highlight = containerRef.current.querySelector('.rpv-search__highlight');
+      if (highlight) {
+        console.log('Highlight successful');
+        return true;
+      } else {
+        console.log('Highlight not found');
+        return false;
+      }
+    } catch (error) {
+      console.error('Highlight error:', error);
+      return false;
+    }
   }, [searchPluginInstance, clearHighlights]);
 
   useEffect(() => {
@@ -45,26 +108,60 @@ const PdfViewer = ({ url, activeSource = null }) => {
     const { text } = activeSource;
     if (!text) return;
 
-    const timer = setTimeout(() => {
-      highlightText(text);
-      
-      // Wait a bit for the highlight to be added to DOM
-      setTimeout(() => {
-        const highlight = containerRef.current?.querySelector('.rpv-search__highlight');
-        if (highlight) {
-          highlight.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
+    let timeoutId;
+    
+    const attemptHighlight = async () => {
+      // Wait for PDF to be fully rendered
+      timeoutId = setTimeout(async () => {
+        const success = await highlightText(text, searchAttempts);
+        
+        if (success) {
+          // If highlight successful, scroll to it
+          const highlight = containerRef.current?.querySelector('.rpv-search__highlight');
+          if (highlight) {
+            highlight.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              
+            });
+          }
+        } else if (searchAttempts < 5) {
+          // Try next search phrase if available
+          setSearchAttempts(prev => prev + 1);
         }
-      }, 100);
-    }, 300);
+      }, 300);
+    };
+
+    attemptHighlight();
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timeoutId);
       clearHighlights();
     };
-  }, [activeSource, highlightText, clearHighlights]);
+  }, [activeSource, highlightText, searchAttempts, clearHighlights]);
+
+  // Reset search attempts when source changes
+  useEffect(() => {
+    setSearchAttempts(0);
+  }, [activeSource]);
+
+  // Add CSS to your global styles or component
+  useEffect(() => {
+    // Add custom CSS for highlighting
+    const style = document.createElement('style');
+    style.textContent = `
+      .source-highlight {
+        background-color: rgba(255, 255, 0, 0.4) !important;
+        border: 1px solid rgba(255, 200, 0, 0.6) !important;
+        box-shadow: 0 0 3px rgba(255, 200, 0, 0.3) !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   return (
     <div className="h-full w-full relative" ref={containerRef}>
