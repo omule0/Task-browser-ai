@@ -30,8 +30,9 @@ export async function POST(request) {
 
     // Initialize chat model
     const chatModel = new ChatOpenAI({
-      modelName: "gpt-4",
+      modelName: "gpt-4o-mini",
       temperature: 0.7,
+      // maxTokens:4096,
     });
 
     // Process document if it's the initial greeting
