@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, ChevronDown, Loader2, Plus } from "lucide-react";
+import { Send, ChevronDown, Loader2, Plus, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,7 +30,7 @@ export function ChatInterface({
   const renderMessageContent = (message) => {
     if (message.role === 'assistant' && message.citations) {
       return (
-        <div>
+        <div className="space-y-4">
           <div className="prose prose-sm max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {message.content}
@@ -81,10 +81,9 @@ export function ChatInterface({
 
   return (
     <div className="flex-1 border-l border-border bg-background flex flex-col">
-      <div className="h-14 border-b border-border flex items-center justify-between px-4">
-        <h2 className="text-lg font-semibold">Chat</h2>
+      <header className="h-14 border-b border-border flex items-center justify-between px-4">
+        <h1 className="text-lg font-semibold">Chat</h1>
         <div className="flex items-center gap-2">
-         
           <Button 
             variant="ghost"
             size="sm"
@@ -95,23 +94,18 @@ export function ChatInterface({
           </Button>
           <ModeToggle />
         </div>
-      </div>
+      </header>
 
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {messages.map((message, index) => (
             <div 
               key={index}
-              className={cn(
-                "flex gap-3 rounded-lg p-4",
-                message.role === 'assistant' 
-                  ? 'bg-secondary/50 border border-border' 
-                  : 'bg-primary/10'
-              )}
+              className="flex gap-4"
             >
               <div 
                 className={cn(
-                  "w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center",
+                  "w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center",
                   message.role === 'assistant' 
                     ? 'bg-primary text-primary-foreground' 
                     : 'bg-primary/80 text-primary-foreground'
@@ -125,9 +119,9 @@ export function ChatInterface({
             </div>
           ))}
           {(isLoading || loadingMessage) && (
-            <div className="flex flex-col items-center justify-center py-4 bg-secondary/50 rounded-lg">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground text-center">
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
+              <p className="text-sm text-muted-foreground">
                 {loadingMessage || 'Processing...'}
               </p>
             </div>
@@ -136,44 +130,39 @@ export function ChatInterface({
       </ScrollArea>
 
       {suggestedQuestions.length > 0 && (
-        <div className="px-4 py-2 border-t border-border">
+        <div className="px-4 py-2 border-t border-border bg-secondary/10">
           <button 
             onClick={() => setIsQuestionsCollapsed(!isQuestionsCollapsed)}
             className="w-full flex items-center justify-between text-sm font-medium text-muted-foreground mb-2 hover:text-foreground"
           >
             <span>Suggested Questions</span>
-            <ChevronDown 
-              className={cn(
-                "h-4 w-4 transition-transform",
-                isQuestionsCollapsed ? "rotate-180" : ""
-              )} 
-            />
+            <ChevronDown className={cn(
+              "h-4 w-4 transition-transform",
+              isQuestionsCollapsed ? "rotate-180" : ""
+            )} />
           </button>
           <div className={cn(
-            "space-y-1.5 transition-all duration-200 overflow-hidden",
-            isQuestionsCollapsed ? "h-0" : "h-auto"
+            "space-y-2 transition-all duration-200",
+            isQuestionsCollapsed ? "h-0 overflow-hidden" : "h-auto"
           )}>
             {suggestedQuestions.map((question, index) => (
-              <button
+              <div 
                 key={index}
-                className="w-full text-left px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors"
+                className="flex items-center gap-2 text-primary cursor-pointer hover:text-primary/80"
                 onClick={() => handleQuestionClick(question)}
-                disabled={isLoading}
               >
-                <div className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5">•</span>
-                  <span className="line-clamp-2">{question}</span>
-                </div>
-              </button>
+                <ArrowRight className="h-4 w-4" />
+                <p className="text-sm">{question}</p>
+              </div>
             ))}
           </div>
         </div>
       )}
 
       <div className="p-4 border-t border-border">
-        <div className="relative">
+        <div className="flex gap-2">
           <Input
-            placeholder="Ask a question about the document..."
+            placeholder={selectedFile ? "Ask any question..." : "Select a PDF to start chatting..."}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyDown={(e) => {
@@ -183,22 +172,19 @@ export function ChatInterface({
               }
             }}
             disabled={isLoading || !selectedFile}
-            className="pr-12"
+            className="flex-1 text-sm"
           />
-          <div className="absolute right-1 top-1/2 -translate-y-1/2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => handleSendMessage()}
-              disabled={isLoading || !selectedFile || !inputMessage.trim()}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <Button
+            size="icon"
+            onClick={() => handleSendMessage()}
+            disabled={isLoading || !selectedFile || !inputMessage.trim()}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
