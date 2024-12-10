@@ -2,39 +2,11 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { createClient } from '@/utils/supabase/client';
-import { m } from "framer-motion";
 
 const textSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 4000,
+  chunkSize: 2000,
   chunkOverlap: 400,
 });
-
-// Helper function to verify workspace access
-async function verifyWorkspaceAccess(workspaceId, userId) {
-  const supabase = createClient();
-  
-  // Ensure workspaceId is a valid UUID
-  try {
-    // // Basic UUID validation
-    // if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workspaceId)) {
-    //   throw new Error('Invalid workspace ID format');
-    // }
-
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('id')
-      .eq('id', workspaceId)
-      .eq('owner_id', userId)
-      .single();
-
-    if (error) throw new Error('Workspace access verification failed');
-    if (!data) throw new Error('Unauthorized workspace access');
-    return true;
-  } catch (error) {
-    console.error('Workspace access verification failed:', error);
-    throw new Error('Unauthorized workspace access');
-  }
-}
 
 // Helper function to check if document is already processed
 async function isDocumentProcessed(fileId, workspaceId, userId) {
@@ -54,9 +26,6 @@ async function isDocumentProcessed(fileId, workspaceId, userId) {
 // Function to process and split document content
 export async function processDocumentContent(content, fileId, workspaceId, userId) {
   try {
-    // Verify workspace access first
-    await verifyWorkspaceAccess(workspaceId, userId);
-
     // Check if document is already processed
     const isProcessed = await isDocumentProcessed(fileId, workspaceId, userId);
     if (isProcessed) {

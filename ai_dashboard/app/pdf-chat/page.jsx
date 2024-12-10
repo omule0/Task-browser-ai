@@ -5,11 +5,14 @@ import { PdfSection } from "@/components/pdf-chat/PdfSection";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { cn } from "@/lib/utils";
+import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useWorkspace } from "@/context/workspace-context";
 import { useDropzone } from 'react-dropzone';
 import { createClient } from '@/utils/supabase/client';
 import { customToast } from "@/components/ui/toast-theme";
 import { Loader2, Upload } from "lucide-react";
+import { FileIcon, defaultStyles } from 'react-file-icon';
+import { format } from 'date-fns';
 import { processDocumentContent } from '@/utils/text-processing';
 
 export default function PDFChat() {
@@ -194,6 +197,45 @@ export default function PDFChat() {
     }
   }, [currentWorkspace, loadFiles]);
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+    },
+    maxSize: 10485760, // 10MB
+    multiple: false,
+  });
+
+  // Add upload zone to the sidebar
+  const renderUploadZone = () => (
+    <div
+      {...getRootProps()}
+      className={`mx-3 mb-3 border-2 border-dashed rounded-lg p-4 transition-colors ${
+        isDragActive 
+          ? 'border-white/50 bg-white/10' 
+          : 'border-white/20 hover:border-white/30'
+      }`}
+    >
+      <input {...getInputProps()} />
+      <div className="flex flex-col items-center gap-2">
+        {isUploading ? (
+          <>
+            <Loader2 className="h-6 w-6 text-white animate-spin" />
+            <p className="text-sm text-white/70 text-center">
+              Uploading... {uploadProgress}%
+            </p>
+          </>
+        ) : (
+          <>
+            <Upload className="h-6 w-6 text-white/70" />
+            <p className="text-sm text-white/70 text-center">
+              Drop PDF here or click to upload
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   // Keep the useEffect for initial file loading
   useEffect(() => {
@@ -202,6 +244,29 @@ export default function PDFChat() {
     }
   }, [currentWorkspace, loadFiles]);
 
+  // Add helper function for file icons
+  const getFileIconProps = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    return {
+      extension,
+      color: 'mistyrose',
+      type: 'acrobat',
+      fold: true,
+      radius: 8,
+    };
+  };
+
+  // Add this helper function to truncate file names
+  const truncateFileName = (fileName, maxLength = 20) => {
+    if (fileName.length <= maxLength) return fileName;
+    
+    const extension = fileName.split('.').pop();
+    const nameWithoutExt = fileName.slice(0, -(extension.length + 1));
+    
+    if (nameWithoutExt.length <= maxLength - 5) return fileName;
+    
+    return `${nameWithoutExt.slice(0, maxLength - 5)}...${extension}`;
+  };
 
   // Add this function near the top of your component
   const checkAndProcessDocument = async (file) => {
@@ -391,19 +456,20 @@ export default function PDFChat() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <PdfChatSidebar 
-        className={cn(
-          "transition-all duration-300",
-          isSidebarCollapsed ? "w-0 overflow-hidden" : "w-[20%] min-w-[250px]"
-        )}
-        files={files}
-        loadingFiles={loadingFiles}
-        selectedFile={selectedFile}
-        onFileSelect={handleFileSelect}
-        onUpload={onDrop}
-        isUploading={isUploading}
-        uploadProgress={uploadProgress}
-      />
+      <div className={cn(
+        "transition-all duration-300",
+        isSidebarCollapsed ? "w-0 overflow-hidden" : "flex"
+      )}>
+        <PdfChatSidebar 
+          files={files}
+          loadingFiles={loadingFiles}
+          selectedFile={selectedFile}
+          onFileSelect={handleFileSelect}
+          onUpload={onDrop}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+        />
+      </div>
 
       <div className="flex-1 flex">
         <PdfSection 

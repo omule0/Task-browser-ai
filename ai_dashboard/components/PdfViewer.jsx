@@ -33,31 +33,10 @@ const PdfViewer = ({ url, activeSource = null }) => {
     if (!text || !containerRef.current) return;
     
     clearHighlights();
-
-    // Clean and prepare the text for matching
-    const cleanText = text.trim();
-    
-    // Try different matching strategies
-    const matchStrategies = [
-      cleanText, // Try exact match first
-      cleanText.substring(0, Math.min(150, cleanText.length)), // Try first 150 chars
-      // For numbers, try to match the numeric portion
-      cleanText.match(/\d+/)?.[0],
-      // For longer text, try to match complete sentences
-      cleanText.match(/[^.!?]+[.!?]+/)?.[0]?.trim(),
-    ].filter(Boolean);
-
-    // Try each strategy until we find matches
-    for (const matchText of matchStrategies) {
-      searchPluginInstance.highlight({
-        keyword: matchText,
-        matchCase: true,
-      });
-
-      // If we found any highlights, stop trying other strategies
-      const hasHighlights = containerRef.current.querySelector('.rpv-search__highlight');
-      if (hasHighlights) break;
-    }
+    searchPluginInstance.highlight({
+      keyword: text.substring(0, 50),
+      matchCase: true,
+    });
   }, [searchPluginInstance, clearHighlights]);
 
   useEffect(() => {

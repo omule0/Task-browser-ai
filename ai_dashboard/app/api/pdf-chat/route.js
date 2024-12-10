@@ -12,18 +12,6 @@ export async function POST(request) {
     // Initialize Supabase client
     const supabase = await createClient();
 
-    // Verify workspace ownership
-    const { data: workspace, error: workspaceError } = await supabase
-      .from('workspaces')
-      .select('id')
-      .eq('id', workspaceId)
-      .eq('owner_id', userId)
-      .single();
-
-    if (workspaceError || !workspace) {
-      throw new Error('Unauthorized workspace access');
-    }
-
     // Get document content
     const { data: docContent, error: docError } = await supabase
       .from('document_content')
@@ -42,7 +30,7 @@ export async function POST(request) {
 
     // Initialize chat model
     const chatModel = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+      modelName: "gpt-4",
       temperature: 0.7,
     });
 
@@ -146,7 +134,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Chat error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: error.message.includes('Unauthorized') ? 403 : 500,
+      status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
