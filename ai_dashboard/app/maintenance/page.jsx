@@ -1,5 +1,56 @@
 'use client'
+import { useEffect, useState } from 'react';
+import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { Loading } from '@/components/ui/loading';
+
 export default function MaintenancePage() {
+  const [maintenanceMode, setMaintenanceMode] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchMaintenanceStatus = async () => {
+      const { data } = await supabase
+        .from('system_status')
+        .select('maintenance_mode')
+        .single();
+      
+      setMaintenanceMode(data?.maintenance_mode || false);
+      setLoading(false);
+    };
+
+    fetchMaintenanceStatus();
+  }, []);
+
+  if (loading) {
+    return <Loading/>
+  }
+
+  if (!maintenanceMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4 p-8">
+          <h1 className="text-4xl font-bold text-foreground">System is Online</h1>
+          <div className="my-8">
+            <span className="text-6xl">✅</span>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-md mx-auto">
+            The system is now back online and ready to use.
+          </p>
+          <Button 
+            className="mt-4"
+            onClick={() => router.push('/')}
+          >
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4 p-8">
