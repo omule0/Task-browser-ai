@@ -38,7 +38,7 @@ const PdfViewer = ({ url, activeSource = null }) => {
   const normalizeText = (text) => {
     return text
       .replace(/\s+/g, ' ')        // Replace multiple spaces with single space
-      .replace(/[^\w\s\d]/g, ' ')  // Replace special characters with spaces, keep numbers
+      // .replace(/[^\w\s\d]/g, ' ')  // Replace special characters with spaces, keep numbers
       .trim()                      // Remove leading/trailing spaces
       .toLowerCase();              // Convert to lowercase
   };

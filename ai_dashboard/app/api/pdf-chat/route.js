@@ -99,9 +99,11 @@ export async function POST(request) {
 
     Important Instructions:
     1. Base your answer only on the provided relevant sections
-    2. Include inline citations using [n] format, where n is the citation number
-    3. If you quote directly, use quotation marks and include the citation
-    4. At the end of your response, list the sources used under a "Sources:" section
+    2. Use bullet points for lists and key points where neccesary
+    3. Bold important terms or concepts
+    4. Include inline citations using [n] format, where n is the citation number
+    5. If you quote directly, use quotation marks and include the citation
+    6. At the end of your response, list the sources used under a "Sources:" section
     
     Assistant:`;
 
