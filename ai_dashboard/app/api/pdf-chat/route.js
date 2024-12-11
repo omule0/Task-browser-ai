@@ -6,6 +6,13 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { processDocumentContent, retrieveRelevantChunks, formatCitations } from '@/utils/text-processing';
 
 export async function POST(request) {
+  // Initialize token counter at the start of the function
+  let tokenCount = {
+    promptTokens: 0,
+    completionTokens: 0,
+    totalTokens: 0
+  };
+
   try {
     const { messages, fileId, workspaceId, userId, initialGreeting } = await request.json();
 
@@ -28,14 +35,21 @@ export async function POST(request) {
       throw new Error('No content found for this document');
     }
 
-    // Initialize chat model
+    // Initialize chat model with callbacks
     const chatModel = new ChatOpenAI({
       modelName: "gpt-4o-mini",
       temperature: 0.7,
-      // maxTokens:4096,
+      callbacks: [{
+        handleLLMEnd: (output) => {
+          if (output.llmOutput?.tokenUsage) {
+            tokenCount.promptTokens += output.llmOutput.tokenUsage.promptTokens || 0;
+            tokenCount.completionTokens += output.llmOutput.tokenUsage.completionTokens || 0;
+            tokenCount.totalTokens += output.llmOutput.tokenUsage.totalTokens || 0;
+          }
+        }
+      }]
     });
 
-    // Process document if it's the initial greeting
     if (initialGreeting) {
       // No need to process document here as it's already handled during file selection
       const overviewTemplate = `Analyze the following document content and provide:
@@ -73,9 +87,25 @@ export async function POST(request) {
         .filter(line => line.trim())
         .map(line => line.replace(/^\d+\.\s*/, '').trim()) || [];
 
+      // Log token usage to database
+      try {
+        await supabase.from('token_usage').insert({
+          user_id: userId,
+          workspace_id: workspaceId,
+          file_path: fileId,
+          prompt_tokens: tokenCount.promptTokens,
+          completion_tokens: tokenCount.completionTokens,
+          total_tokens: tokenCount.totalTokens,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Error logging token usage:', error);
+      }
+
       return new Response(JSON.stringify({ 
         response: overview,
-        suggestedQuestions: questions 
+        suggestedQuestions: questions,
+        tokenUsage: tokenCount
       }), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -127,16 +157,35 @@ export async function POST(request) {
     // Generate response
     const response = await chain.invoke({});
 
+    // Log token usage to database
+    try {
+      await supabase.from('token_usage').insert({
+        user_id: userId,
+        workspace_id: workspaceId,
+        file_path: fileId,
+        prompt_tokens: tokenCount.promptTokens,
+        completion_tokens: tokenCount.completionTokens,
+        total_tokens: tokenCount.totalTokens,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error logging token usage:', error);
+    }
+
     return new Response(JSON.stringify({ 
       response,
-      citations 
+      citations,
+      tokenUsage: tokenCount
     }), {
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Chat error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      tokenUsage: tokenCount
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
