@@ -116,12 +116,12 @@ export default function ViewSchemas() {
       if (error) throw error;
 
       setSchemas(schemas.filter(schema => schema.id !== schemaToDelete.id));
-      customToast.success('Template deleted successfully');
+      customToast.success('Schema deleted successfully');
       setShowDeleteDialog(false);
       setSchemaToDelete(null);
     } catch (error) {
       console.error('Error deleting schema:', error);
-      customToast.error('Failed to delete template');
+      customToast.error('Failed to delete Schema');
     }
   };
 
@@ -141,15 +141,15 @@ export default function ViewSchemas() {
         <Button variant="ghost" onClick={() => router.back()}>
           <ArrowLeft className="w-4 h-4 mr-2" />Back
         </Button>
-        <h1 className="text-2xl font-bold">Your Templates</h1>
+        <h1 className="text-2xl font-bold">Your Schema</h1>
         <div className="w-[100px]"></div> {/* Spacer for alignment */}
       </div>
 
       {schemas.length === 0 ? (
         <Card className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">No templates found</p>
+          <p className="text-muted-foreground mb-4">No Schemas found</p>
           <Button onClick={() => router.push('/schema-generator')}>
-            Create Your First Template
+            Create Your First Schema
           </Button>
         </Card>
       ) : (
@@ -184,7 +184,7 @@ export default function ViewSchemas() {
               </div>
               <Button 
                 className="mt-auto"
-                onClick={() => router.push(`/generate-report?template=${schema.id}`)}
+                onClick={() => router.push(`/generate-report?Schema=${schema.id}`)}
               >
                 Generate Report
               </Button>
@@ -206,7 +206,7 @@ export default function ViewSchemas() {
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => router.push(`/generate-report?template=${selectedSchema.id}`)}
+                  onClick={() => router.push(`/generate-report?Schema=${selectedSchema.id}`)}
                   className="bg-primary text-primary-foreground"
                 >
                   Generate Report
@@ -292,9 +292,9 @@ export default function ViewSchemas() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogTitle>Delete Schema</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this template? This action cannot be undone.
+              Are you sure you want to delete this Schema? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

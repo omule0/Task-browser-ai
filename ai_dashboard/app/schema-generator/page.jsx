@@ -283,14 +283,14 @@ export default function SchemaGenerator() {
 
       if (error) throw error;
 
-      customToast.success('Template saved successfully!');
+      customToast.success('Schema saved successfully!');
       setSaveDialogOpen(false);
       setSchemaName('');
       setSaveSuccess(true);
       setShowSuccessDialog(true);
     } catch (error) {
-      console.error('Error saving Template:', error);
-      customToast.error(error.message || 'Failed to save template');
+      console.error('Error saving Schema:', error);
+      customToast.error(error.message || 'Failed to save Schema');
     } finally {
       setIsSaving(false);
     }
@@ -315,7 +315,7 @@ export default function SchemaGenerator() {
           setEdges(layoutedEdges);
         }
       } catch (error) {
-        console.error('Failed to parse template:', error);
+        console.error('Failed to parse Schema:', error);
       }
     }
   }, [messages, setNodes, setEdges, layout]);
@@ -431,7 +431,7 @@ export default function SchemaGenerator() {
                         disabled={!canSave}
                       >
                         <Save className="mr-2 h-4 w-4" />
-                        Save Template
+                        Save Schema
                       </DropdownMenuItem>
                     </>
                   )}
@@ -465,16 +465,16 @@ export default function SchemaGenerator() {
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save Template</DialogTitle>
+            <DialogTitle>Save Schema</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="schema-name">Template Name</Label>
+              <Label htmlFor="schema-name">Schema Name</Label>
               <Input
                 id="schema-name"
                 value={schemaName}
                 onChange={(e) => setSchemaName(e.target.value)}
-                placeholder="Enter a name for your template"
+                placeholder="Enter a name for your Schema"
               />
             </div>
           </div>
@@ -489,7 +489,7 @@ export default function SchemaGenerator() {
               onClick={handleSaveSchema}
               disabled={!schemaName.trim() || isSaving}
             >
-              {isSaving ? 'Saving...' : 'Save Template'}
+              {isSaving ? 'Saving...' : 'Save Schema'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -499,9 +499,9 @@ export default function SchemaGenerator() {
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Template Saved Successfully!</AlertDialogTitle>
+            <AlertDialogTitle>Schema Saved Successfully!</AlertDialogTitle>
             <AlertDialogDescription>
-              Would you like to generate a report using this template now?
+              Would you like to generate a report using this Schema now?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -556,7 +556,7 @@ function CustomChatWidget({ messages, input, handleInputChange, handleSubmit, is
             <X className="h-4 w-4" />
           </Button>
           <p className="text-base pr-6">
-            Describe your report template and I'll help you create it! Start a chat to begin{" "}
+            Describe your report Schema and I'll help you create it! Start a chat to begin{" "}
             <span role="img" aria-label="pointing finger">
               👆
             </span>

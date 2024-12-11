@@ -153,13 +153,13 @@ export function Sidebar() {
         },
         {
           icon: <LayoutDashboard className="h-4 w-4" />,
-          label: "Template Generator",
+          label: "Schema Generator",
           href: "/schema-generator",
           isActive: pathname === "/schema-generator",
         },
         {
           icon: <FileIcon className="h-4 w-4" />,
-          label: "View Templates",
+          label: "View Schemas",
           href: "/view-schemas",
           isActive: pathname === "/view-schemas",
         },

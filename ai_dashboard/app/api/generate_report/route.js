@@ -21,11 +21,11 @@ function getHumanFriendlyError(error) {
     invalid_api_key:
       "There was an authentication error. Please contact support.",
     "Failed to generate":
-      "Unable to generate the report. Please try with different files or template.",
+      "Unable to generate the report. Please try with different files or Schema.",
     "Failed to parse":
-      "The generated content did not meet the template requirements. Please try again.",
+      "The generated content did not meet the Schema requirements. Please try again.",
     OutputParserException:
-      "The generated content format was invalid. Please try again with a different template.",
+      "The generated content format was invalid. Please try again with a different Schema.",
   };
 
   // Check if error message matches any known patterns
@@ -333,7 +333,7 @@ Generate a complete report following the specified structure and using informati
       zodSchema.parse(report);
     } catch (validationError) {
       console.error("Report validation error:", validationError);
-      throw new Error("Generated report does not match template structure");
+      throw new Error("Generated report does not match Schema structure");
     }
 
     // After generating the report, process it to include source tracking
@@ -357,12 +357,12 @@ Generate a complete report following the specified structure and using informati
         metadata: {
           template: {
             id: jsonSchema.id,
-            name: jsonSchema.name || "Custom Template",
+            name: jsonSchema.name || "Custom Schema",
             schema: jsonSchema
           },
           sources: processedReport.metadata.sources,
           processedChunks: processedChunks.length,
-          template_name: jsonSchema.name || "Custom Template",
+          template_name: jsonSchema.name || "Custom Schema",
           source_count: reportData.files.length,
           generation_date: new Date().toISOString(),
         },
