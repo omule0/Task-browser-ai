@@ -32,6 +32,7 @@ export default function PDFChat() {
   const [isQuestionsCollapsed, setIsQuestionsCollapsed] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [activeSource, setActiveSource] = useState(null);
+  const [tokenRefreshTrigger, setTokenRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -422,6 +423,9 @@ export default function PDFChat() {
         citations: data.citations
       }]);
       setLoadingMessage('');
+
+      // Trigger token usage refresh
+      setTokenRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Chat error:', error);
       setLoadingMessage('Failed to get response. Please try again.');
@@ -468,6 +472,7 @@ export default function PDFChat() {
           onUpload={onDrop}
           isUploading={isUploading}
           uploadProgress={uploadProgress}
+          tokenRefreshTrigger={tokenRefreshTrigger}
         />
       </div>
 

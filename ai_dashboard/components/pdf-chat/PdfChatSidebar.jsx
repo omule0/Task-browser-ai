@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -14,6 +14,8 @@ import { format } from 'date-fns';
 import { FileIcon as ReactFileIcon, defaultStyles } from 'react-file-icon';
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { useWorkspace } from "@/context/workspace-context";
+import { createClient } from '@/utils/supabase/client';
+import { TokenUsageViewer } from "./TokenUsageViewer";
 
 export function PdfChatSidebar({
   className, 
@@ -23,9 +25,22 @@ export function PdfChatSidebar({
   onFileSelect, 
   onUpload,
   isUploading,
-  uploadProgress
+  uploadProgress,
+  tokenRefreshTrigger
 }) {
   const router = useRouter();
+  const { currentWorkspace } = useWorkspace();
+  const [user, setUser] = useState(null);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onUpload,
@@ -91,7 +106,7 @@ export function PdfChatSidebar({
 
   return (
     <div className={cn(
-      "border-r border-border bg-secondary/30 text-foreground flex flex-col",
+      "border-r border-border bg-secondary/30 text-foreground flex flex-col w-72",
       className
     )}>
       {/* Header */}
@@ -158,6 +173,14 @@ export function PdfChatSidebar({
           )}
         </div>
       </ScrollArea>
+
+      {/* Token Usage Viewer */}
+      {selectedFile && currentWorkspace && user && (
+        <TokenUsageViewer 
+          fileId={`${currentWorkspace.id}/${user.id}/${selectedFile.name}`}
+          refreshTrigger={tokenRefreshTrigger}
+        />
+      )}
     </div>
   );
 } 
