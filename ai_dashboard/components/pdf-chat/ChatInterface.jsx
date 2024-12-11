@@ -2,11 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, ChevronDown, Loader2, Plus, ArrowRight } from "lucide-react";
+import { Send, ChevronDown, Loader2, Plus, ArrowRight, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ModeToggle } from "@/components/mode-toggle";
+import { useState } from "react";
 
 export function ChatInterface({
   messages,
@@ -22,19 +23,37 @@ export function ChatInterface({
   loadingMessage,
   onSourceClick,
 }) {
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState(null);
+
   const handleQuestionClick = (question) => {
     handleSendMessage(question);
     setIsQuestionsCollapsed(true);
   };
 
-  const renderMessageContent = (message) => {
+  const handleCopyMessage = async (content, index) => {
+    await navigator.clipboard.writeText(content);
+    setCopiedMessageIndex(index);
+    setTimeout(() => setCopiedMessageIndex(null), 2000);
+  };
+
+  const renderMessageContent = (message, index) => {
     if (message.role === 'assistant' && message.citations) {
       return (
         <div className="space-y-4">
-          <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4">
+          <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4 relative group">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {message.content}
             </ReactMarkdown>
+            <button
+              onClick={() => handleCopyMessage(message.content, index)}
+              className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              {copiedMessageIndex === index ? (
+                <Check className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              )}
+            </button>
           </div>
           {message.citations && message.citations.length > 0 && (
             <div className="mt-3 pt-3 border-t border-border">
@@ -71,10 +90,20 @@ export function ChatInterface({
     }
 
     return (
-      <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4">
+      <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4 relative group">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {message.content}
         </ReactMarkdown>
+        <button
+          onClick={() => handleCopyMessage(message.content, index)}
+          className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          {copiedMessageIndex === index ? (
+            <Check className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+          )}
+        </button>
       </div>
     );
   };
@@ -115,7 +144,7 @@ export function ChatInterface({
                 {message.role === 'assistant' ? 'AI' : 'You'}
               </div>
               <div className="flex-1">
-                {renderMessageContent(message)}
+                {renderMessageContent(message, index)}
               </div>
             </div>
           ))}
