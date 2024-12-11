@@ -31,7 +31,7 @@ export function ChatInterface({
     if (message.role === 'assistant' && message.citations) {
       return (
         <div className="space-y-4">
-          <div className="prose prose-sm max-w-none">
+          <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {message.content}
             </ReactMarkdown>
@@ -71,7 +71,7 @@ export function ChatInterface({
     }
 
     return (
-      <div className="prose prose-sm max-w-none">
+      <div className="prose dark:prose-invert prose-sm max-w-none [&>ul]:list-disc [&>ul]:ml-4 [&>ol]:list-decimal [&>ol]:ml-4">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {message.content}
         </ReactMarkdown>
