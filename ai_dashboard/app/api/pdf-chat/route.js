@@ -134,7 +134,6 @@ export async function POST(request) {
     3. Bold important terms or concepts
     4. Include inline citations using [n] format, where n is the citation number
     5. If you quote directly, use quotation marks and include the citation
-    6. At the end of your response, list the sources used under a "Sources:" section
     
     Assistant:`;
 
