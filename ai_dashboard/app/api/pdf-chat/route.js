@@ -100,7 +100,7 @@ export async function POST(request) {
 
     Important Instructions:
     1. Base your answer only on the provided relevant sections
-    2. Use bullet points for lists and key points where neccesary
+    2. Use bullet points for lists and key points where necessary
     3. Bold important terms or concepts
     4. Include inline citations using [n] format, where n is the citation number
     5. If you quote directly, use quotation marks and include the citation
