@@ -7,10 +7,11 @@ import { searchPlugin } from '@react-pdf-viewer/search';
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import "@react-pdf-viewer/search/lib/styles/index.css";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const PdfViewer = ({ url, activeSource = null }) => {
+const PdfViewer = ({ url, activeSource = null, className }) => {
   const containerRef = useRef(null);
   const [searchAttempts, setSearchAttempts] = useState(0);
   
@@ -164,33 +165,35 @@ const PdfViewer = ({ url, activeSource = null }) => {
   }, []);
 
   return (
-    <div className="h-full w-full relative" ref={containerRef}>
+    <div className={cn("h-full w-full relative", className)} ref={containerRef}>
       {/* Zoom controls */}
-      <div className="absolute top-4 right-4 flex gap-2 z-10 bg-white/90 p-1.5 rounded-lg shadow-sm border border-border">
-        <ZoomOut>
-          {(props) => (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={props.onClick}
-            >
-              <Minus size={14} />
-            </Button>
-          )}
-        </ZoomOut>
-        <ZoomIn>
-          {(props) => (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={props.onClick}
-            >
-              <Plus size={14} />
-            </Button>
-          )}
-        </ZoomIn>
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex gap-1 bg-background/95 rounded-md border shadow-sm p-1">
+          <ZoomOut>
+            {(props) => (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={props.onClick}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+            )}
+          </ZoomOut>
+          <ZoomIn>
+            {(props) => (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={props.onClick}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+          </ZoomIn>
+        </div>
       </div>
 
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.10.111/build/pdf.worker.min.js">
@@ -203,6 +206,13 @@ const PdfViewer = ({ url, activeSource = null }) => {
               searchPluginInstance,
             ]}
             defaultScale={SpecialZoomLevel.PageFit}
+            theme={{
+              theme: 'light',
+              customColors: {
+                backgroundColor: 'var(--background)',
+                textColor: 'var(--foreground)',
+              },
+            }}
           />
         </div>
       </Worker>

@@ -106,7 +106,7 @@ export function PdfChatSidebar({
 
   return (
     <div className={cn(
-      "border-r border-border bg-secondary/30 text-foreground flex flex-col w-72",
+      "border-r border-border bg-secondary/30 text-foreground flex flex-col w-56",
       className
     )}>
       {/* Header */}

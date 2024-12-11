@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { PanelLeft, PanelLeftClose, FileText, Loader2 } from "lucide-react";
 import dynamic from 'next/dynamic';
+import { cn } from "@/lib/utils";
 
 const PdfViewer = dynamic(() => import('@/components/PdfViewer'), {
   ssr: false,
@@ -17,25 +18,22 @@ export function PdfSection({
   pdfUrl,
   isSidebarCollapsed,
   setIsSidebarCollapsed,
-  activeSource
+  activeSource,
+  className,
 }) {
   return (
-    <div className="w-[40%] flex flex-col">
+    <div className={cn("w-[40%] flex flex-col", className)}>
       {/* PDF Header */}
-      <div className="flex items-center px-3 py-2 border-b border-border gap-3 h-14">
+      <div className="flex items-center px-3 py-2 border-b gap-3 h-14">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => {
             setIsSidebarCollapsed(!isSidebarCollapsed);
-            // Force layout recalculation after animation
-            setTimeout(() => {
-              window.dispatchEvent(new Event('resize'));
-            }, 300);
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
           }}
-          className="mr-1 h-8 w-8"
         >
-          {isSidebarCollapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
+          {isSidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </Button>
         <h2 className="text-base font-semibold flex-1">
           {selectedFile ? selectedFile.originalName : 'No file selected'}
@@ -43,12 +41,12 @@ export function PdfSection({
       </div>
 
       {/* PDF Content */}
-      <div className="flex-1 bg-secondary/50 flex justify-center overflow-hidden">
+      <div className="flex-1 bg-muted/50 flex justify-center overflow-hidden">
         {!selectedFile ? (
           <div className="flex items-center justify-center w-full p-8">
             <div className="text-center">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-1">No file selected</h3>
+              <h3 className="text-lg font-medium mb-1">No file selected</h3>
               <p className="text-sm text-muted-foreground">
                 Select a PDF file from the sidebar to view it here
               </p>
