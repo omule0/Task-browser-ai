@@ -38,7 +38,7 @@ export function ChatInterface({
           </div>
           {message.citations && message.citations.length > 0 && (
             <div className="mt-3 pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-2">Sources:</h4>
+              <h4 className="text-xs font-medium text-muted-foreground mb-2">Sources:"click source to view them on pdf"</h4>
               <div className="space-y-1.5">
                 {message.citations.map((citation) => (
                   <div 
