@@ -118,7 +118,7 @@ function combineReports(chunks) {
   const combined = chunks.reduce((acc, chunk, index) => {
     const sourceInfo = {
       chunkIndex: `Source [${index + 1}]`,
-      preview: chunk.sourceText
+      preview: chunk.sourceText.substring(0, 100) + '...'
     };
 
     Object.entries(chunk).forEach(([key, value]) => {
