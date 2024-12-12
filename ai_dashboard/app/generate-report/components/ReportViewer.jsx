@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const JsonRenderer = ({ data, level = 0 }) => {
   if (typeof data !== 'object' || data === null) {
-    return <span className="text-gray-800">{String(data)}</span>;
+    return <span className="text-foreground">{String(data)}</span>;
   }
 
   if (Array.isArray(data)) {

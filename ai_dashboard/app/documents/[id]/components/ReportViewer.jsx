@@ -24,7 +24,7 @@ const detectReportType = (reportData) => {
 
 const JsonRenderer = ({ data, level = 0, reportType }) => {
   if (typeof data !== 'object' || data === null) {
-    return <span className="text-gray-800">{String(data)}</span>;
+    return <span className="text-foreground">{String(data)}</span>;
   }
 
   if (Array.isArray(data)) {
