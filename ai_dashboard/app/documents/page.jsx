@@ -181,10 +181,10 @@ export default function GeneratedReports() {
         {filteredReports.length > 0 ? (
           filteredReports.map((report) => (
             <Link key={report.id} href={`/documents/${report.id}`}>
-              <Card className={`group hover:shadow-md transition-all ${
+              <Card className={`group hover:shadow-md transition-all h-full ${
                 viewMode === 'list' ? 'p-3' : 'p-4'
               }`}>
-                <div className={`flex ${viewMode === 'list' ? 'items-center' : 'flex-col'} gap-4`}>
+                <div className={`flex ${viewMode === 'list' ? 'items-center' : 'flex-col h-full justify-between'} gap-4`}>
                   <div className={`flex items-center ${viewMode === 'list' ? 'flex-1' : 'w-full'}`}>
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-primary" />
@@ -199,12 +199,12 @@ export default function GeneratedReports() {
                     </div>
                   </div>
                   
-                  <div className={`flex ${viewMode === 'list' ? 'items-center' : 'items-end'} gap-3`}>
-                    <div className="flex items-center text-sm text-muted-foreground">
+                  <div className={`flex ${viewMode === 'list' ? 'items-center shrink-0' : 'items-end w-full'} gap-3 justify-between`}>
+                    <div className="flex items-center text-sm text-muted-foreground shrink-0">
                       <Calendar className="w-4 h-4 mr-1" />
                       {new Date(report.created_at).toLocaleDateString()}
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
