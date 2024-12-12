@@ -92,7 +92,8 @@ export function ReportDetailsSidebar({ report }) {
               {report.source_files && report.source_files.length > 0 ? (
                 <ul className="text-sm space-y-1">
                   {report.source_files.map((file, index) => {
-                    const fileName = file.split('/').pop();
+                    const fileName = file.split('/').pop()
+                      .replace(/^\d+-\w+-/, '');
                     return (
                       <li key={index} className="text-muted-foreground flex items-center gap-2">
                         <FileText className="h-3 w-3 flex-shrink-0" />
@@ -106,37 +107,6 @@ export function ReportDetailsSidebar({ report }) {
               )}
             </CollapsibleContent>
           </Collapsible>
-
-          {report.token_usage && (
-            <>
-              <Separator className="my-4" />
-              
-              <Collapsible defaultOpen>
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="flex w-full justify-between p-2 hover:bg-muted rounded-md group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">Token Usage</span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="px-2 pt-2">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-muted-foreground">Total:</span>
-                    <span>{report.token_usage.totalTokens || 0}</span>
-                    <span className="text-muted-foreground">Prompt:</span>
-                    <span>{report.token_usage.promptTokens || 0}</span>
-                    <span className="text-muted-foreground">Completion:</span>
-                    <span>{report.token_usage.completionTokens || 0}</span>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </>
-          )}
 
           {report.metadata && (
             <>
@@ -162,7 +132,7 @@ export function ReportDetailsSidebar({ report }) {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <span className="text-muted-foreground">Document Type:</span>
                       <span>{report.metadata.analysis.documentType}</span>
-                      <span className="text-muted-foreground">Chunks Processed:</span>
+                      <span className="text-muted-foreground">Blocks Processed:</span>
                       <span>{report.metadata.analysis.chunkCount}</span>
                     </div>
                   </div>
@@ -181,7 +151,7 @@ export function ReportDetailsSidebar({ report }) {
                               <span className="capitalize">{section}</span>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">
-                                  {chunks.length} chunks
+                                  {chunks.length} blocks
                                 </span>
                                 <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                               </div>
@@ -195,7 +165,7 @@ export function ReportDetailsSidebar({ report }) {
                                   className="text-xs bg-muted/50 p-2 rounded"
                                 >
                                   <div className="flex justify-between items-center mb-1">
-                                    <span className="text-muted-foreground">Chunk {chunk.chunkIndex}</span>
+                                    <span className="text-muted-foreground">Block {chunk.chunkIndex}</span>
                                   </div>
                                   <p className="line-clamp-2 text-muted-foreground">
                                     {chunk.preview}
