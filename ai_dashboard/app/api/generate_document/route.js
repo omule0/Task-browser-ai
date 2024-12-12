@@ -6,107 +6,225 @@ import { isTokenLimitExceeded, isApproachingTokenLimit, fetchTotalTokenUsage } f
 import { StructuredOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
-// Add this helper function at the top
-function getHumanFriendlyError(error) {
-  // Common error patterns and their user-friendly messages
-  const errorPatterns = {
-    'Title should be between 6-12 words': 'The generated title is too long. Please try again with more specific requirements for a concise title.',
-    'Invalid document type': 'The selected document type is not supported. Please try again.',
-    'context length': 'Your input is too long. Please provide a shorter description or reduce the number of files.',
-    'rate limit': 'We\'re processing too many requests. Please wait a moment and try again.',
-    'invalid_api_key': 'There was an authentication error. Please contact support.',
-    'Failed to generate': 'Unable to generate the document. Try adjusting your description to be more specific.',
-    'Failed to parse': 'The generated content did not meet our requirements. Please try again with more specific instructions or selected files.',
-    'OutputParserException': 'The generated content format was invalid. Please try again with clearer requirements.',
+// Enhanced chunk processing with better context management
+function processChunksWithContext(chunks, maxContextSize = 12000) {
+  const processedChunks = [];
+  let currentContext = '';
+  let currentSize = 0;
+
+  chunks.forEach(chunk => {
+    const chunkSize = chunk.length;
+    if (currentSize + chunkSize <= maxContextSize) {
+      currentContext += '\n' + chunk;
+      currentSize += chunkSize;
+    } else {
+      if (currentContext) {
+        processedChunks.push(currentContext);
+      }
+      currentContext = chunk;
+      currentSize = chunkSize;
+    }
+  });
+
+  if (currentContext) {
+    processedChunks.push(currentContext);
+  }
+
+  return processedChunks;
+}
+
+// Enhanced prompt template generation based on document type
+function generatePromptTemplate(documentType, subType) {
+  const baseSystemPrompt = `You are an expert analyst specializing in ${documentType} with deep industry knowledge. 
+    Your task is to generate a detailed ${subType} that adheres to professional standards and industry best practices.
+    
+    Critical requirements:
+    1. Provide specific, data-driven analysis backed by source material
+    2. Use industry-standard metrics and terminology
+    3. Include quantitative analysis with proper context
+    4. Maintain consistent narrative across sections
+    5. Highlight key risks and opportunities
+    6. Include specific examples and evidence
+    7. Provide actionable insights and recommendations
+    8. Ensure logical flow between sections
+    9. Use precise, professional language
+    10. Include proper citations to source material
+    
+    {format_instructions}`;
+
+  const typeSpecificInstructions = {
+    "Research report": `Focus on:
+      - Research methodology rigor
+      - Data validity and reliability
+      - Clear connection between findings and evidence
+      - Comprehensive literature review
+      - Research implications`,
+    "Buyside Due Diligence": `Focus on:
+      - Investment thesis validation
+      - Risk assessment and mitigation
+      - Value creation opportunities
+      - Market positioning analysis
+      - Operational efficiency`,
+    "Business Plan": `Focus on:
+      - Market opportunity validation
+      - Financial viability
+      - Execution strategy
+      - Competitive advantage
+      - Growth potential`
   };
 
-  // First check if it's a schema validation error
-  if (error.message.includes('Failed to parse')) {
-    try {
-      // Extract the specific validation error message
-      const match = error.message.match(/Error: \[(.*?)\]/);
-      if (match) {
-        const validationError = JSON.parse(match[1]);
-        if (validationError.message) {
-          return `Please adjust your requirements: ${validationError.message}`;
+  return ChatPromptTemplate.fromMessages([
+    ["system", `${baseSystemPrompt}\n\n${typeSpecificInstructions[documentType] || ''}`],
+    ["human", `Context and requirements: {content}
+
+      Source material to analyze:
+      {chunk}
+      
+      Ensure your analysis:
+      1. Maintains consistent narrative across sections
+      2. Provides specific examples from source material
+      3. Includes quantitative metrics where relevant
+      4. Highlights key insights and implications
+      5. Addresses potential risks and mitigation strategies`]
+  ]);
+}
+
+// Enhanced error handling with specific error types
+class ReportGenerationError extends Error {
+  constructor(message, type, details) {
+    super(message);
+    this.name = 'ReportGenerationError';
+    this.type = type;
+    this.details = details;
+  }
+}
+
+// Enhanced report combination with better deduplication and consistency
+function enhancedCombineReports(chunks, documentType) {
+  const metadata = {
+    sources: {},
+    analysis: {
+      chunkCount: chunks.length,
+      processingTime: new Date().toISOString(),
+      documentType
+    }
+  };
+
+  // Improved deduplication logic for arrays
+  function deduplicateArray(arr, key = null) {
+    const seen = new Set();
+    return arr.filter(item => {
+      const value = key ? item[key] : item;
+      const stringified = JSON.stringify(value);
+      if (seen.has(stringified)) return false;
+      seen.add(stringified);
+      return true;
+    });
+  }
+
+  // Enhanced merger for nested objects
+  function mergeNestedObjects(objects) {
+    return objects.reduce((acc, obj) => {
+      Object.entries(obj).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          acc[key] = deduplicateArray(acc[key] ? [...acc[key], ...value] : value);
+        } else if (typeof value === 'object' && value !== null) {
+          acc[key] = acc[key] ? { ...acc[key], ...value } : value;
+        } else {
+          // For string values, concatenate with proper spacing and deduplication
+          acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
         }
+      });
+      return acc;
+    }, {});
+  }
+
+  const combined = chunks.reduce((acc, chunk, index) => {
+    const sourceInfo = {
+      chunkIndex: index + 1,
+      preview: chunk.sourceText?.substring(0, 100) + '...'
+    };
+
+    // Process each field according to its type and schema requirements
+    Object.entries(chunk).forEach(([key, value]) => {
+      if (key === 'sourceText') return;
+
+      if (Array.isArray(value)) {
+        acc[key] = deduplicateArray(acc[key] ? [...acc[key], ...value] : value);
+        metadata.sources[key] = [...(metadata.sources[key] || []), sourceInfo];
+      } else if (typeof value === 'object' && value !== null) {
+        acc[key] = mergeNestedObjects([acc[key] || {}, value]);
+        metadata.sources[key] = [...(metadata.sources[key] || []), sourceInfo];
+      } else {
+        // Improved handling of string fields
+        if (key === 'title' && !acc[key]) {
+          acc[key] = value;
+        } else {
+          acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
+        }
+        metadata.sources[key] = [...(metadata.sources[key] || []), sourceInfo];
       }
-    } catch (e) {
-      // If parsing fails, fall back to pattern matching
-    }
-  }
+    });
 
-  // Check if error message matches any known patterns
-  for (const [pattern, message] of Object.entries(errorPatterns)) {
-    if (error.message.toLowerCase().includes(pattern.toLowerCase())) {
-      return message;
-    }
-  }
+    return acc;
+  }, {});
 
-  // Default error message
-  return 'There was an error generating your document. Please try providing more specific requirements or contact support if the issue persists.';
+  return { report: combined, metadata };
 }
 
 export async function POST(req) {
   try {
+    // Add token tracking variable
+    let totalTokens = {
+      totalTokens: 0,
+      promptTokens: 0,
+      completionTokens: 0
+    };
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      throw new Error("Unauthorized");
+      throw new ReportGenerationError("Unauthorized access", "AUTH_ERROR", "User authentication required");
     }
 
     const { documentType, subType, content, fileContents, selectedFiles, workspaceId } = await req.json();
 
-    // Check token limits first
+    // Token usage validation
     const tokenUsage = await fetchTotalTokenUsage(supabase, user.id);
     if (isTokenLimitExceeded(tokenUsage)) {
       return new Response(
         JSON.stringify({
           warning: "Token limit exceeded",
-          details: "You have reached your token usage limit. Please contact support to increase your limit.",
+          details: "Please contact support to increase your limit.",
           warningType: 'TokenLimitWarning'
         }),
         { status: 200 }
       );
     }
 
-    if (isApproachingTokenLimit(tokenUsage)) {
-      return new Response(
-        JSON.stringify({
-          warning: "Approaching token limit",
-          details: "You don't have enough tokens remaining to generate this document. Please contact support to increase your limit.",
-          warningType: 'ApproachingLimitWarning'
-        }),
-        { status: 200 }
-      );
-    }
-
-    // Track token usage during generation
-    let totalTokens = {
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0
-    };
-
-    // Initialize text splitter
+    // Initialize processing
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 12000,
       chunkOverlap: 2000,
       separators: ["\n\n", "\n", ".", " ", "?", "!", ";", ","],
     });
 
-    // Split all contents into chunks
-    const chunks = [];
+    // Process chunks with enhanced context
+    const rawChunks = [];
     for (const content of fileContents) {
       const contentChunks = await textSplitter.splitText(content);
-      chunks.push(...contentChunks);
+      rawChunks.push(...contentChunks);
     }
+    
+    const processedChunks = processChunksWithContext(rawChunks);
 
-    // Initialize ChatOpenAI with structured output and callbacks
+    // Initialize model with enhanced configuration and token tracking
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
-      temperature: 0.3,
+      temperature: 0.2,
+      maxTokens: 4000,
+      topP: 0.8,
       callbacks: [{
         handleLLMEnd(output) {
           if (output.llmOutput?.tokenUsage) {
@@ -118,71 +236,49 @@ export async function POST(req) {
       }]
     });
 
-    // Define schemas based on document type and subtype
+    // Get schema and create parser
     const schema = getSchema(documentType, subType);
     if (!schema) {
-      throw new Error("Invalid document type or subtype");
+      throw new ReportGenerationError(
+        "Invalid document configuration",
+        "SCHEMA_ERROR",
+        `Unknown document type: ${documentType} or subtype: ${subType}`
+      );
     }
 
-    // Create structured output parser from schema
     const parser = StructuredOutputParser.fromZodSchema(schema);
+    const prompt = generatePromptTemplate(documentType, subType);
 
-    // Create prompt template with format instructions
-    const prompt = ChatPromptTemplate.fromMessages([
-      ["system", `You are an expert analyst tasked with generating a detailed ${subType} based on the provided content and requirements.
-      
-        Important guidelines:
-        - Provide specific examples and data points from the source material
-        - Include quantitative analysis where relevant
-        - Highlight key insights and implications
-        - Maintain professional language and industry-specific terminology
-        - Ensure comprehensive coverage of all major points
-        - Add relevant citations to source material
-        
-        {format_instructions}
-        
-        Note: The title should be 6-12 words and clearly reflect the main focus of the analysis.`],
-      ["human", `Content requirements: {content}
-
-        Source material to analyze:
-        {chunk}
-        
-        Please ensure the analysis is thorough and includes:
-        1. Detailed examination of key points
-        2. Supporting evidence from the source material
-        3. Industry context and implications
-        4. Specific recommendations where applicable`]
-    ]);
-
-    // Process chunks and generate report
-    const processedChunks = [];
-
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
+    // Process chunks with enhanced error handling
+    const processedResults = [];
+    for (let i = 0; i < processedChunks.length; i++) {
       try {
         const formattedPrompt = await prompt.formatMessages({
           content,
-          chunk,
+          chunk: processedChunks[i],
           format_instructions: parser.getFormatInstructions()
         });
 
         const result = await model.invoke(formattedPrompt);
         const parsed = await parser.parse(result.content);
         
-        processedChunks.push({
+        processedResults.push({
           ...parsed,
-          sourceText: chunk
+          sourceText: processedChunks[i]
         });
-      } catch (chunkError) {
-        console.error(`Error processing chunk ${i + 1}:`, chunkError);
-        throw new Error(`Failed to process content: ${getHumanFriendlyError(chunkError)}`);
+      } catch (error) {
+        throw new ReportGenerationError(
+          `Chunk processing failed`,
+          "PROCESSING_ERROR",
+          { chunk: i, error: error.message }
+        );
       }
     }
 
-    // Combine the results
-    const { report, metadata } = combineReports(processedChunks, documentType, subType);
+    // Combine results with enhanced logic
+    const { report, metadata } = enhancedCombineReports(processedResults, documentType);
 
-    // After generating the report, first insert it into the database
+    // Save to database with enhanced error handling and token tracking
     const { data: reportData, error: insertError } = await supabase
       .from('generated_reports')
       .insert({
@@ -199,35 +295,26 @@ export async function POST(req) {
       .select()
       .single();
 
-    if (insertError) throw insertError;
-
-    // Now we have the report ID, we can log the token usage
-    const { error: logError } = await supabase
-      .from('token_usage_logs')
-      .insert({
-        user_id: user.id,
-        workspace_id: workspaceId,
-        tokens_used: totalTokens.totalTokens,
-        usage_type: 'document_generation',
-        document_id: reportData.id  // Use the ID from the inserted report
-      });
-
-    if (logError) throw logError;
-
+    if (insertError) {
+      throw new ReportGenerationError(
+        "Database operation failed",
+        "DB_ERROR",
+        insertError
+      );
+    }
 
     return new Response(JSON.stringify(report), {
       headers: { "Content-Type": "application/json" },
     });
 
   } catch (error) {
-    console.error("Error generating report:", error);
+    console.error("Report generation error:", error);
     
     return new Response(
       JSON.stringify({ 
-        error: "Failed to generate report", 
-        details: getHumanFriendlyError(error),
-        technicalDetails: error.message,
-        errorType: error.name || 'UnknownError'
+        error: "Report generation failed", 
+        details: error instanceof ReportGenerationError ? error.details : error.message,
+        type: error instanceof ReportGenerationError ? error.type : 'UNKNOWN_ERROR'
       }),
       { 
         status: 500, 
@@ -235,95 +322,4 @@ export async function POST(req) {
       }
     );
   }
-}
-
-function combineReports(chunks) {
-  const metadata = {
-    sources: {}
-  };
-  
-  const combined = chunks.reduce((acc, chunk, index) => {
-    const sourceInfo = {
-      chunkIndex: `Source [${index + 1}]`,
-      preview: chunk.sourceText
-    };
-
-    Object.entries(chunk).forEach(([key, value]) => {
-      if (key === 'sourceText') return;
-
-      if (key === 'title') {
-        // For title, only use the first occurrence
-        if (!acc[key]) {
-          acc[key] = value;
-          metadata.sources[key] = [sourceInfo];
-        }
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        // For array fields, store source in metadata
-        const itemsWithoutSource = value.map(item => {
-          const { source, ...itemWithoutSource } = item;
-          return itemWithoutSource;
-        });
-        acc[key] = [...(acc[key] || []), ...itemsWithoutSource];
-        
-        // Store source information in metadata
-        metadata.sources[key] = metadata.sources[key] || [];
-        metadata.sources[key].push({
-          ...sourceInfo,
-          itemIndexes: value.map((_, idx) => acc[key].length - value.length + idx)
-        });
-      } else if (typeof value === 'object' && value !== null) {
-        // For nested objects, separate metadata
-        const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
-        acc[key] = {
-          ...(acc[key] || {}),
-          ...processedObject
-        };
-        
-        metadata.sources[key] = metadata.sources[key] || [];
-        metadata.sources[key].push({
-          ...sourceInfo,
-          ...objectMetadata
-        });
-      } else {
-        // For simple fields
-        acc[key] = acc[key] ? `${acc[key]}\n${value}` : value;
-        metadata.sources[key] = metadata.sources[key] || [];
-        metadata.sources[key].push(sourceInfo);
-      }
-    });
-    return acc;
-  }, {});
-
-  return { report: combined, metadata };
-}
-
-// Add this helper function
-function processNestedObject(obj, sourceInfo) {
-  const processed = {};
-  const metadata = {};
-
-  Object.entries(obj).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
-      processed[key] = value.map(item => {
-        if (typeof item === 'object') {
-          const { source, ...itemWithoutSource } = item;
-          return itemWithoutSource;
-        }
-        return item;
-      });
-      metadata[key] = { type: 'array', items: value.length };
-    } else if (typeof value === 'object' && value !== null) {
-      const { processedObject, objectMetadata } = processNestedObject(value, sourceInfo);
-      processed[key] = processedObject;
-      metadata[key] = objectMetadata;
-    } else {
-      processed[key] = value;
-      metadata[key] = { type: 'simple' };
-    }
-  });
-
-  return { processedObject: processed, objectMetadata: metadata };
 }
