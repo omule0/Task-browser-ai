@@ -6,7 +6,6 @@ import html2canvas from 'html2canvas';
 import { customToast } from "@/components/ui/toast-theme";
 
 export default function ReportActions({ sections }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
   const handlePrint = () => {
@@ -23,19 +22,12 @@ export default function ReportActions({ sections }) {
     setTimeout(() => {
       document.body.classList.remove('printing');
       window.scrollTo(0, scrollPos);
-      setIsOpen(false);
     }, 100);
-  };
-
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setIsOpen(false);
   };
 
   const handleDownloadPDF = async () => {
     try {
       setDownloading(true);
-      setIsOpen(false);
       
       // Add toast notification
       customToast.info('Preparing your report for download...', {
@@ -43,12 +35,6 @@ export default function ReportActions({ sections }) {
       });
       
       const reportElement = document.querySelector('.printable-report');
-      
-      // Hide the floating action button during capture
-      const actionButton = document.querySelector('.floating-actions');
-      if (actionButton) {
-        actionButton.style.display = 'none';
-      }
       
       // Add printing class to apply print styles
       document.body.classList.add('printing');
@@ -60,7 +46,7 @@ export default function ReportActions({ sections }) {
         windowWidth: 1200,
         onclone: (clonedDoc) => {
           // Remove any floating/fixed elements from the clone
-          const floatingElements = clonedDoc.querySelectorAll('.floating-actions, .fixed');
+          const floatingElements = clonedDoc.querySelectorAll('.fixed');
           floatingElements.forEach(el => el.remove());
         }
       });
@@ -96,7 +82,7 @@ export default function ReportActions({ sections }) {
           imgData,
           'JPEG',
           xOffset,
-          yOffset < 0 ? yOffset : 0, // Adjust y-position for subsequent pages
+          yOffset < 0 ? yOffset : 0,
           scaledWidth,
           scaledHeight
         );
@@ -108,75 +94,34 @@ export default function ReportActions({ sections }) {
       pdf.save('report.pdf');
     } catch (error) {
       console.error('Error generating PDF:', error);
+      customToast.error('Failed to generate PDF');
     } finally {
-      // Restore the floating action button
-      const actionButton = document.querySelector('.floating-actions');
-      if (actionButton) {
-        actionButton.style.display = '';
-      }
-      
       document.body.classList.remove('printing');
       setDownloading(false);
     }
   };
 
   return (
-    <div className="fixed right-8 top-24 print:hidden floating-actions z-50">
-      {/* Floating Action Button */}
+    <div className="flex items-center gap-2">
       <Button
-        size="icon"
-        className="rounded-full shadow-lg mb-2"
-        onClick={() => setIsOpen(!isOpen)}
+        variant="outline"
+        size="sm"
+        onClick={handlePrint}
+        className="gap-2"
       >
-        <MoreVertical className="w-4 h-4" />
+        <Printer className="w-4 h-4" />
+        Print
       </Button>
-
-      {/* Actions Panel */}
-      {isOpen && (
-        <div className="space-y-2 animate-in slide-in-from-right">
-          {/* Contents Panel */}
-          <div className="bg-card rounded-lg shadow-lg p-4 w-48 border border-border">
-            <div className="flex items-center gap-2 mb-3 sticky top-0 bg-card">
-              <List className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium text-foreground">Contents</span>
-            </div>
-            <nav className="space-y-2 max-h-[40vh] overflow-y-auto pr-2 
-              scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => scrollToSection(section.id)}
-                  className="block text-sm text-muted-foreground hover:text-foreground 
-                    w-full text-left hover:bg-accent rounded px-2 py-1"
-                >
-                  {section.title}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Actions Panel */}
-          <div className="bg-card rounded-lg shadow-lg p-4 space-y-2 w-48 border border-border">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={handlePrint}
-            >
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={handleDownloadPDF}
-              disabled={downloading}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {downloading ? 'Generating PDF...' : 'Download PDF'}
-            </Button>
-          </div>
-        </div>
-      )}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleDownloadPDF}
+        disabled={downloading}
+        className="gap-2"
+      >
+        <Download className="w-4 h-4" />
+        {downloading ? 'Generating PDF...' : 'Download PDF'}
+      </Button>
     </div>
   );
 } 

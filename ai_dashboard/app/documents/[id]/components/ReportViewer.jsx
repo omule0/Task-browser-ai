@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 import { REPORT_SCHEMA_ORDER } from "../constants/reportSchemaOrder";
 import { ReportDetailsSidebar } from "./ReportDetailsSidebar";
+import ReportActions from "@/components/report-actions";
 
 // Helper function to detect report type
 const detectReportType = (reportData) => {
@@ -76,6 +77,12 @@ const JsonRenderer = ({ data, level = 0, reportType }) => {
 export default function ReportViewer({ report, reportMetadata, onBack, title, createdAt }) {
   const reportType = detectReportType(report);
   
+  // Create sections array for the report actions
+  const sections = Object.keys(report).map(key => ({
+    id: key,
+    title: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+  }));
+  
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Main content area */}
@@ -96,11 +103,14 @@ export default function ReportViewer({ report, reportMetadata, onBack, title, cr
               )}
             </div>
           </div>
+          
+          {/* Add ReportActions here */}
+          <ReportActions sections={sections} />
         </header>
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-auto">
-          <div className="max-w-4xl mx-auto p-6">
+          <div className="max-w-4xl mx-auto p-6 printable-report">
             <JsonRenderer 
               data={report} 
               reportType={reportType} 
