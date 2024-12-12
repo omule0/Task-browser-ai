@@ -150,15 +150,64 @@ export function ReportDetailsSidebar({ report }) {
                   >
                     <div className="flex items-center gap-2">
                       <Info className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">Additional Metadata</span>
+                      <span className="font-medium">Sources</span>
                     </div>
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="px-2 pt-2">
-                  <pre className="text-xs bg-muted p-2 rounded-md overflow-auto">
-                    {JSON.stringify(report.metadata, null, 2)}
-                  </pre>
+                <CollapsibleContent className="px-2 pt-2 space-y-4">
+                  {/* Analysis Info */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Analysis Details</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-muted-foreground">Document Type:</span>
+                      <span>{report.metadata.analysis.documentType}</span>
+                      <span className="text-muted-foreground">Chunks Processed:</span>
+                      <span>{report.metadata.analysis.chunkCount}</span>
+                    </div>
+                  </div>
+
+                  {/* Source Sections */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Source Sections</h4>
+                    <div className="space-y-3">
+                      {Object.entries(report.metadata.sources).map(([section, chunks]) => (
+                        <Collapsible key={section}>
+                          <CollapsibleTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              className="flex w-full justify-between p-1 text-sm hover:bg-muted/50 rounded group"
+                            >
+                              <span className="capitalize">{section}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {chunks.length} chunks
+                                </span>
+                                <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                              </div>
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pl-2 pt-1">
+                            <div className="space-y-2">
+                              {chunks.map((chunk, index) => (
+                                <div 
+                                  key={index}
+                                  className="text-xs bg-muted/50 p-2 rounded"
+                                >
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-muted-foreground">Chunk {chunk.chunkIndex}</span>
+                                  </div>
+                                  <p className="line-clamp-2 text-muted-foreground">
+                                    {chunk.preview}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                    </div>
+                  </div>
                 </CollapsibleContent>
               </Collapsible>
             </>
