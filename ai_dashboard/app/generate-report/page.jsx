@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Loader2, Plus, Info, Edit3, MessageCircle, X } from "lucide-react";
+import { ArrowLeft, FileText, Loader2, Plus, Info} from "lucide-react";
 import { customToast } from "@/components/ui/toast-theme";
 import SelectFiles from "@/app/create-document/components/SelectFiles";
 import { useWorkspace } from "@/context/workspace-context";

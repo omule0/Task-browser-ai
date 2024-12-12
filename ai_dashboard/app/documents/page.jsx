@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, ChevronRight, Calendar, Trash2, Search, Grid, List, Filter, SortDesc } from "lucide-react";
+import { FileText, ChevronRight, Calendar, Trash2, Search, Grid, List,  SortDesc } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "@/context/workspace-context";
 import { customToast } from "@/components/ui/toast-theme";

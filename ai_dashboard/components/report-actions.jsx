@@ -5,7 +5,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { customToast } from "@/components/ui/toast-theme";
 
-export default function ReportActions({ sections, title }) {
+export default function ReportActions({ title }) {
   const [downloading, setDownloading] = useState(false);
 
   const handlePrint = () => {

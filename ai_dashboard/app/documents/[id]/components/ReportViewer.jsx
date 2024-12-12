@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 import { REPORT_SCHEMA_ORDER } from "../constants/reportSchemaOrder";
 import { ReportDetailsSidebar } from "./ReportDetailsSidebar";
@@ -8,8 +7,6 @@ import ReportActions from "@/components/report-actions";
 
 // Helper function to detect report type
 const detectReportType = (reportData) => {
-  // Log the report data for debugging
-  console.log('Report Data:', reportData);
 
   if (!reportData) return null;
 
@@ -105,7 +102,7 @@ export default function ReportViewer({ report, reportMetadata, onBack, title, cr
           </div>
           
           {/* Add ReportActions here */}
-          <ReportActions sections={sections} />
+          <ReportActions sections={sections} title={title} />
         </header>
 
         {/* Scrollable content area */}
