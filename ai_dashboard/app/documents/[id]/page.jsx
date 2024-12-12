@@ -5,6 +5,7 @@ import { Loading } from "@/components/ui/loading";
 import { useParams } from "next/navigation";
 import ReportViewer from "./components/ReportViewer";
 import GenerateReportViewer from "../../generate-report/components/ReportViewer";
+import { ReportDetailsSidebar } from "./components/ReportDetailsSidebar";
 import { useRouter } from "next/navigation";
 
 export default function DocumentView() {
@@ -42,20 +43,40 @@ export default function DocumentView() {
 
   // Use GenerateReportViewer for custom reports, otherwise use the regular ReportViewer
   const isCustomReport = report.sub_type === "custom_report";
+  const reportMetadata = {
+    ...report,
+    metadata: {
+      ...report.metadata,
+      analysis: {
+        documentType: report.document_type,
+        chunkCount: report.metadata?.processedChunks || 0,
+      },
+      sources: report.metadata?.sources || {},
+      template: report.metadata?.template || {
+        name: report.document_type,
+        schema: {}
+      }
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       {isCustomReport ? (
-        <GenerateReportViewer 
-          report={report.report_data} 
-          onBack={() => router.push('/documents')}
-          title={report.content} // Using content field as title for custom reports
-          createdAt={report.created_at}
-        />
+        <>
+          <div className="flex-1">
+            <GenerateReportViewer 
+              report={report.report_data} 
+              onBack={() => router.push('/documents')}
+              title={report.content} 
+              createdAt={report.created_at}
+            />
+          </div>
+          <ReportDetailsSidebar report={reportMetadata} />
+        </>
       ) : (
         <ReportViewer 
           report={report.report_data} 
-          reportMetadata={report}
+          reportMetadata={reportMetadata}
           onBack={() => router.push('/documents')}
           title={report.title}
           createdAt={report.created_at}
