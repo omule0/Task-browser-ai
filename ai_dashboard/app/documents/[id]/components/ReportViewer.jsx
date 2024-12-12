@@ -74,21 +74,21 @@ const JsonRenderer = ({ data, level = 0, reportType }) => {
 };
 
 export default function ReportViewer({ report, reportMetadata, onBack, title, createdAt }) {
-  // Detect report type from the data
   const reportType = detectReportType(report);
   
   return (
-    <div className="w-full flex">
-      <div className="flex-1">
-        {/* Top Navigation */}
-        <header className="mb-6 flex items-center justify-between">
+    <div className="flex h-screen overflow-hidden">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Fixed header */}
+        <header className="flex items-center justify-between px-6 h-[60px] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={onBack} className="mr-2">
+            <Button variant="ghost" onClick={onBack} size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">{title || "Generated Report"}</h1>
+              <h1 className="text-xl font-semibold">{title || "Generated Report"}</h1>
               {createdAt && (
                 <p className="text-sm text-muted-foreground">
                   Created on {new Date(createdAt).toLocaleDateString()}
@@ -98,17 +98,18 @@ export default function ReportViewer({ report, reportMetadata, onBack, title, cr
           </div>
         </header>
 
-        <Separator className="my-4" />
-
-        <div className="flex relative">
-          <main className="flex-1 bg-white p-6">
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-auto">
+          <div className="max-w-4xl mx-auto p-6">
             <JsonRenderer 
               data={report} 
               reportType={reportType} 
             />
-          </main>
+          </div>
         </div>
       </div>
+
+      {/* Sidebar */}
       <ReportDetailsSidebar report={reportMetadata} />
     </div>
   );
