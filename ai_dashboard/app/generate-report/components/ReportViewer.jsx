@@ -1,10 +1,11 @@
 "use client";
+import { useState } from "react";
+import ReportActions from "@/components/report-actions";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Edit3, MessageCircle, Plus } from "lucide-react";
 
 const JsonRenderer = ({ data, level = 0 }) => {
-  if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean' || data === null) {
+  if (typeof data !== 'object' || data === null) {
     return <span className="text-gray-800">{String(data)}</span>;
   }
 
@@ -20,40 +21,38 @@ const JsonRenderer = ({ data, level = 0 }) => {
     );
   }
 
-  if (typeof data === 'object') {
-    return (
-      <div className={`${level > 0 ? 'ml-4' : ''}`}>
-        {Object.entries(data).map(([key, value]) => (
-          <div key={key} className="mb-2">
-            <h3 className={`font-semibold ${level === 0 ? 'text-2xl mb-2' : level === 1 ? 'text-xl mb-1' : 'text-lg'}`}>
-              {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
-            </h3>
-            <JsonRenderer data={value} level={level + 1} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className={`${level > 0 ? 'ml-4' : ''}`}>
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} className="mb-2">
+          <h3 className={`font-semibold ${level === 0 ? 'text-2xl mb-2' : level === 1 ? 'text-xl mb-1' : 'text-lg'}`}>
+            {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+          </h3>
+          <JsonRenderer data={value} level={level + 1} />
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export default function ReportViewer({ report, onBack, title, createdAt }) {
+  // Create sections array for the report actions
+  const sections = Object.keys(report).map(key => ({
+    id: key,
+    title: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+  }));
+
   return (
-    <div className="w-full">
-      {/* Top Navigation */}
-      <header className="mb-6 flex items-center justify-between">
+    <div className="w-full flex flex-col min-h-0">
+      {/* Fixed header */}
+      <header className="flex items-center justify-between px-6 h-[60px] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mr-2"
-          >
+          <Button variant="ghost" onClick={onBack} size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{title || "Generated Report"}</h1>
+            <h1 className="text-xl font-semibold">{title || "Generated Report"}</h1>
             {createdAt && (
               <p className="text-sm text-muted-foreground">
                 Created on {new Date(createdAt).toLocaleDateString()}
@@ -61,47 +60,14 @@ export default function ReportViewer({ report, onBack, title, createdAt }) {
             )}
           </div>
         </div>
-        {/* <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Share Report
-          </Button>
-        </div> */}
+        <ReportActions sections={sections} title={title} />
       </header>
 
-      <Separator className="my-4" />
-
-      {/* Main Content Area */}
-      <div className="flex relative">
-        {/* Document Content */}
-        <main className="flex-1 bg-white">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-4xl mx-auto p-6 printable-report">
           <JsonRenderer data={report} />
-        </main>
-
-        {/* Floating Button Group
-        <div className="fixed right-4 top-1/4 flex flex-col gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-lg bg-white"
-          >
-            <Edit3 className="w-4 h-4 text-emerald-500" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="rounded-lg bg-white"
-          >
-            <MessageCircle className="w-4 h-4 text-emerald-500" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="rounded-lg bg-white"
-          >
-            <Plus className="w-4 h-4 text-emerald-500" />
-          </Button>
-        </div> */}
+        </div>
       </div>
     </div>
   );
