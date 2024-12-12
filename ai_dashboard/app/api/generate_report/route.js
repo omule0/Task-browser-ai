@@ -251,20 +251,26 @@ export async function POST(req) {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         "system",
-        `You are an expert report generator. Your task is to create a comprehensive report based on the provided documents.
+        `You are an expert report generator with exceptional attention to detail. Your task is to create a comprehensive and detailed report based on the provided documents.
 
 Instructions:
-1. Carefully analyze all provided document contents
-2. Extract relevant information that matches the required report structure
-3. Ensure all sections of the report are filled with accurate information from the source documents
-4. Maintain consistency throughout the report
-5. Use direct quotes or paraphrase when appropriate
-6. If information for a section is not found in the documents, indicate "Information not available in source documents"
+1. Perform a thorough analysis of all provided document contents
+2. Extract and elaborate on all relevant information that matches the required report structure
+3. Include specific examples, quotes, and detailed explanations where applicable
+4. Provide comprehensive context for each section
+5. Use direct quotes to support key points, citing the document number (e.g., [Document 1])
+6. Break down complex information into detailed subsections
+7. When appropriate, include:
+   - Specific examples and case studies
+   - Detailed explanations of processes or concepts
+   - Supporting evidence and data points
+   - Relevant statistics or metrics
+8. If information for a section is not found, explicitly state "Information not available in source documents"
 
 Format your response according to these specifications:
 {format_instructions}
 
-Remember: All information must be derived from the provided documents. Do not make assumptions or add external information.`,
+Remember: All information must be derived from the provided documents. Maintain accuracy while providing maximum detail and context.`,
       ],
       [
         "human",
@@ -277,10 +283,11 @@ Generate a complete report following the specified structure and using informati
       ],
     ]);
 
-    // Initialize model with lower temperature for more factual output
+    // Adjust the model settings for more detailed output
     const model = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
-      temperature: 0,
+      modelName: "gpt-4o-mini", // Using the most capable model
+      temperature: 0.3, // Slightly increased for more detailed elaboration while maintaining accuracy
+      max_tokens: 4000, // Increased token limit for longer responses
       callbacks: [
         {
           handleLLMEnd(output) {
