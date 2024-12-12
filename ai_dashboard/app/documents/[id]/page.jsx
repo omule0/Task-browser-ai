@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { useParams } from "next/navigation";
-import ReportViewer from "@/app/generate-report/components/ReportViewer";
+import ReportViewer from "./ReportViewer";
 import { useRouter } from "next/navigation";
 
 export default function DocumentView() {
