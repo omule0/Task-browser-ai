@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { useParams } from "next/navigation";
 import ReportViewer from "./components/ReportViewer";
+import GenerateReportViewer from "../../generate-report/components/ReportViewer";
 import { useRouter } from "next/navigation";
 
 export default function DocumentView() {
@@ -39,15 +40,27 @@ export default function DocumentView() {
   if (loading) return <Loading />;
   if (!report) return <div className="text-foreground">Report not found</div>;
 
+  // Use GenerateReportViewer for custom reports, otherwise use the regular ReportViewer
+  const isCustomReport = report.sub_type === "custom_report";
+
   return (
     <div className="min-h-screen bg-background">
-      <ReportViewer 
-        report={report.report_data} 
-        reportMetadata={report}
-        onBack={() => router.push('/documents')}
-        title={report.title}
-        createdAt={report.created_at}
-      />
+      {isCustomReport ? (
+        <GenerateReportViewer 
+          report={report.report_data} 
+          onBack={() => router.push('/documents')}
+          title={report.content} // Using content field as title for custom reports
+          createdAt={report.created_at}
+        />
+      ) : (
+        <ReportViewer 
+          report={report.report_data} 
+          reportMetadata={report}
+          onBack={() => router.push('/documents')}
+          title={report.title}
+          createdAt={report.created_at}
+        />
+      )}
     </div>
   );
 }
