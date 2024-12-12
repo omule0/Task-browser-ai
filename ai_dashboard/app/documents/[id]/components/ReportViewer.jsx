@@ -2,7 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
-import { REPORT_SCHEMA_ORDER } from "./constants/reportSchemaOrder";
+import { REPORT_SCHEMA_ORDER } from "../constants/reportSchemaOrder";
+import { ReportDetailsSidebar } from "./ReportDetailsSidebar";
 
 // Helper function to detect report type
 const detectReportType = (reportData) => {
@@ -72,43 +73,43 @@ const JsonRenderer = ({ data, level = 0, reportType }) => {
   );
 };
 
-export default function ReportViewer({ report, onBack, title, createdAt }) {
+export default function ReportViewer({ report, reportMetadata, onBack, title, createdAt }) {
   // Detect report type from the data
   const reportType = detectReportType(report);
   
-  console.log('Detected Report Type:', reportType);
-  console.log('Schema Order:', REPORT_SCHEMA_ORDER[reportType]);
-
   return (
-    <div className="w-full">
-      {/* Top Navigation */}
-      <header className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={onBack} className="mr-2">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">{title || "Generated Report"}</h1>
-            {createdAt && (
-              <p className="text-sm text-muted-foreground">
-                Created on {new Date(createdAt).toLocaleDateString()}
-              </p>
-            )}
+    <div className="w-full flex">
+      <div className="flex-1">
+        {/* Top Navigation */}
+        <header className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={onBack} className="mr-2">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">{title || "Generated Report"}</h1>
+              {createdAt && (
+                <p className="text-sm text-muted-foreground">
+                  Created on {new Date(createdAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
           </div>
+        </header>
+
+        <Separator className="my-4" />
+
+        <div className="flex relative">
+          <main className="flex-1 bg-white p-6">
+            <JsonRenderer 
+              data={report} 
+              reportType={reportType} 
+            />
+          </main>
         </div>
-      </header>
-
-      <Separator className="my-4" />
-
-      <div className="flex relative">
-        <main className="flex-1 bg-white p-6">
-          <JsonRenderer 
-            data={report} 
-            reportType={reportType} 
-          />
-        </main>
       </div>
+      <ReportDetailsSidebar report={reportMetadata} />
     </div>
   );
 } 

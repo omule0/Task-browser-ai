@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Loading } from "@/components/ui/loading";
 import { useParams } from "next/navigation";
-import ReportViewer from "./ReportViewer";
+import ReportViewer from "./components/ReportViewer";
 import { useRouter } from "next/navigation";
 
 export default function DocumentView() {
@@ -40,10 +40,13 @@ export default function DocumentView() {
   if (!report) return <div className="text-foreground">Report not found</div>;
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background">
       <ReportViewer 
         report={report.report_data} 
+        reportMetadata={report}
         onBack={() => router.push('/documents')}
+        title={report.title}
+        createdAt={report.created_at}
       />
     </div>
   );
