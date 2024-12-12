@@ -41,7 +41,6 @@ export default function DocumentView() {
   if (loading) return <Loading />;
   if (!report) return <div className="text-foreground">Report not found</div>;
 
-  // Use GenerateReportViewer for custom reports, otherwise use the regular ReportViewer
   const isCustomReport = report.sub_type === "custom_report";
   const reportMetadata = {
     ...report,
@@ -60,10 +59,10 @@ export default function DocumentView() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {isCustomReport ? (
         <>
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col min-h-0">
             <GenerateReportViewer 
               report={report.report_data} 
               onBack={() => router.push('/documents')}

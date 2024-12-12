@@ -2,6 +2,7 @@
 import ReportActions from "@/components/report-actions";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const JsonRenderer = ({ data, level = 0 }) => {
   if (typeof data !== 'object' || data === null) {
@@ -35,16 +36,15 @@ const JsonRenderer = ({ data, level = 0 }) => {
 };
 
 export default function ReportViewer({ report, onBack, title, createdAt }) {
-  // Create sections array for the report actions
   const sections = Object.keys(report).map(key => ({
     id: key,
     title: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
   }));
 
   return (
-    <div className="w-full flex flex-col min-h-0">
+    <div className="flex flex-col h-full">
       {/* Fixed header */}
-      <header className="flex items-center justify-between px-6 h-[60px] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="flex-none flex items-center justify-between px-6 h-[60px] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onBack} size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -63,11 +63,11 @@ export default function ReportViewer({ report, onBack, title, createdAt }) {
       </header>
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-auto">
+      <ScrollArea className="flex-1">
         <div className="max-w-4xl mx-auto p-6 printable-report">
           <JsonRenderer data={report} />
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 } 
