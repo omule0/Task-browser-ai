@@ -61,12 +61,12 @@ export default function ReportViewer({ report, onBack, title, createdAt }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Button variant="outline">
             <MessageCircle className="w-4 h-4 mr-2" />
             Share Report
           </Button>
-        </div>
+        </div> */}
       </header>
 
       <Separator className="my-4" />
@@ -78,7 +78,7 @@ export default function ReportViewer({ report, onBack, title, createdAt }) {
           <JsonRenderer data={report} />
         </main>
 
-        {/* Floating Button Group */}
+        {/* Floating Button Group
         <div className="fixed right-4 top-1/4 flex flex-col gap-2">
           <Button
             variant="outline"
@@ -101,7 +101,7 @@ export default function ReportViewer({ report, onBack, title, createdAt }) {
           >
             <Plus className="w-4 h-4 text-emerald-500" />
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

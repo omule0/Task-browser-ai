@@ -91,9 +91,9 @@ export async function POST(req) {
 
     // Initialize text splitter
     const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 90000,
-      chunkOverlap: 4000,
-      separators: ["\n\n", "\n", ".", " ", "?", "!", ";"],
+      chunkSize: 12000,
+      chunkOverlap: 2000,
+      separators: ["\n\n", "\n", ".", " ", "?", "!", ";", ","],
     });
 
     // Split all contents into chunks
@@ -106,7 +106,7 @@ export async function POST(req) {
     // Initialize ChatOpenAI with structured output and callbacks
     const model = new ChatOpenAI({
       modelName: "gpt-4o-mini",
-      temperature: 0,
+      temperature: 0.3,
       callbacks: [{
         handleLLMEnd(output) {
           if (output.llmOutput?.tokenUsage) {
@@ -129,10 +129,29 @@ export async function POST(req) {
 
     // Create prompt template with format instructions
     const prompt = ChatPromptTemplate.fromMessages([
-      ["system", `Generate a ${subType} based on the following content and requirements. 
-       {format_instructions}
-       Important: Ensure the title is between 6-12 words and incorporate relevant information from the source document.`],
-      ["human", "{content}\n\nSource document content:\n{chunk}"]
+      ["system", `You are an expert analyst tasked with generating a detailed ${subType} based on the provided content and requirements.
+      
+        Important guidelines:
+        - Provide specific examples and data points from the source material
+        - Include quantitative analysis where relevant
+        - Highlight key insights and implications
+        - Maintain professional language and industry-specific terminology
+        - Ensure comprehensive coverage of all major points
+        - Add relevant citations to source material
+        
+        {format_instructions}
+        
+        Note: The title should be 6-12 words and clearly reflect the main focus of the analysis.`],
+      ["human", `Content requirements: {content}
+
+        Source material to analyze:
+        {chunk}
+        
+        Please ensure the analysis is thorough and includes:
+        1. Detailed examination of key points
+        2. Supporting evidence from the source material
+        3. Industry context and implications
+        4. Specific recommendations where applicable`]
     ]);
 
     // Process chunks and generate report
@@ -307,10 +326,4 @@ function processNestedObject(obj, sourceInfo) {
   });
 
   return { processedObject: processed, objectMetadata: metadata };
-}
-
-// Helper function to truncate text and add ellipsis
-function truncateText(text, maxLength) {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
 }
