@@ -77,18 +77,6 @@ export default function SelectFiles({
 
   return (
     <div className="space-y-4">
-      <Card className="p-4 bg-primary/10 border-primary/20">
-        <div className="flex gap-3">
-          <Info className="h-5 w-5 text-primary mt-0.5" />
-          <div className="space-y-1">
-            <h3 className="font-medium text-foreground">About File Selection</h3>
-            <p className="text-sm text-muted-foreground">
-              The files you select will determine the content of your AI-generated document. 
-              Choose files that contain relevant information for your desired output.
-            </p>
-          </div>
-        </div>
-      </Card>
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
