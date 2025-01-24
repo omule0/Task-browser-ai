@@ -31,6 +31,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 
 interface NavItem {
   title: string
@@ -180,23 +181,26 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         <NavigationGroup items={navigationData} />
       </SidebarContent>
       <SidebarFooter className="border-t border-border">
-        <div className="flex items-center gap-2 p-4">
-          <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
-            {userProfile.avatar ? (
-              <img src={userProfile.avatar} alt={userProfile.name} className="h-full w-full rounded-full" />
-            ) : (
-              <span className="text-sm font-medium">{userProfile.name[0]}</span>
-            )}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium truncate">{userProfile.name}</span>
-            {userProfile.email && (
-              <span className="text-xs text-muted-foreground truncate">{userProfile.email}</span>
-            )}
-          </div>
-          <Button variant="ghost" size="icon" className="ml-auto">
+        <div className="flex flex-col gap-4 p-4">
+          <Button variant="ghost" size="icon" className="w-full flex items-center gap-2 justify-start">
             <Settings className="h-4 w-4" />
+            <span>Settings</span>
           </Button>
+          <Card className="flex items-center gap-2 p-3">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
+              {userProfile.avatar ? (
+                <img src={userProfile.avatar} alt={userProfile.name} className="h-full w-full rounded-full" />
+              ) : (
+                <span className="text-sm font-medium">{userProfile.name[0]}</span>
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium truncate">{userProfile.name}</span>
+              {userProfile.email && (
+                <span className="text-xs text-muted-foreground truncate">{userProfile.email}</span>
+              )}
+            </div>
+          </Card>
         </div>
       </SidebarFooter>
       <SidebarRail />
