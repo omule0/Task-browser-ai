@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface UserProfile {
   name: string
@@ -29,73 +30,79 @@ const userProfile: UserProfile = {
 
 export function AppSidebar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Card className={cn("pb-12 w-64", className)} {...props}>
-      <div className="space-y-4 py-4">
-        <div className="px-4 py-2">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-              D
+    <Card className={cn("h-[calc(100vh-2rem)] w-[280px] flex flex-col", className)} {...props}>
+      <ScrollArea className="flex-1">
+        <div className="space-y-4 py-4">
+          <div className="px-4 py-2">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+                D
+              </div>
+              <span className="font-semibold text-lg">Digest AI</span>
+            </Link>
+          </div>
+          <Separator />
+          <div className="px-3">
+            <div className="space-y-1">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                Personal
+              </Button>
             </div>
-            <span className="font-semibold text-lg">Digest AI</span>
-          </Link>
-        </div>
-        <Separator />
-        <div className="px-3">
-          <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              Personal
-            </Button>
+          </div>
+          <Separator />
+          <div className="px-3 py-2">
+            <nav className="space-y-1">
+              <Link href="/overview">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Home className="h-4 w-4" />
+                  Overview
+                </Button>
+              </Link>
+              <Link href="/research">
+                <Button variant="ghost" className="w-full justify-start gap-2 bg-accent">
+                  <Search className="h-4 w-4" />
+                  Research Assistant
+                </Button>
+              </Link>
+              <Link href="/reports">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <FileText className="h-4 w-4" />
+                  Research Reports
+                </Button>
+              </Link>
+              <Link href="/playground">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <Code className="h-4 w-4" />
+                  API Playground
+                </Button>
+              </Link>
+              <Link href="/invoices">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <FileIcon className="h-4 w-4" />
+                  Invoices
+                </Button>
+              </Link>
+              <Link href="/docs">
+                <Button variant="ghost" className="w-full justify-start gap-2">
+                  <FileCode className="h-4 w-4" />
+                  Documentation
+                </Button>
+              </Link>
+            </nav>
           </div>
         </div>
-        <Separator />
-        <div className="px-3 py-2">
-          <div className="space-y-1">
-            <Link href="/overview">
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <Home className="h-4 w-4" />
-                Overview
-              </Button>
-            </Link>
-            <Link href="/research">
-              <Button variant="ghost" className="w-full justify-start gap-2 bg-accent">
-                <Search className="h-4 w-4" />
-                Research Assistant
-              </Button>
-            </Link>
-            <Link href="/reports">
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <FileText className="h-4 w-4" />
-                Research Reports
-              </Button>
-            </Link>
-            <Link href="/playground">
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <Code className="h-4 w-4" />
-                API Playground
-              </Button>
-            </Link>
-            <Link href="/invoices">
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <FileIcon className="h-4 w-4" />
-                Invoices
-              </Button>
-            </Link>
-            <Link href="/docs">
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <FileCode className="h-4 w-4" />
-                Documentation
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-      <div className="mt-auto px-3">
-        <div className="flex items-center gap-2 px-4 py-2">
+      </ScrollArea>
+      <Separator />
+      <div className="p-4">
+        <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
             {userProfile.name[0]}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm">{userProfile.name}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-medium truncate">{userProfile.name}</span>
+            {userProfile.email && (
+              <span className="text-xs text-muted-foreground truncate">{userProfile.email}</span>
+            )}
           </div>
           <Button variant="ghost" size="icon" className="ml-auto">
             <Settings className="h-4 w-4" />
