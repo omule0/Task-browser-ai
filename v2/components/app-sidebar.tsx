@@ -6,120 +6,15 @@ import {
   Home,
   Search,
   Settings,
-  ChevronRight,
+  FileText,
+  Code,
+  FileIcon,
+  FileCode,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-
-interface NavItem {
-  title: string
-  url: string
-  icon?: React.ComponentType<{ className?: string }>
-  isActive?: boolean
-  items?: {
-    title: string
-    url: string
-  }[]
-}
-
-const navigationData: NavItem[] = [
-  {
-    title: "Overview",
-    url: "/overview",
-    icon: Home,
-    isActive: true,
-  },
-  {
-    title: "Research",
-    url: "/research",
-    icon: Search,
-    isActive: false,
-    items: [
-      {
-        title: "Research Assistant",
-        url: "/research/assistant",
-      },
-      {
-        title: "Research Reports",
-        url: "/research/reports",
-      },
-    ],
-  },
-
-]
-
-function NavigationGroup({ items }: { items: NavItem[] }) {
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              {item.items ? (
-                <>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.title}>
-                      {item.icon && <item.icon className="h-4 w-4" />}
-                      <span>{item.title}</span>
-                      <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <a href={subItem.url} className="flex items-center gap-2">
-                              <span>{subItem.title}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </>
-              ) : (
-                <SidebarMenuButton asChild>
-                  <a href={item.url} className="flex items-center gap-2">
-                    {item.icon && <item.icon className="h-4 w-4" />}
-                    <span>{item.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              )}
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
-  )
-}
+import { Separator } from "@/components/ui/separator"
 
 interface UserProfile {
   name: string
@@ -132,48 +27,81 @@ const userProfile: UserProfile = {
   email: "user@example.com"
 }
 
-export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Sidebar 
-      collapsible="icon" 
-      className={cn("group/sidebar", className)} 
-      {...props}
-    >
-      <SidebarHeader className="border-b border-border p-4 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-2">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-            D
-          </div>
-          <span className="font-semibold text-lg group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">Digest AI</span>
-        </Link>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavigationGroup items={navigationData} />
-      </SidebarContent>
-      <SidebarFooter className="border-t border-border">
-        <div className="flex flex-col gap-4 p-4 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-2">
-          <Button variant="ghost" size="icon" className="w-full flex items-center gap-2 justify-start">
-            <Settings className="h-4 w-4" />
-            <span className="group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">Settings</span>
-          </Button>
-          <Card className="flex items-center gap-2 p-3 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-1.5">
-            <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
-              {userProfile.avatar ? (
-                <img src={userProfile.avatar} alt={userProfile.name} className="h-full w-full rounded-full" />
-              ) : (
-                <span className="text-sm font-medium">{userProfile.name[0]}</span>
-              )}
+    <Card className={cn("pb-12 w-64", className)} {...props}>
+      <div className="space-y-4 py-4">
+        <div className="px-4 py-2">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+              D
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium truncate">{userProfile.name}</span>
-              {userProfile.email && (
-                <span className="text-xs text-muted-foreground truncate">{userProfile.email}</span>
-              )}
-            </div>
-          </Card>
+            <span className="font-semibold text-lg">Digest AI</span>
+          </Link>
         </div>
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+        <Separator />
+        <div className="px-3">
+          <div className="space-y-1">
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              Personal
+            </Button>
+          </div>
+        </div>
+        <Separator />
+        <div className="px-3 py-2">
+          <div className="space-y-1">
+            <Link href="/overview">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Home className="h-4 w-4" />
+                Overview
+              </Button>
+            </Link>
+            <Link href="/research">
+              <Button variant="ghost" className="w-full justify-start gap-2 bg-accent">
+                <Search className="h-4 w-4" />
+                Research Assistant
+              </Button>
+            </Link>
+            <Link href="/reports">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <FileText className="h-4 w-4" />
+                Research Reports
+              </Button>
+            </Link>
+            <Link href="/playground">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <Code className="h-4 w-4" />
+                API Playground
+              </Button>
+            </Link>
+            <Link href="/invoices">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <FileIcon className="h-4 w-4" />
+                Invoices
+              </Button>
+            </Link>
+            <Link href="/docs">
+              <Button variant="ghost" className="w-full justify-start gap-2">
+                <FileCode className="h-4 w-4" />
+                Documentation
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+      <div className="mt-auto px-3">
+        <div className="flex items-center gap-2 px-4 py-2">
+          <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
+            {userProfile.name[0]}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm">{userProfile.name}</span>
+          </div>
+          <Button variant="ghost" size="icon" className="ml-auto">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </Card>
   )
 } 
