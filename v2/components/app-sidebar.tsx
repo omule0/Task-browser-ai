@@ -5,7 +5,6 @@ import Link from "next/link"
 import {
   Home,
   Search,
-  FileCode,
   Settings,
   ChevronRight,
 } from "lucide-react"
@@ -67,36 +66,7 @@ const navigationData: NavItem[] = [
       },
     ],
   },
-  {
-    title: "Documentation",
-    url: "/docs",
-    icon: FileCode,
-    items: [
-      {
-        title: "API Reference",
-        url: "/docs/api",
-      },
-      {
-        title: "Guides",
-        url: "/docs/guides",
-      },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-    items: [
-      {
-        title: "Profile",
-        url: "/settings/profile",
-      },
-      {
-        title: "Billing",
-        url: "/settings/billing",
-      },
-    ],
-  },
+
 ]
 
 function NavigationGroup({ items }: { items: NavItem[] }) {
@@ -169,24 +139,24 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
       className={cn("group/sidebar", className)} 
       {...props}
     >
-      <SidebarHeader className="border-b border-border p-4">
+      <SidebarHeader className="border-b border-border p-4 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-2">
         <Link href="/" className="flex items-center gap-2">
           <div className="h-6 w-6 rounded bg-primary flex items-center justify-center text-primary-foreground font-semibold">
             D
           </div>
-          <span className="font-semibold text-lg">Digest AI</span>
+          <span className="font-semibold text-lg group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">Digest AI</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavigationGroup items={navigationData} />
       </SidebarContent>
       <SidebarFooter className="border-t border-border">
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 p-4 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-2">
           <Button variant="ghost" size="icon" className="w-full flex items-center gap-2 justify-start">
             <Settings className="h-4 w-4" />
-            <span>Settings</span>
+            <span className="group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">Settings</span>
           </Button>
-          <Card className="flex items-center gap-2 p-3">
+          <Card className="flex items-center gap-2 p-3 group-has-[[data-collapsible=icon]]/sidebar-wrapper:p-1.5">
             <div className="h-8 w-8 shrink-0 rounded-full bg-accent flex items-center justify-center">
               {userProfile.avatar ? (
                 <img src={userProfile.avatar} alt={userProfile.name} className="h-full w-full rounded-full" />
