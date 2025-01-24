@@ -13,8 +13,11 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { AppSidebar } from "@/components/app-sidebar"
 import { 
   Sheet, 
-  SheetContent, 
+  SheetContent,
+  SheetTitle,
   SheetTrigger,
+  SheetClose,
+  SheetHeader,
 } from "@/components/ui/sheet"
 
 interface AppHeaderProps {
@@ -54,8 +57,12 @@ export function AppHeader({ className }: AppHeaderProps) {
                     <Menu className="h-4 w-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[280px] p-0 m-4 h-[calc(100vh-2rem)] rounded-xl border bg-background shadow-lg">
+                <SheetContent side="left" className="flex flex-col w-[280px] p-0 m-4 mb-8 h-[calc(100vh-6rem)] rounded-xl border bg-background shadow-lg">
+                  <SheetHeader className="p-4">
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                  </SheetHeader>
                   <AppSidebar className="border-none shadow-none m-0 h-full" />
+                  <SheetClose className="absolute right-4 top-4" />
                 </SheetContent>
               </Sheet>
               <Button variant="ghost" size="icon">
