@@ -144,7 +144,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#212121] overflow-hidden rounded-lg shadow-md">
+    <div className="relative flex flex-col h-[calc(100vh-12rem)] bg-background/95 rounded-lg shadow-md">
       <Settings
         onModelChange={setModel}
         onSystemInstructionsChange={setSystemInstructions}
@@ -166,7 +166,7 @@ export default function ChatInterface() {
       {messages.length === 0 ? (
         <HomeComponent onMessageSelect={handleSendMessage} />
       ) : (
-        <div ref={messageListRef} className="overflow-y-auto h-screen pb-32">
+        <div ref={messageListRef} className="flex-1 overflow-y-auto">
           <MessageList messages={messages} />
           {graphInterrupted && threadState && threadId ? (
             <div className="flex items-center justify-start w-2/3 mx-auto">
@@ -178,7 +178,7 @@ export default function ChatInterface() {
             </div>
           ) : null}
           {allowNullMessage && (
-            <div className="flex flex-col w-2/3 mx-auto overflow-y-scroll pb-[100px]">
+            <div className="flex flex-col w-2/3 mx-auto pb-4">
               <button
                 onClick={() => handleSendMessage(null)}
                 disabled={isLoading}
@@ -190,7 +190,7 @@ export default function ChatInterface() {
           )}
         </div>
       )}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#212121] border-t border-gray-700">
+      <div className="sticky bottom-0 left-0 right-0 bg-background/95 border-t border-border p-4">
         <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
     </div>
