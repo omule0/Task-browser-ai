@@ -34,9 +34,9 @@ export default function Home() {
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px] p-0">
+        <SheetContent side="left" className="w-[280px] p-0 m-4 h-[calc(100vh-2rem)] rounded-xl border bg-background shadow-lg">
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <AppSidebar className="border-none shadow-none m-0" />
+          <AppSidebar className="border-none shadow-none m-0 h-full" />
         </SheetContent>
       </Sheet>
 
