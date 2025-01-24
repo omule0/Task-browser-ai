@@ -15,19 +15,17 @@ import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   SidebarInset,
-  SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 export default function Home() {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
+    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
+      <AppSidebar className="hidden lg:block" />
+      <div className="flex flex-col">
+        <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
+          <div className="flex items-center gap-2 lg:gap-4">
+            <SidebarTrigger className="lg:hidden" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
@@ -40,7 +38,7 @@ export default function Home() {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-4">
             <div className="flex items-center gap-2 bg-accent/50 px-3 py-1 rounded-full">
               <div className="h-2 w-2 rounded-full bg-green-500" />
               <span className="text-sm">Operational</span>
@@ -61,12 +59,12 @@ export default function Home() {
             </Card>
           </div>
         </header>
-        <main className="flex-1 p-4">
-          <div className="max-w-5xl mx-auto">
+        <main className="flex-1">
+          <div className="container max-w-5xl py-6">
             <ChatInterface />
           </div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   );
 }

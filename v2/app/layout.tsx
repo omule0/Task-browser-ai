@@ -25,7 +25,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider>
+          <SidebarProvider
+            style={{
+              "--sidebar-width": "16rem",
+            } as React.CSSProperties}
+          >
             {children}
           </SidebarProvider>
         </ThemeProvider>
