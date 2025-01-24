@@ -9,12 +9,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
@@ -23,7 +21,7 @@ export default function Home() {
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
       <AppSidebar className="hidden lg:block" />
       <div className="flex flex-col">
-        <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
+        <header className="flex h-14 lg:h-[60px] items-center gap-4 bg-background px-6">
           <div className="flex items-center gap-2 lg:gap-4">
             <SidebarTrigger className="lg:hidden" />
             <Breadcrumb>
