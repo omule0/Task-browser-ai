@@ -47,7 +47,7 @@ export function AppHeader({ className }: AppHeaderProps) {
           </Card>
           
           <div className="flex items-center gap-2">
-            <Card className="flex items-center p-1 bg-background/60 backdrop-blur-sm border-border/50">
+            <Card className="flex items-center gap-1 p-1 bg-background/60 backdrop-blur-sm border-border/50">
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden">
@@ -58,9 +58,6 @@ export function AppHeader({ className }: AppHeaderProps) {
                   <AppSidebar className="border-none shadow-none m-0 h-full" />
                 </SheetContent>
               </Sheet>
-            </Card>
-
-            <Card className="flex items-center gap-1 p-1 bg-background/60 backdrop-blur-sm border-border/50">
               <Button variant="ghost" size="icon">
                 <Github className="h-4 w-4" />
               </Button>
