@@ -16,7 +16,6 @@ import {
   Sheet, 
   SheetContent, 
   SheetTrigger,
-  SheetTitle,
 } from "@/components/ui/sheet";
 
 export default function Home() {
@@ -29,7 +28,7 @@ export default function Home() {
 
       <div className="flex-1">
         <header className="flex h-14 lg:h-[60px] items-center gap-4 bg-background px-6">
-          <div className="flex items-center gap-2 lg:gap-4">
+          <div className="flex flex-col gap-1">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
@@ -41,12 +40,13 @@ export default function Home() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            <h1 className="text-lg font-semibold">Research Assistant</h1>
           </div>
           <div className="ml-auto flex items-center gap-2 md:gap-4">
-            <div className="hidden sm:flex items-center gap-2 bg-accent/50 px-3 py-1 rounded-full">
+            <Card className="hidden sm:flex items-center gap-2 px-4 py-3">
               <div className="h-2 w-2 rounded-full bg-green-500" />
               <span className="text-sm">Operational</span>
-            </div>
+            </Card>
             <Card className="flex items-center p-1">
               {/* Mobile Sidebar Trigger */}
               <Sheet>
@@ -56,7 +56,6 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[280px] p-0 m-4 h-[calc(100vh-2rem)] rounded-xl border bg-background shadow-lg">
-                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <AppSidebar className="border-none shadow-none m-0 h-full" />
                 </SheetContent>
               </Sheet>
