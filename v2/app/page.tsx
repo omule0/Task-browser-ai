@@ -12,7 +12,7 @@ export default function Home() {
 
       <div className="flex-1">
         <AppHeader />
-        <main className="px-4 sm:px-6 lg:px-8 py-6">
+        <main className="px-4 sm:px-6 lg:px-8 py-6 mt-24">
           <div className="container max-w-5xl mx-auto">
             <ChatInterface />
           </div>
