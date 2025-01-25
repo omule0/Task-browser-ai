@@ -1,9 +1,14 @@
 import { useState } from "react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Settings2 } from "lucide-react";
 
 export default function InputArea({
   onSendMessage,
+  disabled
 }: {
   onSendMessage: (message: string) => void;
+  disabled?: boolean;
 }) {
   const [input, setInput] = useState("");
 
@@ -16,35 +21,68 @@ export default function InputArea({
   };
 
   return (
-    <form onSubmit={handleSubmit} className=" p-0">
-      <div className="flex fixed left-1/4 w-1/2 h-[60px] mx-auto bottom-5  ">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className=" h-full w-full rounded-[30px] px-10 focus:outline-none bg-[#2f2f2f] placeholder-white text-white"
-          placeholder="Message StreamChat"
-        />
-        <button
-          type="submit"
-          className=" absolute right-[10px] bottom-[10px] w-[40px] h-[40px] rounded-[20px] bg-[#676767] text-white  hover:opacity-80 flex items-center justify-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="currentColor"
-              fillRule="evenodd"
-              d="M11.394 6.68a.857.857 0 0 1 1.212 0l3.857 3.857a.857.857 0 0 1-1.212 1.212l-2.394-2.394v7.36a.857.857 0 0 1-1.714 0v-7.36l-2.394 2.394a.857.857 0 1 1-1.212-1.212z"
-              clipRule="evenodd"
+    <main className="px-8 py-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <form onSubmit={handleSubmit}>
+          <div className="relative">
+            <Input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={disabled}
+              placeholder="What should I research for you?"
+              className="w-full h-14 pl-6 pr-32 text-lg bg-accent/50 border-accent"
             />
-          </svg>
-        </button>
+            <Button
+              type="submit"
+              disabled={disabled}
+              className="absolute right-2 top-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              Research
+            </Button>
+          </div>
+        </form>
+        
+        <div className="text-center space-y-2 text-sm text-muted-foreground">
+          <p>Powered by our advanced AI that aims for objective and factual results at speed. <a href="#" className="underline">Learn more.</a></p>
+        </div>
+        
+        <div className="flex items-center justify-center gap-2 text-sm mb-8">
+          <Settings2 className="h-4 w-4" />
+          <span>Preferences</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 auto-rows-min">
+          <Button 
+            variant="outline" 
+            onClick={() => onSendMessage("How to improve problem-solving skills?")}
+            className="w-full justify-start p-6 text-left h-auto bg-accent/50 hover:bg-accent/60"
+          >
+            How to improve problem-solving skills?
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => onSendMessage("How to legally avoid taxes when inheriting property in California?")}
+            className="w-full justify-start p-6 text-left h-auto bg-accent/50 hover:bg-accent/60"
+          >
+            How to legally avoid taxes when inheriting property in California?
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => onSendMessage("What are the most promising cryptocurrency projects right now?")}
+            className="col-span-2 justify-start p-6 text-left h-auto bg-accent/50 hover:bg-accent/60"
+          >
+            What are the most promising cryptocurrency projects right now?
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => onSendMessage("What's the optimal tech stack for building a SaaS product?")}
+            className="col-span-2 justify-start p-6 text-left h-auto bg-accent/50 hover:bg-accent/60"
+          >
+            What's the optimal tech stack for building a SaaS product?
+          </Button>
+        </div>
       </div>
-    </form>
+    </main>
   );
 }
