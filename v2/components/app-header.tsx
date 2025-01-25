@@ -1,4 +1,6 @@
-import { Github, Twitter, Mail, Menu } from 'lucide-react'
+"use client"
+
+import { Github, Twitter, Mail } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,21 +12,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { AppSidebar } from "@/components/app-sidebar"
-import { 
-  Sheet, 
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-  SheetHeader,
-} from "@/components/ui/sheet"
+import { MobileSidebar } from "@/components/mobile-sidebar"
+import { useState } from 'react'
 
 interface AppHeaderProps {
   className?: string
 }
 
 export function AppHeader({ className }: AppHeaderProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
   return (
     <div className="fixed top-0 right-0 z-50 lg:left-[280px] left-0 px-4 lg:pl-8 pt-4">
       <Card role="banner" className={`flex flex-col sm:flex-row min-h-[60px] items-start sm:items-center gap-4 px-6 py-4 shadow-sm bg-background/60 backdrop-blur-sm border-border/50 ${className}`}>
@@ -51,20 +48,10 @@ export function AppHeader({ className }: AppHeaderProps) {
           
           <div className="flex items-center gap-2">
             <Card className="flex items-center gap-1 p-1 bg-background/60 backdrop-blur-sm border-border/50">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="flex flex-col w-[280px] p-0 m-4 mb-8 h-[calc(100vh-6rem)] rounded-xl border bg-background shadow-lg">
-                  <SheetHeader className="p-4">
-                    <SheetTitle>Navigation Menu</SheetTitle>
-                  </SheetHeader>
-                  <AppSidebar className="border-none shadow-none m-0 h-full" />
-                  <SheetClose className="absolute right-4 top-4" />
-                </SheetContent>
-              </Sheet>
+              <MobileSidebar 
+                isOpen={isSidebarOpen} 
+                onOpenChange={setIsSidebarOpen} 
+              />
               <Button variant="ghost" size="icon">
                 <Github className="h-4 w-4" />
               </Button>
