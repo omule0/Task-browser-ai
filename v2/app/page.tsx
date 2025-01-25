@@ -6,11 +6,12 @@ export default function Home() {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block w-[280px]">
         <AppSidebar className="border-r border-border m-4" />
       </div>
 
-      <div className="flex-1">
+      {/* Main Content */}
+      <div className="flex-1 min-h-screen">
         <AppHeader />
         <main className="px-4 sm:px-6 lg:px-8 py-6 mt-24">
           <div className="container max-w-5xl mx-auto">
