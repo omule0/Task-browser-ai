@@ -4,12 +4,12 @@ import * as React from "react"
 import Link from "next/link"
 import {
   Home,
-  Search,
   Settings,
   FileText,
-  Code,
-  FileIcon,
-  FileCode,
+  Stars,
+  User,
+  LogOutIcon,
+  ChevronDown,
   Menu,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -24,6 +24,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 interface UserProfile {
   name: string
@@ -50,7 +55,7 @@ export function MobileSidebar({ isOpen, onOpenChange, className, ...props }: Mob
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col w-[280px] p-0 m-4 mb-8 h-[calc(100vh-6rem)] rounded-xl border bg-background shadow-lg">
+      <SheetContent side="left" className="flex flex-col w-[280px] p-0 m-4 mb-8 h-[calc(110vh-6rem)] rounded-xl border bg-background shadow-lg">
         <SheetHeader className="p-4">
           <SheetTitle>
             <Link href="/" className="flex items-center gap-2">
@@ -81,32 +86,33 @@ export function MobileSidebar({ isOpen, onOpenChange, className, ...props }: Mob
                 </Link>
                 <Link href="/research">
                   <Button variant="ghost" className="w-full justify-start gap-2 bg-accent">
-                    <Search className="h-4 w-4" />
+                    <Stars className="h-4 w-4" />
                     Research Assistant
                   </Button>
                 </Link>
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-between">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        My Account
+                      </div>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <Link href="/settings">
+                      <Button variant="ghost" className="w-full justify-start gap-2 pl-8 text-sm">
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </Button>
+                    </Link>
+                  </CollapsibleContent>
+                </Collapsible>
                 <Link href="/reports">
                   <Button variant="ghost" className="w-full justify-start gap-2">
                     <FileText className="h-4 w-4" />
                     Research Reports
-                  </Button>
-                </Link>
-                <Link href="/playground">
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <Code className="h-4 w-4" />
-                    API Playground
-                  </Button>
-                </Link>
-                <Link href="/invoices">
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <FileIcon className="h-4 w-4" />
-                    Invoices
-                  </Button>
-                </Link>
-                <Link href="/docs">
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <FileCode className="h-4 w-4" />
-                    Documentation
                   </Button>
                 </Link>
               </nav>
@@ -126,7 +132,7 @@ export function MobileSidebar({ isOpen, onOpenChange, className, ...props }: Mob
               )}
             </div>
             <Button variant="ghost" size="icon" className="ml-auto">
-              <Settings className="h-4 w-4" />
+              <LogOutIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
