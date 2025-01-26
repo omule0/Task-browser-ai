@@ -1,8 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import ChatInterface from "../components/ChatInterface";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       {/* Desktop Sidebar */}
@@ -12,10 +17,10 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex-1 min-h-screen">
-        <AppHeader />
+        <AppHeader isLoading={isLoading} />
         <main className="px-4 sm:px-6 lg:px-8 py-6 mt-24">
           <div className="container max-w-5xl mx-auto">
-            <ChatInterface />
+            <ChatInterface onLoadingChange={setIsLoading} />
           </div>
         </main>
       </div>

@@ -19,7 +19,11 @@ import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ChatInterface() {
+interface ChatInterfaceProps {
+  onLoadingChange?: (isLoading: boolean) => void;
+}
+
+export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -132,16 +136,16 @@ export default function ChatInterface() {
       // Fetch the current state of the thread
       const currentState = await getThreadState(threadId);
       console.log("Current thread state:", currentState);
-      
+
       setThreadState(currentState);
-      
+
       // Check if we need human input
-      if (currentState.next.includes("template_feedback_node") || 
-          currentState.next.includes("human_feedback")) {
+      if (currentState.next.includes("template_feedback_node") ||
+        currentState.next.includes("human_feedback")) {
         console.log("Graph interrupted for human input");
         setGraphInterrupted(true);
       }
-      
+
       setIsLoading(false);
     } catch (err) {
       console.error("Error in message flow:", err);
@@ -153,6 +157,11 @@ export default function ChatInterface() {
       setIsLoading(false);
     }
   };
+
+  // Update parent component when loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
 
   return (
     <div className="">
@@ -167,11 +176,6 @@ export default function ChatInterface() {
         onStreamModeChange={setStreamMode}
         currentStreamMode={streamMode}
       />
-      {isLoading && (
-        <div className="">
-          Processing your request...
-        </div>
-      )}
       {messages.length === 0 ? (
         <SamplePrompts onMessageSelect={handleSendMessage} />
       ) : (
@@ -199,7 +203,7 @@ export default function ChatInterface() {
           )}
         </div>
       )}
-      
+
     </div>
   );
 }

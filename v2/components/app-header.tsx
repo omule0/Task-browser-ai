@@ -14,12 +14,14 @@ import { Card } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { useState } from 'react'
+import { cn } from "@/lib/utils"
 
 interface AppHeaderProps {
   className?: string
+  isLoading?: boolean
 }
 
-export function AppHeader({ className }: AppHeaderProps) {
+export function AppHeader({ className, isLoading = false }: AppHeaderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
@@ -42,8 +44,10 @@ export function AppHeader({ className }: AppHeaderProps) {
         
         <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-auto items-center">
           <Card className="flex items-center gap-2 px-4 py-3 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span className="text-sm">Operational</span>
+            <div className={cn("h-2 w-2 rounded-full transition-colors", 
+              isLoading ? "bg-yellow-500 animate-pulse" : "bg-green-500"
+            )} />
+            <span className="text-sm">{isLoading ? "Processing" : "Operational"}</span>
           </Card>
           
           <div className="flex items-center gap-2">
