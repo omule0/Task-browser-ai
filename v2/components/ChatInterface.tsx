@@ -17,8 +17,10 @@ import {
 import { ASSISTANT_ID_COOKIE } from "@/constants";
 import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ChatInterface() {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
@@ -30,7 +32,6 @@ export default function ChatInterface() {
   const [threadState, setThreadState] = useState<ThreadState>();
   const [graphInterrupted, setGraphInterrupted] = useState(false);
   const [allowNullMessage, setAllowNullMessage] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const messageListRef = useRef<HTMLDivElement>(null);
 
@@ -55,10 +56,13 @@ export default function ChatInterface() {
         setThreadId(thread_id);
         setAssistantId(assistantId);
         setUserId(uuidv4());
-        setError(null);
       } catch (err) {
         console.error("Error initializing chat:", err);
-        setError("Failed to initialize chat. Please try refreshing the page.");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to initialize chat. Please try refreshing the page.",
+        });
       }
     };
 
@@ -73,7 +77,11 @@ export default function ChatInterface() {
 
   const handleSendMessage = async (message: string | null) => {
     if (!threadId || !assistantId) {
-      setError("Chat is not properly initialized. Please try refreshing the page.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Chat is not properly initialized. Please try refreshing the page.",
+      });
       return;
     }
 
@@ -90,7 +98,6 @@ export default function ChatInterface() {
       setThreadState(undefined);
       setGraphInterrupted(false);
       setAllowNullMessage(false);
-      setError(null);
 
       console.log("Sending message:", {
         threadId,
@@ -138,7 +145,11 @@ export default function ChatInterface() {
       setIsLoading(false);
     } catch (err) {
       console.error("Error in message flow:", err);
-      setError("An error occurred while processing your message. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while processing your message. Please try again.",
+      });
       setIsLoading(false);
     }
   };
@@ -153,11 +164,6 @@ export default function ChatInterface() {
         onStreamModeChange={setStreamMode}
         currentStreamMode={streamMode}
       />
-      {error && (
-        <div className="bg-red-500 text-white p-4 text-center">
-          {error}
-        </div>
-      )}
       {isLoading && (
         <div className="bg-blue-500 text-white p-2 text-center">
           Processing your request...
