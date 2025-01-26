@@ -32,3 +32,8 @@ export interface ResearchState {
   report_template?: string;
   final_report?: string;
 }
+
+export interface ThreadState {
+  next: string[];
+  state: ResearchState;
+}

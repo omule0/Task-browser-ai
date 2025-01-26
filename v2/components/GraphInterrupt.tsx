@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { ResearchState } from "../types";
-import { ThreadState } from "@langchain/langgraph-sdk";
+import { ThreadState, ResearchState } from "../types";
 import { updateState } from "../utils/chatApi";
 
 interface Props {
   threadId: string;
-  state: ThreadState<ResearchState>;
+  state: ThreadState;
   setAllowNullMessage: (allow: boolean) => void;
 }
 
@@ -56,21 +55,21 @@ export function GraphInterrupt({ threadId, state, setAllowNullMessage }: Props) 
   const promptText = getPromptText();
 
   return (
-    <div className="w-full p-4 bg-gray-800 rounded-lg shadow-lg">
-      <h3 className="text-xl font-bold mb-2 text-gray-100">{promptText.title}</h3>
+    <div className="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg mt-4">
+      <h3 className="text-xl font-semibold text-white mb-2">{promptText.title}</h3>
       <p className="text-gray-300 mb-4">{promptText.description}</p>
       <textarea
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
         placeholder={promptText.placeholder}
-        className="w-full h-32 p-2 mb-4 bg-gray-700 text-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full h-32 p-2 bg-gray-700 text-white rounded-lg mb-4"
       />
       <button
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
       >
-        {isSubmitting ? "Submitting..." : "Submit Feedback"}
+        {isSubmitting ? "Submitting..." : feedback ? "Submit Feedback" : "Approve"}
       </button>
     </div>
   );

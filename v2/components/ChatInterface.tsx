@@ -4,10 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
-import SamplePrompts from "./sampleprompts";
-import Settings, { StreamMode, Model } from "./Settings";
-import { Message, ResearchState } from "../types";
-import { ThreadState, Checkpoint, Metadata, ThreadTask } from "@langchain/langgraph-sdk";
+import HomeComponent from "./HomeComponent";
+import Settings, { StreamMode } from "./Settings";
+import { Message, Model, ThreadState } from "../types";
 import { handleStreamEvent } from "../utils/streamHandler";
 import {
   createAssistant,
@@ -28,7 +27,7 @@ export default function ChatInterface() {
   const [userId, setUserId] = useState<string>("");
   const [systemInstructions, setSystemInstructions] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [threadState, setThreadState] = useState<ThreadState<ResearchState>>();
+  const [threadState, setThreadState] = useState<ThreadState>();
   const [graphInterrupted, setGraphInterrupted] = useState(false);
   const [allowNullMessage, setAllowNullMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +92,15 @@ export default function ChatInterface() {
       setAllowNullMessage(false);
       setError(null);
 
+      console.log("Sending message:", {
+        threadId,
+        assistantId,
+        message,
+        messageId,
+        model,
+        streamMode,
+      });
+
       const response = await sendMessage({
         threadId,
         assistantId,
@@ -104,31 +112,26 @@ export default function ChatInterface() {
         streamMode,
       });
 
+      console.log("Got response stream");
+
       let eventCount = 0;
       for await (const chunk of response) {
+        console.log(`Processing chunk ${++eventCount}:`, chunk);
         handleStreamEvent(chunk, setMessages, streamMode);
       }
 
+      console.log("Stream completed");
+
+      // Fetch the current state of the thread
       const currentState = await getThreadState(threadId);
+      console.log("Current thread state:", currentState);
       
-      const initialState: ThreadState<ResearchState> = {
-        values: {
-          topic: "",
-          max_analysts: 3,
-          ...currentState.values
-        },
-        next: currentState.next || [],
-        checkpoint: currentState.checkpoint,
-        metadata: currentState.metadata || {},
-        created_at: currentState.created_at,
-        parent_checkpoint: currentState.parent_checkpoint,
-        tasks: currentState.tasks || []
-      };
+      setThreadState(currentState);
       
-      setThreadState(initialState);
-      
+      // Check if we need human input
       if (currentState.next.includes("template_feedback_node") || 
           currentState.next.includes("human_feedback")) {
+        console.log("Graph interrupted for human input");
         setGraphInterrupted(true);
       }
       
@@ -141,7 +144,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="relative flex flex-col h-[calc(100vh-12rem)] bg-background/95 rounded-lg shadow-md">
+    <div className="w-full h-screen bg-[#212121] overflow-hidden rounded-lg shadow-md">
       <Settings
         onModelChange={setModel}
         onSystemInstructionsChange={setSystemInstructions}
@@ -161,9 +164,9 @@ export default function ChatInterface() {
         </div>
       )}
       {messages.length === 0 ? (
-        <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
+        <HomeComponent onMessageSelect={handleSendMessage} />
       ) : (
-        <div ref={messageListRef} className="flex-1 overflow-y-auto">
+        <div ref={messageListRef} className="overflow-y-auto h-screen pb-32">
           <MessageList messages={messages} />
           {graphInterrupted && threadState && threadId ? (
             <div className="flex items-center justify-start w-2/3 mx-auto">
@@ -175,7 +178,7 @@ export default function ChatInterface() {
             </div>
           ) : null}
           {allowNullMessage && (
-            <div className="flex flex-col w-2/3 mx-auto pb-4">
+            <div className="flex flex-col w-2/3 mx-auto overflow-y-scroll pb-[100px]">
               <button
                 onClick={() => handleSendMessage(null)}
                 disabled={isLoading}
@@ -185,11 +188,11 @@ export default function ChatInterface() {
               </button>
             </div>
           )}
-          <div className="sticky bottom-0 left-0 right-0 bg-background/95 border-t border-border p-4">
-            <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
-          </div>
         </div>
       )}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#212121] border-t border-gray-700">
+        <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
+      </div>
     </div>
   );
 }
