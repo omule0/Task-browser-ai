@@ -155,7 +155,10 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#212121] overflow-hidden rounded-lg shadow-md">
+    <div className="">
+      <div className="">
+        <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
+      </div>
       <Settings
         onModelChange={setModel}
         onSystemInstructionsChange={setSystemInstructions}
@@ -165,17 +168,17 @@ export default function ChatInterface() {
         currentStreamMode={streamMode}
       />
       {isLoading && (
-        <div className="bg-blue-500 text-white p-2 text-center">
+        <div className="">
           Processing your request...
         </div>
       )}
       {messages.length === 0 ? (
         <HomeComponent onMessageSelect={handleSendMessage} />
       ) : (
-        <div ref={messageListRef} className="overflow-y-auto h-screen pb-32">
+        <div ref={messageListRef} className="">
           <MessageList messages={messages} />
           {graphInterrupted && threadState && threadId ? (
-            <div className="flex items-center justify-start w-2/3 mx-auto">
+            <div className="">
               <GraphInterrupt
                 setAllowNullMessage={setAllowNullMessage}
                 threadId={threadId}
@@ -184,11 +187,11 @@ export default function ChatInterface() {
             </div>
           ) : null}
           {allowNullMessage && (
-            <div className="flex flex-col w-2/3 mx-auto overflow-y-scroll pb-[100px]">
+            <div className="">
               <button
                 onClick={() => handleSendMessage(null)}
                 disabled={isLoading}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2 max-w-[400px] mx-auto"
+                className=""
               >
                 Continue
               </button>
@@ -196,9 +199,7 @@ export default function ChatInterface() {
           )}
         </div>
       )}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#212121] border-t border-gray-700">
-        <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
-      </div>
+      
     </div>
   );
 }
