@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/app-header";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
@@ -17,10 +18,13 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex-1 min-h-screen">
-        <AppHeader isLoading={isLoading} />
+        <AppHeader isLoading={isLoading} isOffline={isOffline} />
         <main className="px-4 sm:px-6 lg:px-8 py-6 mt-24">
           <div className="container max-w-5xl mx-auto">
-            <ChatInterface onLoadingChange={setIsLoading} />
+            <ChatInterface 
+              onLoadingChange={setIsLoading} 
+              onOfflineChange={setIsOffline}
+            />
           </div>
         </main>
       </div>

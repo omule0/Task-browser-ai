@@ -21,9 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
+  onOfflineChange?: (isOffline: boolean) => void;
 }
 
-export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
+export default function ChatInterface({ onLoadingChange, onOfflineChange }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
   const [userId, setUserId] = useState<string>("");
   const [systemInstructions, setSystemInstructions] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const [threadState, setThreadState] = useState<ThreadState>();
   const [graphInterrupted, setGraphInterrupted] = useState(false);
   const [allowNullMessage, setAllowNullMessage] = useState(false);
@@ -42,6 +44,7 @@ export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
   useEffect(() => {
     const initializeChat = async () => {
       try {
+        setIsOffline(false);
         let assistantId = getCookie(ASSISTANT_ID_COOKIE);
         if (!assistantId) {
           console.log("Creating new assistant...");
@@ -62,6 +65,7 @@ export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
         setUserId(uuidv4());
       } catch (err) {
         console.error("Error initializing chat:", err);
+        setIsOffline(true);
         toast({
           variant: "destructive",
           title: "Error",
@@ -99,6 +103,7 @@ export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
 
     try {
       setIsLoading(true);
+      setIsOffline(false);
       setThreadState(undefined);
       setGraphInterrupted(false);
       setAllowNullMessage(false);
@@ -162,6 +167,11 @@ export default function ChatInterface({ onLoadingChange }: ChatInterfaceProps) {
   useEffect(() => {
     onLoadingChange?.(isLoading);
   }, [isLoading, onLoadingChange]);
+
+  // Update parent component when offline state changes
+  useEffect(() => {
+    onOfflineChange?.(isOffline);
+  }, [isOffline, onOfflineChange]);
 
   return (
     <div className="">

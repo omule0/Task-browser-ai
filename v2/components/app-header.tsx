@@ -19,9 +19,10 @@ import { cn } from "@/lib/utils"
 interface AppHeaderProps {
   className?: string
   isLoading?: boolean
+  isOffline?: boolean
 }
 
-export function AppHeader({ className, isLoading = false }: AppHeaderProps) {
+export function AppHeader({ className, isLoading = false, isOffline = false }: AppHeaderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
@@ -45,9 +46,13 @@ export function AppHeader({ className, isLoading = false }: AppHeaderProps) {
         <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-auto items-center">
           <Card className="flex items-center gap-2 px-4 py-3 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
             <div className={cn("h-2 w-2 rounded-full transition-colors", 
+              isOffline ? "bg-red-500" :
               isLoading ? "bg-yellow-500 animate-pulse" : "bg-green-500"
             )} />
-            <span className="text-sm">{isLoading ? "Processing" : "Operational"}</span>
+            <span className="text-sm">
+              {isOffline ? "Offline" :
+               isLoading ? "Processing" : "Operational"}
+            </span>
           </Card>
           
           <div className="flex items-center gap-2">
