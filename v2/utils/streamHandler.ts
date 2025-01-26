@@ -1,4 +1,4 @@
-import { StreamMode } from "@/components/Settings";
+import { StreamMode } from "@/components/Agentsettings";
 import { Message, ToolCall } from "../types";
 
 export const handleStreamEvent = (

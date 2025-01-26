@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import SamplePrompts from "./SamplePrompts";
-import Settings, { StreamMode } from "./Settings";
+import AgentSettings, { StreamMode } from "./Agentsettings";
 import { Message, Model, ThreadState } from "../types";
 import { handleStreamEvent } from "../utils/streamHandler";
 import {
@@ -159,7 +159,7 @@ export default function ChatInterface() {
       <div className="">
         <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
-      <Settings
+      <AgentSettings
         onModelChange={setModel}
         onSystemInstructionsChange={setSystemInstructions}
         currentModel={model}

@@ -1,4 +1,4 @@
-import { StreamMode } from "@/components/Settings";
+import { StreamMode } from "@/components/Agentsettings";
 import { ThreadState, Client } from "@langchain/langgraph-sdk";
 
 function parseResearchQuery(message: string): { topic: string; max_analysts: number } {
