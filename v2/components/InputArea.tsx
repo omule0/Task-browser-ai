@@ -1,6 +1,7 @@
+"use client"
+
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function InputArea({
   onSendMessage,
@@ -18,39 +19,23 @@ export default function InputArea({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-0">
-      <div className="">
-        <div className="">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className={cn(
-             
-            )}
-            placeholder="Message StreamChat"
-          />
-          <button
-            type="submit"
-            className=""
-            aria-label="Send message"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                fill="currentColor"
-                fillRule="evenodd"
-                d="M11.394 6.68a.857.857 0 0 1 1.212 0l3.857 3.857a.857.857 0 0 1-1.212 1.212l-2.394-2.394v7.36a.857.857 0 0 1-1.714 0v-7.36l-2.394 2.394a.857.857 0 1 1-1.212-1.212z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </form>
+    <div className="w-full p-4">
+      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl gap-4">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="What should I research for you?"
+          className="flex-1 h-14 rounded-full bg-muted px-6 text-lg text-foreground placeholder:text-muted-foreground border border-input hover:border-accent focus:border-ring ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        />
+        <Button
+          type="submit"
+          className="h-14 px-8 rounded-full bg-[#7d8dff] hover:bg-[#6b7dff] text-white font-medium text-lg transition-colors"
+          aria-label="Send message"
+        >
+          Research
+        </Button>
+      </form>
+    </div>
   );
 }

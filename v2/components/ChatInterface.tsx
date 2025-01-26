@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
-import HomeComponent from "./HomeComponent";
+import SamplePrompts from "./SamplePrompts";
 import Settings, { StreamMode } from "./Settings";
 import { Message, Model, ThreadState } from "../types";
 import { handleStreamEvent } from "../utils/streamHandler";
@@ -173,7 +173,7 @@ export default function ChatInterface() {
         </div>
       )}
       {messages.length === 0 ? (
-        <HomeComponent onMessageSelect={handleSendMessage} />
+        <SamplePrompts onMessageSelect={handleSendMessage} />
       ) : (
         <div ref={messageListRef} className="">
           <MessageList messages={messages} />
