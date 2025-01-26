@@ -24,7 +24,7 @@ export function AppHeader({ className }: AppHeaderProps) {
 
   return (
     <div className="fixed top-0 right-0 z-50 lg:left-[280px] left-0 px-4 lg:pl-8 pt-4">
-      <Card role="banner" className={`flex flex-col sm:flex-row min-h-[60px] items-start sm:items-center gap-4 px-6 py-4 shadow-sm bg-background/60 backdrop-blur-sm border-border/50 ${className}`}>
+      <Card role="banner" className={`flex flex-col sm:flex-row min-h-[60px] items-start sm:items-center gap-4 px-6 py-4 shadow-none bg-background/40 backdrop-blur-[2px] border-border/20 rounded-full ${className}`}>
         <div className="flex flex-col gap-1 w-full sm:w-auto">
           <Breadcrumb>
             <BreadcrumbList>
@@ -41,13 +41,13 @@ export function AppHeader({ className }: AppHeaderProps) {
         </div>
         
         <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-auto items-center">
-          <Card className="flex items-center gap-2 px-4 py-3 bg-background/60 backdrop-blur-sm border-border/50">
+          <Card className="flex items-center gap-2 px-4 py-3 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
             <div className="h-2 w-2 rounded-full bg-green-500" />
             <span className="text-sm">Operational</span>
           </Card>
           
           <div className="flex items-center gap-2">
-            <Card className="flex items-center gap-1 p-1 bg-background/60 backdrop-blur-sm border-border/50">
+            <Card className="flex items-center gap-1 p-1 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
               <MobileSidebar 
                 isOpen={isSidebarOpen} 
                 onOpenChange={setIsSidebarOpen} 
@@ -63,7 +63,7 @@ export function AppHeader({ className }: AppHeaderProps) {
               </Button>
             </Card>
 
-            <Card className="p-1 bg-background/60 backdrop-blur-sm border-border/50">
+            <Card className="p-1 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
               <ThemeToggle />
             </Card>
           </div>
