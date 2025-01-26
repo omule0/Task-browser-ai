@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import {
   Collapsible,
   CollapsibleContent,
@@ -37,9 +38,23 @@ export default function AgentSettings({
   currentSystemInstructions,
   currentStreamMode,
 }: SettingsProps) {
-  const models: Model[] = [ "gpt-4o-mini"];
+  const models: Model[] = ["gpt-4o-mini"];
   const streamModes: StreamMode[] = ["messages", "values", "updates", "events"];
   const [isStreamOpen, setIsStreamOpen] = useState(false);
+  const [enabledModels, setEnabledModels] = useState<Record<Model, boolean>>({
+    "gpt-4o-mini": true
+  });
+
+  const handleModelToggle = (model: Model) => {
+    setEnabledModels((prev) => {
+      const newState = { ...prev, [model]: !prev[model] };
+      // If we're enabling this model, make it the current model
+      if (newState[model]) {
+        onModelChange(model);
+      }
+      return newState;
+    });
+  };
 
   return (
     <div className="flex justify-center items-center">
@@ -62,15 +77,29 @@ export default function AgentSettings({
             {models.map((model) => (
               <DropdownMenuItem
                 key={model}
-                className="gap-2"
-                onSelect={() => onModelChange(model)}
+                className="gap-2 px-2 py-1.5"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  if (enabledModels[model]) {
+                    onModelChange(model);
+                  }
+                }}
               >
-                <span className={currentModel === model ? "font-medium" : ""}>
-                  {model}
-                </span>
-                {currentModel === model && (
-                  <span className="ml-auto text-xs text-muted-foreground">Selected</span>
-                )}
+                <div className="flex items-center justify-between w-full">
+                  <span className={currentModel === model && enabledModels[model] ? "font-medium" : ""}>
+                    {model}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {currentModel === model && enabledModels[model] && (
+                      <span className="text-xs text-muted-foreground">Selected</span>
+                    )}
+                    <Switch
+                      checked={enabledModels[model]}
+                      onCheckedChange={() => handleModelToggle(model)}
+                      aria-label={`Enable ${model}`}
+                    />
+                  </div>
+                </div>
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
