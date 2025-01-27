@@ -13,7 +13,7 @@ export interface ToolCall {
   result?: any;
 }
 
-export type Model = "gpt-4o-mini" | string; // Add other model options as needed
+export type Model = "gpt-4o-mini" | string;
 
 export interface Analyst {
   affiliation: string;
@@ -34,6 +34,6 @@ export interface ResearchState {
 }
 
 export interface ThreadState {
+  state: Record<string, any>;
   next: string[];
-  state: ResearchState;
 }

@@ -174,46 +174,54 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   }, [isOffline, onOfflineChange]);
 
   return (
-    <div className="">
-      <div className="">
+    <div className="flex flex-col w-full h-full gap-4 p-4">
+      {/* Input Area at the top */}
+      <div className="w-full">
         <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
-      <AgentSettings
-        onModelChange={setModel}
-        onSystemInstructionsChange={setSystemInstructions}
-        currentModel={model}
-        currentSystemInstructions={systemInstructions}
-        onStreamModeChange={setStreamMode}
-        currentStreamMode={streamMode}
-      />
-      {messages.length === 0 ? (
-        <SamplePrompts onMessageSelect={handleSendMessage} />
-      ) : (
-        <div ref={messageListRef} className="">
-          <MessageList messages={messages} />
-          {graphInterrupted && threadState && threadId ? (
-            <div className="">
-              <GraphInterrupt
-                setAllowNullMessage={setAllowNullMessage}
-                threadId={threadId}
-                state={threadState}
-              />
-            </div>
-          ) : null}
-          {allowNullMessage && (
-            <div className="">
-              <button
-                onClick={() => handleSendMessage(null)}
-                disabled={isLoading}
-                className=""
-              >
-                Continue
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
+      {/* Agent Settings below input */}
+      <div className="w-full">
+        <AgentSettings
+          onModelChange={setModel}
+          onSystemInstructionsChange={setSystemInstructions}
+          currentModel={model}
+          currentSystemInstructions={systemInstructions}
+          onStreamModeChange={setStreamMode}
+          currentStreamMode={streamMode}
+        />
+      </div>
+
+      {/* Chat content area */}
+      <div className="w-full">
+        {messages.length === 0 ? (
+          <SamplePrompts onMessageSelect={handleSendMessage} />
+        ) : (
+          <div ref={messageListRef} className="space-y-4">
+            <MessageList messages={messages} />
+            {graphInterrupted && threadState && threadId && (
+              <div className="mt-4">
+                <GraphInterrupt
+                  setAllowNullMessage={setAllowNullMessage}
+                  threadId={threadId}
+                  state={threadState}
+                />
+              </div>
+            )}
+            {allowNullMessage && (
+              <div className="mt-4">
+                <button
+                  onClick={() => handleSendMessage(null)}
+                  disabled={isLoading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
