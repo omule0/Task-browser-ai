@@ -1,5 +1,6 @@
 import { StreamMode } from "@/components/Agentsettings";
 import { Message, ToolCall } from "../types";
+import { v4 as uuidv4 } from "uuid";
 
 export const handleStreamEvent = (
   event: any,
@@ -36,7 +37,7 @@ const handleStreamMessageEvent = (
   setMessages((prevMessages) => [
     ...prevMessages,
     {
-      id: `log_${Date.now()}`,
+      id: uuidv4(),
       text: logMessage,
       sender: "system",
     }
@@ -60,7 +61,7 @@ const handleStreamEventEvent = (
   setMessages((prevMessages) => [
     ...prevMessages,
     {
-      id: `log_${Date.now()}`,
+      id: uuidv4(),
       text: logMessage,
       sender: "system",
     }
@@ -83,7 +84,7 @@ const handleStreamUpdatesEvent = (
   setMessages((prevMessages) => [
     ...prevMessages,
     {
-      id: `log_${Date.now()}`,
+      id: uuidv4(),
       text: logMessage,
       sender: "system",
     }
@@ -108,7 +109,7 @@ const handleStreamValuesEvent = (
   setMessages((prevMessages) => [
     ...prevMessages,
     {
-      id: `log_${Date.now()}`,
+      id: uuidv4(),
       text: logMessage,
       sender: "system",
     }
