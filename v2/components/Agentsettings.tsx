@@ -17,11 +17,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useState } from "react"
+import { Model } from "@/types"
 
-export type Model = "gpt-4o-mini";
-export type StreamMode = "messages" | "values" | "updates" | "events";
+export type StreamMode = "messages" | "events" | "updates" | "values"
 
-interface SettingsProps {
+interface AgentSettingsProps {
   onModelChange: (model: Model) => void;
   onSystemInstructionsChange: (instructions: string) => void;
   onStreamModeChange: (mode: StreamMode) => void;
@@ -37,7 +37,7 @@ export default function AgentSettings({
   currentModel,
   currentSystemInstructions,
   currentStreamMode,
-}: SettingsProps) {
+}: AgentSettingsProps) {
   const models: Model[] = ["gpt-4o-mini"];
   const streamModes: StreamMode[] = ["messages", "values", "updates", "events"];
   const [isStreamOpen, setIsStreamOpen] = useState(false);

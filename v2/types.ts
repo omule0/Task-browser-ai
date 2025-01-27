@@ -1,6 +1,8 @@
+import { ThreadState as LangChainThreadState } from "@langchain/langgraph-sdk";
+
 export type Message = {
   id: string;
-  text?: string;
+  text: string;
   rawResponse?: Record<string, any>;
   sender: string;
   toolCalls?: ToolCall[];
@@ -10,10 +12,10 @@ export interface ToolCall {
   id: string;
   name: string;
   args: string;
-  result?: any;
+  result?: string;
 }
 
-export type Model = "gpt-4o-mini" | string;
+export type Model = string;
 
 export interface Analyst {
   affiliation: string;
@@ -25,15 +27,30 @@ export interface Analyst {
 export interface ResearchState {
   topic: string;
   max_analysts: number;
+  human_analyst_feedback: string;
+  template_feedback: string;
+  analysts: Analyst[];
+  sections?: string[];
+  report_template: string;
+  final_report?: string;
+}
+
+export interface ThreadStateData {
+  messages: Array<{
+    id: string;
+    role: string;
+    content: string;
+  }>;
+  userId?: string;
+  topic?: string;
+  max_analysts?: number;
   human_analyst_feedback?: string;
   template_feedback?: string;
   analysts?: Analyst[];
   sections?: string[];
   report_template?: string;
   final_report?: string;
+  [key: string]: unknown;
 }
 
-export interface ThreadState {
-  state: Record<string, any>;
-  next: string[];
-}
+export type ThreadState = LangChainThreadState<ThreadStateData>;

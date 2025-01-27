@@ -7,17 +7,19 @@ import dynamic from "next/dynamic";
 // Throws build errors if we try to import this normally
 const ReactJson = dynamic(() => import("react-json-view"), { ssr: false });
 
+interface MessageProps {
+  text?: string;
+  rawResponse?: Record<string, unknown>;
+  sender: "ai" | "user";
+  toolCalls?: ToolCallType[];
+}
+
 export default function Message({
   text,
   rawResponse,
   sender,
-  toolCalls,
-}: {
-  text?: string;
-  rawResponse?: Record<string, any>;
-  sender: string;
-  toolCalls?: ToolCallType[];
-}) {
+  toolCalls = [],
+}: MessageProps) {
   const isBot = sender === "ai";
   const [isVisible, setIsVisible] = useState(false);
 
@@ -25,35 +27,31 @@ export default function Message({
     setIsVisible(true);
   }, []);
 
-  let messageContent: React.ReactNode;
-  if (rawResponse) {
-    messageContent = (
-      <ReactJson
-        displayObjectSize={false}
-        style={{ backgroundColor: "transparent" }}
-        displayDataTypes={false}
-        quotesOnKeys={false}
-        enableClipboard={false}
-        name={false}
-        src={rawResponse}
-        theme="tomorrow"
-      />
-    );
-  } else {
-    messageContent = (
-      <>
-        {toolCalls &&
-          toolCalls.length > 0 &&
-          toolCalls.map((toolCall) => (
-            <ToolCall key={toolCall.id} {...toolCall} />
-          ))}
-        {isBot ? <Markdown>{text}</Markdown> : text}
-      </>
-    );
-  }
+  const messageContent = rawResponse ? (
+    <ReactJson
+      displayObjectSize={false}
+      style={{ backgroundColor: "transparent" }}
+      displayDataTypes={false}
+      quotesOnKeys={false}
+      enableClipboard={false}
+      name={false}
+      src={rawResponse}
+      theme="tomorrow"
+    />
+  ) : (
+    <>
+      {toolCalls.length > 0 &&
+        toolCalls.map((toolCall) => (
+          <ToolCall key={toolCall.id} {...toolCall} />
+        ))}
+      {isBot ? <Markdown>{text}</Markdown> : text}
+    </>
+  );
 
   return (
     <div
+      role="article"
+      aria-label={`${isBot ? "AI" : "User"} message`}
       className={`flex ${
         isBot ? "justify-start" : "justify-end"
       } mb-4 relative transition-opacity duration-200 ease-in-out ${
@@ -63,7 +61,7 @@ export default function Message({
       {isBot && (
         <img
           src="/logo.jpeg"
-          alt="Bot Icon"
+          alt="AI Assistant"
           className="absolute left-0 top-4 w-8 h-8 rounded-full"
           style={{ transform: "translateX(-120%)" }}
         />

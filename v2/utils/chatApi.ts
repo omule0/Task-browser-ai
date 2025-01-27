@@ -1,24 +1,6 @@
 import { StreamMode } from "@/components/Agentsettings";
-import { ThreadState, Client } from "@langchain/langgraph-sdk";
-
-function parseResearchQuery(message: string): { topic: string; max_analysts: number } {
-  // Default values
-  let max_analysts = 3;
-  let topic = message;
-
-  // Try to extract number of analysts from the message
-  const analystsMatch = message.match(/with\s+(\d+)\s+analysts?/i);
-  if (analystsMatch) {
-    max_analysts = parseInt(analystsMatch[1]);
-    // Remove the analysts part from the topic
-    topic = message.replace(/with\s+\d+\s+analysts?/i, '').trim();
-  }
-
-  // Clean up the topic
-  topic = topic.replace(/^(research|analyze|study)\s+/i, '').trim();
-  
-  return { topic, max_analysts };
-}
+import { ThreadState, ThreadStateData, ResearchState } from "../types";
+import { Client } from "@langchain/langgraph-sdk";
 
 const createClient = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
@@ -39,7 +21,7 @@ export const createThread = async () => {
 
 export const getThreadState = async (
   threadId: string
-): Promise<ThreadState<Record<string, any>>> => {
+): Promise<ThreadState> => {
   const client = createClient();
   return client.threads.getState(threadId);
 };
@@ -47,7 +29,7 @@ export const getThreadState = async (
 export const updateState = async (
   threadId: string,
   fields: {
-    newState: Record<string, any>;
+    newState: Partial<ResearchState>;
     asNode?: string;
   }
 ) => {
@@ -70,30 +52,35 @@ export const sendMessage = async (params: {
 }) => {
   const client = createClient();
 
-  let input: Record<string, any> | null = null;
+  let input: Partial<ThreadStateData> | null = null;
   if (params.message !== null) {
-    const { topic, max_analysts } = parseResearchQuery(params.message);
-    
-    // Format input for LangGraph research assistant
-    input = {
-      topic,
-      max_analysts,
-      human_analyst_feedback: "",
-      template_feedback: "",
-      analysts: [],
-      sections: [],
-      report_template: "",
-      final_report: "",
-      messages: [
-        {
-          id: params.messageId,
-          role: "human",
-          content: params.message,
-        },
-      ],
-    };
-
-    console.log("Formatted input for LangGraph:", input);
+    // Extract topic and max_analysts from the message if it matches the pattern
+    const match = params.message.match(/^(.*?)\s+with\s+(\d+)\s+analysts?$/i);
+    if (match) {
+      input = {
+        messages: [
+          {
+            id: params.messageId,
+            role: "human",
+            content: params.message,
+          },
+        ],
+        userId: params.userId,
+        topic: match[1].trim(),
+        max_analysts: parseInt(match[2], 10),
+      };
+    } else {
+      input = {
+        messages: [
+          {
+            id: params.messageId,
+            role: "human",
+            content: params.message,
+          },
+        ],
+        userId: params.userId,
+      };
+    }
   }
 
   const config = {
