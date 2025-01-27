@@ -174,7 +174,7 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   }, [isOffline, onOfflineChange]);
 
   return (
-    <div className="flex flex-col w-full h-full gap-4 p-4">
+    <div className="flex flex-col w-full h-full gap-6 p-4">
       {/* Input Area at the top */}
       <div className="w-full">
         <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
@@ -193,14 +193,21 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
       </div>
 
       {/* Chat content area */}
-      <div className="w-full">
+      <div className="w-full flex-1 overflow-y-auto">
         {messages.length === 0 ? (
           <SamplePrompts onMessageSelect={handleSendMessage} />
         ) : (
-          <div ref={messageListRef} className="space-y-4">
+          <div ref={messageListRef} className="space-y-6">
             <MessageList messages={messages} />
+            {isLoading && (
+              <div className="flex items-center justify-center py-2">
+                <div className="animate-pulse text-muted-foreground">
+                  Generating response...
+                </div>
+              </div>
+            )}
             {graphInterrupted && threadState && threadId && (
-              <div className="mt-4">
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg border">
                 <GraphInterrupt
                   setAllowNullMessage={setAllowNullMessage}
                   threadId={threadId}
@@ -209,11 +216,11 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
               </div>
             )}
             {allowNullMessage && (
-              <div className="mt-4">
+              <div className="mt-6 flex justify-center">
                 <button
                   onClick={() => handleSendMessage(null)}
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue
                 </button>
