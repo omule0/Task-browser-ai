@@ -30,7 +30,7 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   const [threadId, setThreadId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [model, setModel] = useState<Model>("gpt-4o-mini");
-  const [streamMode, setStreamMode] = useState<StreamMode>("updates");
+  const [streamMode, setStreamMode] = useState<StreamMode>("values");
   const [userId, setUserId] = useState<string>("");
   const [systemInstructions, setSystemInstructions] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);

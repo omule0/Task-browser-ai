@@ -22,7 +22,7 @@ export default function InputArea({
 
   return (
     <div className="w-full p-4">
-      <form onSubmit={handleSubmit} className="mx-auto flex w-full max-w-4xl gap-4">
+      <form onSubmit={handleSubmit} className="mx-auto w-[850px] flex gap-4">
         <input
           type="text"
           value={input}
