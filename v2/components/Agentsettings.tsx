@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
   Collapsible,
@@ -23,19 +22,15 @@ export type StreamMode = "messages" | "events" | "updates" | "values"
 
 interface AgentSettingsProps {
   onModelChange: (model: Model) => void;
-  onSystemInstructionsChange: (instructions: string) => void;
   onStreamModeChange: (mode: StreamMode) => void;
   currentModel: Model;
-  currentSystemInstructions: string;
   currentStreamMode: StreamMode;
 }
 
 export default function AgentSettings({
   onModelChange,
-  onSystemInstructionsChange,
   onStreamModeChange,
   currentModel,
-  currentSystemInstructions,
   currentStreamMode,
 }: AgentSettingsProps) {
   const models: Model[] = ["gpt-4o-mini"];
@@ -132,18 +127,6 @@ export default function AgentSettings({
               </CollapsibleContent>
             </Collapsible>
           </DropdownMenuGroup>
-          
-          <DropdownMenuSeparator />
-          
-          <div className="p-2">
-            <DropdownMenuLabel className="text-xs font-medium">System Instructions</DropdownMenuLabel>
-            <Textarea
-              value={currentSystemInstructions}
-              onChange={(e) => onSystemInstructionsChange(e.target.value)}
-              className="mt-2 min-h-[100px] resize-none"
-              placeholder="Enter system instructions..."
-            />
-          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

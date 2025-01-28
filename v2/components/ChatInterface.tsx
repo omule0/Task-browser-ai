@@ -33,7 +33,6 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   const [model, setModel] = useState<Model>("gpt-4o-mini");
   const [streamMode, setStreamMode] = useState<StreamMode>("updates");
   const [userId, setUserId] = useState<string>("");
-  const [systemInstructions, setSystemInstructions] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [threadState, setThreadState] = useState<ThreadState>();
@@ -112,7 +111,6 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
         messageId,
         model,
         userId,
-        systemInstructions,
         streamMode,
       });
 
@@ -169,9 +167,7 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
       <div className="bg-background border-b">
         <AgentSettings
           onModelChange={setModel}
-          onSystemInstructionsChange={setSystemInstructions}
           currentModel={model}
-          currentSystemInstructions={systemInstructions}
           onStreamModeChange={setStreamMode}
           currentStreamMode={streamMode}
         />

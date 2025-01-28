@@ -47,7 +47,6 @@ export const sendMessage = async (params: {
   message: string | null;
   model: string;
   userId: string;
-  systemInstructions: string;
   streamMode: StreamMode;
 }) => {
   const client = createClient();
@@ -70,7 +69,6 @@ export const sendMessage = async (params: {
   const config = {
     configurable: {
       model_name: params.model,
-      system_instructions: params.systemInstructions,
     },
   };
 
