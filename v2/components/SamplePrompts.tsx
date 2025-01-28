@@ -10,22 +10,22 @@ export default function SamplePrompts({ onMessageSelect }: Props) {
   const questions = [
     {
       id: 1,
-      message: "Research the current state and challenges of AI Safety with 3 analysts",
+      message: "Research the current state and challenges of AI Safety",
       className: "col-span-2 lg:col-span-1",
     },
     {
       id: 2,
-      message: "Analyze the latest developments in climate change mitigation with 4 analysts",
+      message: "Analyze the latest developments in climate change mitigation",
       className: "col-span-2 lg:col-span-1",
     },
     {
       id: 3,
-      message: "Study recent breakthroughs in quantum computing with 2 analysts",
+      message: "Study recent breakthroughs in quantum computing",
       className: "col-span-2",
     },
     {
       id: 4,
-      message: "Explore the latest trends and innovations in biotechnology with 3 analysts",
+      message: "Explore the latest trends and innovations in biotechnology",
       className: "col-span-2",
     },
   ];

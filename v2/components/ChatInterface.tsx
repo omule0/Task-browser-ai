@@ -18,6 +18,7 @@ import { ASSISTANT_ID_COOKIE } from "@/constants";
 import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
 import { useToast } from "@/hooks/use-toast";
+import SkeletonMessage from "./SkeletonMessage";
 
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
@@ -38,6 +39,7 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   const [threadState, setThreadState] = useState<ThreadState>();
   const [graphInterrupted, setGraphInterrupted] = useState(false);
   const [allowNullMessage, setAllowNullMessage] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const messageListRef = useRef<HTMLDivElement>(null);
 
@@ -47,19 +49,12 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
         setIsOffline(false);
         let assistantId = getCookie(ASSISTANT_ID_COOKIE);
         if (!assistantId) {
-          console.log("Creating new assistant...");
           const assistant = await createAssistant("research_assistant");
           assistantId = assistant.assistant_id;
           setCookie(ASSISTANT_ID_COOKIE, assistantId);
-          console.log("Created assistant:", assistantId);
-        } else {
-          console.log("Using existing assistant:", assistantId);
         }
 
-        console.log("Creating new thread...");
         const { thread_id } = await createThread();
-        console.log("Created thread:", thread_id);
-
         setThreadId(thread_id);
         setAssistantId(assistantId);
         setUserId(uuidv4());
@@ -71,15 +66,20 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
           title: "Error",
           description: "Failed to initialize chat. Please try refreshing the page.",
         });
+      } finally {
+        setIsInitializing(false);
       }
     };
 
     initializeChat();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (messageListRef.current) {
-      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages]);
 
@@ -95,10 +95,7 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
 
     const messageId = uuidv4();
     if (message !== null) {
-      setMessages([
-        ...messages,
-        { text: message, sender: "user", id: messageId },
-      ]);
+      setMessages((prev) => [...prev, { text: message, sender: "user", id: messageId }]);
     }
 
     try {
@@ -107,15 +104,6 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
       setThreadState(undefined);
       setGraphInterrupted(false);
       setAllowNullMessage(false);
-
-      console.log("Sending message:", {
-        threadId,
-        assistantId,
-        message,
-        messageId,
-        model,
-        streamMode,
-      });
 
       const response = await sendMessage({
         threadId,
@@ -128,30 +116,19 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
         streamMode,
       });
 
-      console.log("Got response stream");
-
-      let eventCount = 0;
       for await (const chunk of response) {
-        console.log(`Processing chunk ${++eventCount}:`, chunk);
         handleStreamEvent(chunk, setMessages, streamMode);
       }
 
-      console.log("Stream completed");
-
-      // Fetch the current state of the thread
       const currentState = await getThreadState(threadId);
-      console.log("Current thread state:", currentState);
-
       setThreadState(currentState);
 
-      // Check if we need human input
-      if (currentState.next.includes("template_feedback_node") ||
-        currentState.next.includes("human_feedback")) {
-        console.log("Graph interrupted for human input");
+      if (
+        currentState.next.includes("template_feedback_node") ||
+        currentState.next.includes("human_feedback")
+      ) {
         setGraphInterrupted(true);
       }
-
-      setIsLoading(false);
     } catch (err) {
       console.error("Error in message flow:", err);
       toast({
@@ -159,29 +136,37 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
         title: "Error",
         description: "An error occurred while processing your message. Please try again.",
       });
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Update parent component when loading state changes
   useEffect(() => {
     onLoadingChange?.(isLoading);
   }, [isLoading, onLoadingChange]);
 
-  // Update parent component when offline state changes
   useEffect(() => {
     onOfflineChange?.(isOffline);
   }, [isOffline, onOfflineChange]);
 
+  if (isInitializing) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="text-muted-foreground">Initializing research assistant...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col w-full h-full gap-6 p-4">
+    <div className="flex flex-col w-full h-full min-h-[80vh] max-w-7xl mx-auto">
       {/* Input Area at the top */}
-      <div className="w-full">
+      <div className="bg-background border-b pb-4">
         <InputArea onSendMessage={handleSendMessage} disabled={isLoading} />
       </div>
 
-      {/* Agent Settings below input */}
-      <div className="w-full">
+      {/* Settings Panel */}
+      <div className="bg-background border-b">
         <AgentSettings
           onModelChange={setModel}
           onSystemInstructionsChange={setSystemInstructions}
@@ -192,42 +177,41 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
         />
       </div>
 
-      {/* Chat content area */}
-      <div className="w-full flex-1 overflow-y-auto">
-        {messages.length === 0 ? (
-          <SamplePrompts onMessageSelect={handleSendMessage} />
-        ) : (
-          <div ref={messageListRef} className="space-y-6">
-            <MessageList messages={messages} />
-            {isLoading && (
-              <div className="flex items-center justify-center py-2">
-                <div className="animate-pulse text-muted-foreground">
-                  Generating response...
+      {/* Main Chat Area */}
+      <div className="flex-1 overflow-hidden">
+        <div 
+          ref={messageListRef}
+          className="h-full overflow-y-auto px-4 py-6 space-y-6"
+        >
+          {messages.length === 0 ? (
+            <SamplePrompts onMessageSelect={handleSendMessage} />
+          ) : (
+            <>
+              <MessageList messages={messages} />
+              {isLoading && <SkeletonMessage />}
+              {graphInterrupted && threadState && threadId && (
+                <div className="transition-all duration-200 ease-in-out">
+                  <GraphInterrupt
+                    setAllowNullMessage={setAllowNullMessage}
+                    threadId={threadId}
+                    state={threadState}
+                  />
                 </div>
-              </div>
-            )}
-            {graphInterrupted && threadState && threadId && (
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg border">
-                <GraphInterrupt
-                  setAllowNullMessage={setAllowNullMessage}
-                  threadId={threadId}
-                  state={threadState}
-                />
-              </div>
-            )}
-            {allowNullMessage && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={() => handleSendMessage(null)}
-                  disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Continue
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+              {allowNullMessage && (
+                <div className="flex justify-center py-4">
+                  <button
+                    onClick={() => handleSendMessage(null)}
+                    disabled={isLoading}
+                    className="px-6 py-2 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    Continue Research
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

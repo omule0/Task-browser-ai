@@ -54,33 +54,17 @@ export const sendMessage = async (params: {
 
   let input: Partial<ThreadStateData> | null = null;
   if (params.message !== null) {
-    // Extract topic and max_analysts from the message if it matches the pattern
-    const match = params.message.match(/^(.*?)\s+with\s+(\d+)\s+analysts?$/i);
-    if (match) {
-      input = {
-        messages: [
-          {
-            id: params.messageId,
-            role: "human",
-            content: params.message,
-          },
-        ],
-        userId: params.userId,
-        topic: match[1].trim(),
-        max_analysts: parseInt(match[2], 10),
-      };
-    } else {
-      input = {
-        messages: [
-          {
-            id: params.messageId,
-            role: "human",
-            content: params.message,
-          },
-        ],
-        userId: params.userId,
-      };
-    }
+    input = {
+      messages: [
+        {
+          id: params.messageId,
+          role: "human",
+          content: params.message,
+        },
+      ],
+      userId: params.userId,
+      topic: params.message.trim(),
+    };
   }
 
   const config = {

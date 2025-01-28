@@ -3,7 +3,7 @@ import { ThreadState as LangChainThreadState } from "@langchain/langgraph-sdk";
 export type Message = {
   id: string;
   text: string;
-  rawResponse?: Record<string, any>;
+  rawResponse?: Record<string, unknown>;
   sender: string;
   toolCalls?: ToolCall[];
 };
@@ -26,7 +26,6 @@ export interface Analyst {
 
 export interface ResearchState {
   topic: string;
-  max_analysts: number;
   human_analyst_feedback: string;
   template_feedback: string;
   analysts: Analyst[];
@@ -43,7 +42,6 @@ export interface ThreadStateData {
   }>;
   userId?: string;
   topic?: string;
-  max_analysts?: number;
   human_analyst_feedback?: string;
   template_feedback?: string;
   analysts?: Analyst[];
