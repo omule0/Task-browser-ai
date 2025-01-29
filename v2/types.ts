@@ -17,6 +17,8 @@ export interface ToolCall {
 
 export type Model = string;
 
+export type StreamMode = "updates" | "messages" | "values" | "events";
+
 export interface Analyst {
   affiliation: string;
   name: string;
