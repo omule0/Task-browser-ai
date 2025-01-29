@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import SamplePrompts from "./SamplePrompts";
-import AgentSettings, { StreamMode } from "./Agentsettings";
+import { StreamMode } from "./Agentsettings";
 import { Message, Model, ThreadState } from "../types";
 import { handleStreamEvent } from "../utils/streamHandler";
 import {
@@ -26,15 +26,20 @@ import { cn } from "@/lib/utils";
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
   onOfflineChange?: (isOffline: boolean) => void;
+  model: Model;
+  streamMode: StreamMode;
 }
 
-export default function ChatInterface({ onLoadingChange, onOfflineChange }: ChatInterfaceProps) {
+export default function ChatInterface({ 
+  onLoadingChange, 
+  onOfflineChange,
+  model,
+  streamMode 
+}: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
-  const [model, setModel] = useState<Model>("gpt-4o-mini");
-  const [streamMode, setStreamMode] = useState<StreamMode>("updates");
   const [userId, setUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -198,19 +203,13 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
 
   if (isInitializing) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent"
+      <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen bg-background">
+        <div
+          className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"
         />
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-muted-foreground"
-        >
+        <p className="text-muted-foreground text-center mt-4">
           Initializing research assistant...
-        </motion.p>
+        </p>
       </div>
     );
   }
@@ -218,27 +217,16 @@ export default function ChatInterface({ onLoadingChange, onOfflineChange }: Chat
   return (
     <div className="flex flex-col w-full h-full min-h-[100vh] max-w-5xl mx-auto relative">
       {/* Top Controls Row */}
-      <div className="bg-background/80 backdrop-blur-sm  flex items-center  px-0 py-0">
-          {/* Settings Panel on the left */}
-          <div className="flex-shrink-0">
-            <AgentSettings
-              onModelChange={setModel}
-              currentModel={model}
-              onStreamModeChange={setStreamMode}
-              currentStreamMode={streamMode}
-              className="transition-all duration-200"
-            />
-          </div>
-
-          {/* Input Area taking remaining space */}
-          <div className="flex-1 min-w-0">
-            <InputArea 
-              onSendMessage={handleSendMessage} 
-              disabled={isLoading}
-              className="transition-all duration-200 transform"
-            />
-          </div>
+      <div className="bg-background/80 backdrop-blur-sm flex items-center px-0 py-0">
+        {/* Input Area taking full width */}
+        <div className="w-full">
+          <InputArea 
+            onSendMessage={handleSendMessage} 
+            disabled={isLoading}
+            className="transition-all duration-200 transform"
+          />
         </div>
+      </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 overflow-hidden relative">

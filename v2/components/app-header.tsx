@@ -1,6 +1,5 @@
 "use client"
 
-import { Github, Twitter, Mail } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,24 +8,37 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { useState } from 'react'
 import { cn } from "@/lib/utils"
+import AgentSettings from './Agentsettings'
+import { Model, StreamMode } from '@/types'
 
 interface AppHeaderProps {
   className?: string
   isLoading?: boolean
   isOffline?: boolean
+  onModelChange?: (model: Model) => void
+  currentModel?: Model
+  onStreamModeChange?: (mode: StreamMode) => void
+  currentStreamMode?: StreamMode
 }
 
-export function AppHeader({ className, isLoading = false, isOffline = false }: AppHeaderProps) {
+export function AppHeader({ 
+  className, 
+  isLoading = false, 
+  isOffline = false,
+  onModelChange,
+  currentModel = "gpt-4o-mini",
+  onStreamModeChange,
+  currentStreamMode = "updates"
+}: AppHeaderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div className="fixed top-0 right-0 z-50 lg:left-[280px] left-0 px-4 lg:pl-8 pt-4">
+    <div className="fixed top-0 right-0 z-50 lg:left-[280px] left-0 px-4 lg:pl-8 pt-4 h-[50px] sm:h-[10px]">
       <Card role="banner" className={`flex flex-col sm:flex-row min-h-[60px] items-start sm:items-center gap-4 px-6 py-4 shadow-none bg-background/40 backdrop-blur-[2px] border-border/20 rounded-full ${className}`}>
         <div className="flex flex-col gap-1 w-full sm:w-auto">
           <Breadcrumb>
@@ -61,15 +73,15 @@ export function AppHeader({ className, isLoading = false, isOffline = false }: A
                 isOpen={isSidebarOpen} 
                 onOpenChange={setIsSidebarOpen} 
               />
-              <Button variant="ghost" size="icon">
-                <Github className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Mail className="h-4 w-4" />
-              </Button>
+              {onModelChange && onStreamModeChange && (
+                <AgentSettings
+                  onModelChange={onModelChange}
+                  currentModel={currentModel}
+                  onStreamModeChange={onStreamModeChange}
+                  currentStreamMode={currentStreamMode}
+                  className="transition-all duration-200"
+                />
+              )}
             </Card>
 
             <Card className="p-1 bg-background/60 backdrop-blur-sm border-border/50 rounded-full">
