@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
@@ -21,7 +20,6 @@ import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
 import { useToast } from "@/hooks/use-toast";
 import SkeletonMessage from "./SkeletonMessage";
-import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
@@ -47,8 +45,6 @@ export default function ChatInterface({
   const [graphInterrupted, setGraphInterrupted] = useState(false);
   const [allowNullMessage, setAllowNullMessage] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const [hasNewMessage, setHasNewMessage] = useState(false);
 
   const messageListRef = useRef<HTMLDivElement>(null);
 
@@ -157,50 +153,6 @@ export default function ChatInterface({
     onOfflineChange?.(isOffline);
   }, [isOffline, onOfflineChange]);
 
-  // Scroll handling
-  const handleScroll = () => {
-    if (!messageListRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = messageListRef.current;
-    const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 100;
-    setShowScrollButton(!isBottom);
-    
-    if (isBottom) {
-      setHasNewMessage(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    if (messageListRef.current) {
-      messageListRef.current.scrollTo({
-        top: messageListRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-      setHasNewMessage(false);
-    }
-  };
-
-  useEffect(() => {
-    const messageList = messageListRef.current;
-    if (messageList) {
-      messageList.addEventListener("scroll", handleScroll);
-      return () => messageList.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (messageListRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messageListRef.current;
-      const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 100;
-      
-      if (!isBottom) {
-        setHasNewMessage(true);
-      } else {
-        scrollToBottom();
-      }
-    }
-  }, [messages]);
-
   if (isInitializing) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen bg-background">
@@ -279,30 +231,6 @@ export default function ChatInterface({
               )}
             </AnimatePresence>
         </div>
-
-        {/* Scroll to bottom button */}
-        <AnimatePresence>
-          {showScrollButton && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              onClick={scrollToBottom}
-              className={cn(
-                "absolute bottom-6 right-6 p-2 rounded-full bg-primary shadow-lg",
-                "hover:bg-primary/90 transition-all duration-200 transform hover:scale-105",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
-                hasNewMessage && "animate-bounce"
-              )}
-              aria-label="Scroll to bottom"
-            >
-              <ChevronDown className="w-5 h-5 text-white" />
-              {hasNewMessage && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
-              )}
-            </motion.button>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

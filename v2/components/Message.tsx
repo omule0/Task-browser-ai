@@ -25,6 +25,68 @@ interface Analyst {
   description: string;
 }
 
+const commonProseStyles = [
+  "prose prose-sm dark:prose-invert max-w-none",
+  "prose-headings:text-foreground prose-p:text-muted-foreground",
+  "prose-strong:text-foreground prose-code:text-foreground",
+  "[&>*:first-child]:mt-0",
+  "[&>*:last-child]:mb-0",
+] as const;
+
+const templateProseStyles = [
+  ...commonProseStyles,
+  "prose-h1:text-xl prose-h1:font-semibold prose-h1:mb-4",
+  "prose-h2:text-base prose-h2:font-medium prose-h2:mt-4 prose-h2:mb-2",
+  "prose-h3:text-sm prose-h3:font-medium prose-h3:mt-3 prose-h3:mb-1.5",
+  "prose-ul:my-0.5 prose-ul:pl-4",
+  "prose-li:my-0.5 prose-li:leading-normal",
+  "text-sm leading-normal"
+] as const;
+
+const finalReportStyles = [
+  ...commonProseStyles,
+  "prose-h1:text-2xl prose-h1:font-bold prose-h1:mb-6",
+  "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4",
+  "prose-h2:pb-2 prose-h2:border-b prose-h2:border-border",
+  "prose-h3:text-base prose-h3:font-medium prose-h3:mt-6 prose-h3:mb-3",
+  "prose-p:text-sm prose-p:my-2 prose-p:leading-relaxed",
+  "prose-ul:my-2 prose-ul:pl-6",
+  "prose-li:my-0.5",
+  "prose-a:text-primary hover:prose-a:text-primary/80"
+] as const;
+
+const interviewSectionStyles = [
+  ...commonProseStyles,
+  "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-6 prose-h2:mb-3",
+  "prose-h3:text-base prose-h3:font-medium prose-h3:mt-4 prose-h3:mb-2",
+  "prose-p:text-sm prose-p:my-2 prose-p:leading-relaxed",
+  "prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4",
+  "prose-li:my-0.5",
+  "prose-a:text-primary hover:prose-a:text-primary/80",
+  "[&_h3:last-of-type]:border-t [&_h3:last-of-type]:pt-4 [&_h3:last-of-type]:mt-6",
+  "[&_h3:last-of-type+p]:mt-2 [&_h3:last-of-type~p]:my-1 [&_h3:last-of-type~p]:text-xs"
+] as const;
+
+const ReportTemplate = ({ template }: { template: string }) => (
+  <div className={cn(...templateProseStyles)}>
+    <Markdown>{template}</Markdown>
+  </div>
+);
+
+const FinalReport = ({ report }: { report: string }) => (
+  <div className={cn(...finalReportStyles)}>
+    <Markdown>{report}</Markdown>
+  </div>
+);
+
+const InterviewSection = ({ sections }: { sections: string[] }) => (
+  <div className={cn(...interviewSectionStyles)}>
+    {sections.map((section, index) => (
+      <Markdown key={index}>{section}</Markdown>
+    ))}
+  </div>
+);
+
 export default function Message({
   text,
   rawResponse,
@@ -160,77 +222,19 @@ export default function Message({
     // Handle final report
     if (isFinalReport(data)) {
       const report = (data.write_complete_report as Record<string, unknown>).final_report as string;
-      return (
-        <div className={cn(
-          "prose prose-sm dark:prose-invert max-w-none",
-          "prose-h1:text-2xl prose-h1:font-bold prose-h1:mb-6 prose-h1:mt-0",
-          "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4",
-          "prose-h2:pb-2 prose-h2:border-b prose-h2:border-border",
-          "prose-h3:text-base prose-h3:font-medium prose-h3:mt-6 prose-h3:mb-3",
-          "prose-p:text-sm prose-p:text-muted-foreground prose-p:my-2 prose-p:leading-relaxed",
-          "prose-ul:my-2 prose-ul:pl-6",
-          "prose-li:my-0.5 prose-li:text-muted-foreground",
-          "[&_h2:first-of-type+ul]:list-none [&_h2:first-of-type+ul]:pl-0",
-          "[&_h2:first-of-type+ul>li]:my-1",
-          "[&_h2:nth-of-type(3)+ol]:list-decimal [&_h2:nth-of-type(3)+ol]:pl-6",
-          "[&_h2:nth-of-type(3)+ol>li]:my-0.5 [&_h2:nth-of-type(3)+ol>li]:text-muted-foreground",
-          "[&_h2:nth-last-of-type(2)]:mt-8 [&_h2:nth-last-of-type(2)]:border-t [&_h2:nth-last-of-type(2)]:pt-6",
-          "[&_h2:nth-last-of-type(2)+ol]:list-none [&_h2:nth-last-of-type(2)+ol]:pl-0",
-          "[&_h2:nth-last-of-type(2)+ol>li]:my-1 [&_h2:nth-last-of-type(2)+ol>li]:text-xs",
-          "[&_h2:last-of-type+ul]:list-none [&_h2:last-of-type+ul]:pl-0",
-          "[&_h2:last-of-type+ul>li]:my-1 [&_h2:last-of-type+ul>li]:text-sm",
-          "prose-a:text-primary hover:prose-a:text-primary/80",
-          "prose-strong:font-medium prose-strong:text-muted-foreground"
-        )}>
-          <Markdown>{report}</Markdown>
-        </div>
-      );
+      return <FinalReport report={report} />;
     }
 
     // Handle interview sections
     if (isInterviewSection(data)) {
       const sections = (data.conduct_interview as Record<string, unknown>).sections as string[];
-      return (
-        <div className={cn(
-          "prose prose-sm dark:prose-invert max-w-none",
-          "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-6 prose-h2:mb-3",
-          "prose-h3:text-base prose-h3:font-medium prose-h3:mt-4 prose-h3:mb-2",
-          "prose-p:text-sm prose-p:text-muted-foreground prose-p:my-2 prose-p:leading-relaxed",
-          "prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4",
-          "prose-li:my-0.5",
-          "prose-a:text-primary hover:prose-a:text-primary/80",
-          "[&>*:first-child]:mt-0",
-          "[&_h3:last-of-type]:border-t [&_h3:last-of-type]:pt-4 [&_h3:last-of-type]:mt-6 [&_h3:last-of-type]:border-border",
-          "[&_h3:last-of-type+p]:mt-2 [&_h3:last-of-type~p]:my-1 [&_h3:last-of-type~p]:text-xs"
-        )}>
-          {sections.map((section, index) => (
-            <Markdown key={index}>{section}</Markdown>
-          ))}
-        </div>
-      );
+      return <InterviewSection sections={sections} />;
     }
 
     // Handle report templates
     if (isReportTemplate(data)) {
       const template = (data.generate_template as Record<string, unknown>).report_template as string;
-      return (
-        <div className={cn(
-          "prose prose-sm dark:prose-invert max-w-none",
-          "prose-h1:text-xl prose-h1:font-semibold prose-h1:mt-0 prose-h1:mb-4",
-          "prose-h2:text-base prose-h2:font-medium prose-h2:mt-4 prose-h2:mb-2",
-          "prose-h3:text-sm prose-h3:font-medium prose-h3:mt-3 prose-h3:mb-1.5",
-          "prose-ul:my-0.5 prose-ul:pl-4",
-          "prose-li:my-0.5 prose-li:leading-normal",
-          "[&_li>strong]:text-xs [&_li>strong]:font-normal [&_li>strong]:text-muted-foreground [&_li>strong]:block [&_li>strong]:mt-0.5",
-          "[&>*:first-child]:mt-0",
-          "[&>*:last-child]:mb-0",
-          "[&_ul_ul]:mt-0 [&_ul_ul]:mb-0 [&_ul_ul]:ml-3",
-          "prose-li:marker:text-muted-foreground/70",
-          "text-sm leading-normal"
-        )}>
-          <Markdown>{template}</Markdown>
-        </div>
-      );
+      return <ReportTemplate template={template} />;
     }
 
     // Handle analysts
