@@ -47,6 +47,10 @@ export default function Message({
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const isInterruptMessage = (data: Record<string, unknown>): boolean => {
+    return '__interrupt__' in data;
+  };
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -61,6 +65,11 @@ export default function Message({
       setTimeout(() => setError(null), 3000);
     }
   };
+
+  // Hide interrupt messages completely
+  if (rawResponse && isInterruptMessage(rawResponse)) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -166,6 +175,11 @@ export default function Message({
   );
 
   const renderJsonContent = (data: Record<string, unknown>) => {
+    // Hide interrupt messages
+    if (isInterruptMessage(data)) {
+      return null;
+    }
+
     // Handle final report
     if (isFinalReport(data)) {
       const report = (data.write_complete_report as Record<string, unknown>).final_report as string;
