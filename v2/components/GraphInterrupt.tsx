@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { ThreadState, ResearchState } from "../types";
 import { updateState } from "../utils/chatApi";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ThumbsUp, Loader2 } from "lucide-react";
 
 interface Props {
   threadId: string;
@@ -55,22 +61,58 @@ export function GraphInterrupt({ threadId, state, setAllowNullMessage }: Props) 
   const promptText = getPromptText();
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 bg-gray-800 rounded-lg mt-4">
-      <h3 className="text-xl font-semibold text-white mb-2">{promptText.title}</h3>
-      <p className="text-gray-300 mb-4">{promptText.description}</p>
-      <textarea
-        value={feedback}
-        onChange={(e) => setFeedback(e.target.value)}
-        placeholder={promptText.placeholder}
-        className="w-full h-32 p-2 bg-gray-700 text-white rounded-lg mb-4"
-      />
-      <button
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
-      >
-        {isSubmitting ? "Submitting..." : feedback ? "Submit Feedback" : "Approve"}
-      </button>
-    </div>
+    <Card className="w-full max-w-2xl mx-auto mt-4">
+      <CardHeader>
+        <CardTitle>{promptText.title}</CardTitle>
+        <CardDescription>{promptText.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Textarea
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          placeholder={promptText.placeholder}
+          className={cn(
+            "min-h-[120px] resize-none transition-all duration-200",
+            "focus:ring-2 focus:ring-primary/20",
+            "placeholder:text-muted-foreground/60"
+          )}
+        />
+      </CardContent>
+      <CardFooter className="flex justify-end space-x-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={cn(
+                  "min-w-[120px]",
+                  feedback.length === 0 && "bg-green-600 hover:bg-green-700"
+                )}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : feedback ? (
+                  "Submit Feedback"
+                ) : (
+                  <>
+                    <ThumbsUp className="mr-2 h-4 w-4" />
+                    Approve
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {feedback
+                ? "Submit your feedback for review"
+                : "Approve the current content"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </CardFooter>
+    </Card>
   );
 } 
