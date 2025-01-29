@@ -17,7 +17,7 @@ export default function MessageList({ messages }: { messages: MessageType[] }) {
             <Message
               rawResponse={message.rawResponse}
               text={message.text}
-              sender={message.sender === "assistant" ? "ai" : "user"}
+              sender={message.sender === "user" ? "user" : "ai"}
               toolCalls={message.toolCalls}
             />
           </motion.div>
