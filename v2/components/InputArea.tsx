@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+interface InputAreaProps {
+  onSendMessage: (message: string) => void;
+  disabled?: boolean;
+  className?: string;
+}
 
 export default function InputArea({
   onSendMessage,
   disabled = false,
-}: {
-  onSendMessage: (message: string) => void;
-  disabled?: boolean;
-}) {
+  className,
+}: InputAreaProps) {
   const [input, setInput] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,7 +26,7 @@ export default function InputArea({
   };
 
   return (
-    <div className="w-full p-4">
+    <div className={cn("relative w-full p-4", className)}>
       <form onSubmit={handleSubmit} className="mx-auto w-[850px] flex gap-4">
         <input
           type="text"

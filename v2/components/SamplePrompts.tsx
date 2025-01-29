@@ -35,8 +35,8 @@ export default function SamplePrompts({ onMessageSelect }: Props) {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-background to-background/80 p-4 md:p-6">
-      <div className="mx-auto max-w-4xl">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-background to-background/80 p-0 md:p-0">
+      <div className="mx-auto max-w-3xl ">
         <div className="mb-8 text-center">
           <h2 className="mb-2 text-xl font-semibold md:text-2xl">
             Ready to explore?

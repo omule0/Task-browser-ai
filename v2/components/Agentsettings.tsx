@@ -73,14 +73,14 @@ export default function AgentSettings({
         <DropdownMenuTrigger asChild>
           <Button 
             variant="ghost" 
-            className="flex items-center gap-2 h-9 px-4 hover:bg-primary/10 transition-colors duration-200"
+            size="icon"
+            className="h-9 w-9 hover:bg-primary/10 transition-colors duration-200"
           >
             <Settings2 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Preferences</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
-          align="end" 
+          align="start" 
           className="w-[320px] backdrop-blur-lg bg-background/95"
         >
           <DropdownMenuLabel className="flex items-center gap-2 text-primary">
