@@ -4,20 +4,11 @@ import Markdown from "react-markdown";
 import ToolCall from "./ToolCall";
 import { ToolCall as ToolCallType } from "../types";
 import React, { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserCircle, Bot, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { UserCircle, Bot } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
-// Throws build errors if we try to import this normally
-const ReactJson = dynamic(() => import("react-json-view"), { 
-  ssr: false,
-  loading: () => <Skeleton className="h-20 w-full" />
-});
 
 interface MessageProps {
   text?: string;
@@ -43,9 +34,6 @@ export default function Message({
 }: MessageProps) {
   const isBot = sender === "ai";
   const [isVisible, setIsVisible] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const isInterruptMessage = (data: Record<string, unknown>): boolean => {
     return '__interrupt__' in data;
@@ -54,17 +42,6 @@ export default function Message({
   useEffect(() => {
     setIsVisible(true);
   }, []);
-
-  const handleCopy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError("Failed to copy text to clipboard");
-      setTimeout(() => setError(null), 3000);
-    }
-  };
 
   // Hide interrupt messages completely
   if (rawResponse && isInterruptMessage(rawResponse)) {
@@ -186,34 +163,23 @@ export default function Message({
       return (
         <div className={cn(
           "prose prose-sm dark:prose-invert max-w-none",
-          // Main title
           "prose-h1:text-2xl prose-h1:font-bold prose-h1:mb-6 prose-h1:mt-0",
-          // Section headers
           "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-8 prose-h2:mb-4",
           "prose-h2:pb-2 prose-h2:border-b prose-h2:border-border",
-          // Subsection headers
           "prose-h3:text-base prose-h3:font-medium prose-h3:mt-6 prose-h3:mb-3",
-          // Paragraphs and content
           "prose-p:text-sm prose-p:text-muted-foreground prose-p:my-2 prose-p:leading-relaxed",
-          // Lists
           "prose-ul:my-2 prose-ul:pl-6",
           "prose-li:my-0.5 prose-li:text-muted-foreground",
-          // Title page items
           "[&_h2:first-of-type+ul]:list-none [&_h2:first-of-type+ul]:pl-0",
           "[&_h2:first-of-type+ul>li]:my-1",
-          // Table of contents
           "[&_h2:nth-of-type(3)+ol]:list-decimal [&_h2:nth-of-type(3)+ol]:pl-6",
           "[&_h2:nth-of-type(3)+ol>li]:my-0.5 [&_h2:nth-of-type(3)+ol>li]:text-muted-foreground",
-          // References
           "[&_h2:nth-last-of-type(2)]:mt-8 [&_h2:nth-last-of-type(2)]:border-t [&_h2:nth-last-of-type(2)]:pt-6",
           "[&_h2:nth-last-of-type(2)+ol]:list-none [&_h2:nth-last-of-type(2)+ol]:pl-0",
           "[&_h2:nth-last-of-type(2)+ol>li]:my-1 [&_h2:nth-last-of-type(2)+ol>li]:text-xs",
-          // Appendices
           "[&_h2:last-of-type+ul]:list-none [&_h2:last-of-type+ul]:pl-0",
           "[&_h2:last-of-type+ul>li]:my-1 [&_h2:last-of-type+ul>li]:text-sm",
-          // Links
           "prose-a:text-primary hover:prose-a:text-primary/80",
-          // Strong text
           "prose-strong:font-medium prose-strong:text-muted-foreground"
         )}>
           <Markdown>{report}</Markdown>
@@ -227,21 +193,14 @@ export default function Message({
       return (
         <div className={cn(
           "prose prose-sm dark:prose-invert max-w-none",
-          // Headers
           "prose-h2:text-lg prose-h2:font-semibold prose-h2:mt-6 prose-h2:mb-3",
           "prose-h3:text-base prose-h3:font-medium prose-h3:mt-4 prose-h3:mb-2",
-          // Paragraphs
           "prose-p:text-sm prose-p:text-muted-foreground prose-p:my-2 prose-p:leading-relaxed",
-          // Lists
           "prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4",
           "prose-li:my-0.5",
-          // Links
           "prose-a:text-primary hover:prose-a:text-primary/80",
-          // First element spacing
           "[&>*:first-child]:mt-0",
-          // Sources section
           "[&_h3:last-of-type]:border-t [&_h3:last-of-type]:pt-4 [&_h3:last-of-type]:mt-6 [&_h3:last-of-type]:border-border",
-          // Source links
           "[&_h3:last-of-type+p]:mt-2 [&_h3:last-of-type~p]:my-1 [&_h3:last-of-type~p]:text-xs"
         )}>
           {sections.map((section, index) => (
@@ -257,25 +216,16 @@ export default function Message({
       return (
         <div className={cn(
           "prose prose-sm dark:prose-invert max-w-none",
-          // Main title
           "prose-h1:text-xl prose-h1:font-semibold prose-h1:mt-0 prose-h1:mb-4",
-          // Section headers
           "prose-h2:text-base prose-h2:font-medium prose-h2:mt-4 prose-h2:mb-2",
-          // Subsection headers
           "prose-h3:text-sm prose-h3:font-medium prose-h3:mt-3 prose-h3:mb-1.5",
-          // Lists and content
           "prose-ul:my-0.5 prose-ul:pl-4",
           "prose-li:my-0.5 prose-li:leading-normal",
-          // Description text
           "[&_li>strong]:text-xs [&_li>strong]:font-normal [&_li>strong]:text-muted-foreground [&_li>strong]:block [&_li>strong]:mt-0.5",
-          // Spacing adjustments
           "[&>*:first-child]:mt-0",
           "[&>*:last-child]:mb-0",
-          // Nested lists
           "[&_ul_ul]:mt-0 [&_ul_ul]:mb-0 [&_ul_ul]:ml-3",
-          // List markers
           "prose-li:marker:text-muted-foreground/70",
-          // Overall text
           "text-sm leading-normal"
         )}>
           <Markdown>{template}</Markdown>
@@ -327,8 +277,8 @@ export default function Message({
   };
 
   const messageContent = rawResponse ? (
-    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-      <div className="flex items-center justify-between mb-2">
+    <div>
+      <div className="mb-2">
         <Badge variant="secondary">
           {isAnalystResponse(rawResponse) ? 'AI Analysts' : 
            isReportTemplate(rawResponse) ? 'Report Template' : 
@@ -336,50 +286,17 @@ export default function Message({
            isFinalReport(rawResponse) ? 'Final Report' :
            'Response'}
         </Badge>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleCopy(JSON.stringify(rawResponse, null, 2))}
-            className="h-8 px-2"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </Button>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
       </div>
       <div className={cn(
         "rounded-lg bg-muted/5 p-4",
         (isReportTemplate(rawResponse) || isAnalystResponse(rawResponse) || 
-         isInterviewSection(rawResponse) || isFinalReport(rawResponse)) && !isExpanded 
+         isInterviewSection(rawResponse) || isFinalReport(rawResponse))
           ? "prose prose-sm dark:prose-invert max-w-none" 
           : ""
       )}>
-        {!isExpanded ? (
-          renderJsonContent(rawResponse)
-        ) : (
-          <CollapsibleContent>
-            <div className="pt-2">
-              <ReactJson
-                displayObjectSize={false}
-                style={{ backgroundColor: "transparent" }}
-                displayDataTypes={false}
-                quotesOnKeys={false}
-                enableClipboard={false}
-                name={false}
-                src={rawResponse}
-                theme="tomorrow"
-                collapsed={2}
-              />
-            </div>
-          </CollapsibleContent>
-        )}
+        {renderJsonContent(rawResponse)}
       </div>
-    </Collapsible>
+    </div>
   ) : (
     <>
       {toolCalls.length > 0 && (
@@ -403,21 +320,7 @@ export default function Message({
           <Markdown 
             components={{
               pre: ({ children, ...props }) => (
-                <div className="relative">
-                  <pre {...props} className="p-4">{children}</pre>
-                  <Button
-                    onClick={() => {
-                      const codeContent = children?.toString() || "";
-                      handleCopy(codeContent);
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 h-8 px-2"
-                    aria-label="Copy code"
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
+                <pre {...props} className="p-4">{children}</pre>
               ),
               code: (props) => (
                 <code {...props} className="bg-muted/30 rounded px-1.5 py-0.5" />
@@ -469,14 +372,6 @@ export default function Message({
           </div>
         </div>
       </Card>
-      {error && (
-        <div 
-          role="alert"
-          className="absolute top-0 right-0 mt-2 mr-2 p-2 bg-destructive text-destructive-foreground rounded-md text-sm"
-        >
-          {error}
-        </div>
-      )}
     </div>
   );
 }
