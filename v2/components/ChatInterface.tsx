@@ -20,6 +20,7 @@ import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
 import { useToast } from "@/hooks/use-toast";
 import SkeletonMessage from "./SkeletonMessage";
+import { ClipLoader } from "react-spinners";
 
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
@@ -156,9 +157,7 @@ export default function ChatInterface({
   if (isInitializing) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen bg-background">
-        <div
-          className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"
-        />
+        <ClipLoader color={"#6366f1"} loading={true} size={50} />
         <p className="text-muted-foreground text-center mt-4">
           Initializing research assistant...
         </p>

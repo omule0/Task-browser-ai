@@ -114,7 +114,7 @@ export default function Message({
     return (
       <Card className={cn(
         "w-full p-4",
-        isBot ? "bg-muted/50" : "bg-primary/5"
+        "bg-background"
       )}>
         <div className="flex items-start gap-3">
           <div className="shrink-0">
@@ -350,7 +350,7 @@ export default function Message({
       <Card 
         className={cn(
           "w-full p-4",
-          isBot ? "bg-muted/50" : "bg-primary/5",
+          "bg-background",
           "ring-1 ring-inset ring-black/5 dark:ring-white/5",
           "hover:ring-primary/10 dark:hover:ring-primary/10"
         )}

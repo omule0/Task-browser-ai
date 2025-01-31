@@ -5,7 +5,7 @@ import ChatInterface from "../components/ChatInterface";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { Model } from "@/types";
-import { StreamMode } from "./Agentsettings";
+import { StreamMode } from "@/components/Agentsettings";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +31,7 @@ export default function Home() {
           currentStreamMode={streamMode}
         />
         <main className="px-4 sm:px-6 lg:px-8 py-6 mt-24">
-          <div className="container max-w-5xl mx-auto">
+          <div className="container max-w-5xl mx-auto flex justify-center items-center">
             <ChatInterface 
               onLoadingChange={setIsLoading} 
               onOfflineChange={setIsOffline}
