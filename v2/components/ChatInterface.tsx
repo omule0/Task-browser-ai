@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, motion } from "framer-motion";
 import MessageList from "./MessageList";
-import InputArea from "./InputArea";
-import SamplePrompts from "./SamplePrompts";
+import ChatInput from "./ChatInput";
 import { StreamMode } from "./Agentsettings";
 import { Message, Model, ThreadState } from "../types";
 import { handleStreamEvent } from "../utils/streamHandler";
@@ -67,11 +66,44 @@ export default function ChatInterface({
       } catch (err) {
         console.error("Error initializing chat:", err);
         setIsOffline(true);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to initialize chat. Please try refreshing the page.",
-        });
+        
+        // Handle network errors specifically
+        if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+          toast({
+            variant: "destructive",
+            title: "Network Error",
+            description: "Unable to connect to the server. Please check your internet connection and try again.",
+            duration: 5000,
+          });
+          return;
+        }
+
+        // Handle other known errors
+        if (err instanceof Error) {
+          toast({
+            variant: "destructive",
+            title: "Chat Initialization Failed",
+            description: `Unable to start the chat: ${err.message}. Please try refreshing the page.`,
+            duration: 5000,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Unexpected Error",
+            description: "An unexpected error occurred while setting up the chat. Please try again later.",
+            duration: 5000,
+          });
+        }
+
+        // Show an additional toast if the assistant creation specifically failed
+        if (!getCookie(ASSISTANT_ID_COOKIE)) {
+          toast({
+            variant: "destructive",
+            title: "Assistant Creation Failed",
+            description: "Failed to create a new research assistant. This might affect chat functionality.",
+            duration: 5000,
+          });
+        }
       } finally {
         setIsInitializing(false);
       }
@@ -156,7 +188,7 @@ export default function ChatInterface({
 
   if (isInitializing) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center min-h-screen bg-background">
+      <div className="">
         <ClipLoader color={"#6366f1"} loading={true} size={50} />
         <p className="text-muted-foreground text-center mt-4">
           Initializing research assistant...
@@ -166,12 +198,12 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col w-full h-full min-h-[100vh] max-w-5xl mx-auto relative">
+    <div className="">
       {/* Top Controls Row */}
-      <div className="bg-background/80 backdrop-blur-sm flex items-center px-0 py-0">
+      <div className="">
         {/* Input Area taking full width */}
         <div className="w-full">
-          <InputArea 
+          <ChatInput 
             onSendMessage={handleSendMessage} 
             disabled={isLoading}
             className="transition-all duration-200 transform"
@@ -180,55 +212,49 @@ export default function ChatInterface({
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="">
         <div 
           ref={messageListRef}
-          className="h-full overflow-y-auto px-4 py-2 space-y-6 scroll-smooth"
+          className=""
         >
-            <AnimatePresence mode="popLayout">
-              {messages.length === 0 ? (
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <MessageList messages={messages} />
+              {isLoading && <SkeletonMessage />}
+              {graphInterrupted && threadState && threadId && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="transition-all duration-200 ease-in-out"
                 >
-                  <SamplePrompts onMessageSelect={handleSendMessage} />
+                  <GraphInterrupt
+                    setAllowNullMessage={setAllowNullMessage}
+                    threadId={threadId}
+                    state={threadState}
+                  />
                 </motion.div>
-              ) : (
-                <>
-                  <MessageList messages={messages} />
-                  {isLoading && <SkeletonMessage />}
-                  {graphInterrupted && threadState && threadId && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="transition-all duration-200 ease-in-out"
-                    >
-                      <GraphInterrupt
-                        setAllowNullMessage={setAllowNullMessage}
-                        threadId={threadId}
-                        state={threadState}
-                      />
-                    </motion.div>
-                  )}
-                  {allowNullMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex justify-center py-4"
-                    >
-                      <button
-                        onClick={() => handleSendMessage(null)}
-                        disabled={isLoading}
-                        className="px-6 py-2 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-                      >
-                        Continue Research
-                      </button>
-                    </motion.div>
-                  )}
-                </>
               )}
-            </AnimatePresence>
+              {allowNullMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-center py-4"
+                >
+                  <button
+                    onClick={() => handleSendMessage(null)}
+                    disabled={isLoading}
+                    className="px-6 py-2 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                  >
+                    Continue Research
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
