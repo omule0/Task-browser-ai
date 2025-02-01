@@ -52,7 +52,8 @@ const finalReportStyles = [
   "prose-p:text-sm prose-p:my-2 prose-p:leading-relaxed",
   "prose-ul:my-2 prose-ul:pl-6",
   "prose-li:my-0.5",
-  "prose-a:text-primary hover:prose-a:text-primary/80"
+  "prose-a:text-primary hover:prose-a:text-primary/80",
+  "break-words overflow-x-auto"
 ] as const;
 
 const interviewSectionStyles = [
@@ -64,7 +65,8 @@ const interviewSectionStyles = [
   "prose-li:my-0.5",
   "prose-a:text-primary hover:prose-a:text-primary/80",
   "[&_h3:last-of-type]:border-t [&_h3:last-of-type]:pt-4 [&_h3:last-of-type]:mt-6",
-  "[&_h3:last-of-type+p]:mt-2 [&_h3:last-of-type~p]:my-1 [&_h3:last-of-type~p]:text-xs"
+  "[&_h3:last-of-type+p]:mt-2 [&_h3:last-of-type~p]:my-1 [&_h3:last-of-type~p]:text-xs",
+  "break-words overflow-x-auto"
 ] as const;
 
 const ReportTemplate = ({ template }: { template: string }) => (
@@ -74,15 +76,15 @@ const ReportTemplate = ({ template }: { template: string }) => (
 );
 
 const FinalReport = ({ report }: { report: string }) => (
-  <div className={cn(...finalReportStyles)}>
-    <Markdown>{report}</Markdown>
+  <div className={cn("overflow-x-hidden", ...finalReportStyles)}>
+    <Markdown className="max-w-full">{report}</Markdown>
   </div>
 );
 
 const InterviewSection = ({ sections }: { sections: string[] }) => (
-  <div className={cn(...interviewSectionStyles)}>
+  <div className={cn("overflow-x-hidden", ...interviewSectionStyles)}>
     {sections.map((section, index) => (
-      <Markdown key={index}>{section}</Markdown>
+      <Markdown key={index} className="max-w-full">{section}</Markdown>
     ))}
   </div>
 );

@@ -217,10 +217,11 @@ export default function ChatInterface({
                     setAllowNullMessage={setAllowNullMessage}
                     threadId={threadId}
                     state={threadState}
+                    onContinue={handleSendMessage}
                   />
                 </motion.div>
               )}
-              {allowNullMessage && (
+              {allowNullMessage && !graphInterrupted && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
