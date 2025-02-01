@@ -26,6 +26,7 @@ interface ChatInterfaceProps {
   streamMode: StreamMode;
   isInitializing: boolean;
   setIsInitializing: (value: boolean) => void;
+  onMessagesChange?: (messages: Message[]) => void;
 }
 
 export default function ChatInterface({ 
@@ -33,7 +34,8 @@ export default function ChatInterface({
   model,
   streamMode,
   isInitializing,
-  setIsInitializing 
+  setIsInitializing,
+  onMessagesChange
 }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -178,35 +180,28 @@ export default function ChatInterface({
     onLoadingChange?.(isLoading);
   }, [isLoading, onLoadingChange]);
 
+  useEffect(() => {
+    onMessagesChange?.(messages);
+  }, [messages, onMessagesChange]);
+
   if (isInitializing) {
     return null;
   }
 
   return (
-    <div className="">
-      {/* Top Controls Row */}
-      <div className="">
-        {/* Input Area taking full width */}
-        <div className="w-full">
-          <ChatInput 
-            onSendMessage={handleSendMessage} 
-            disabled={isLoading}
-            className="transition-all duration-200 transform"
-          />
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full">
       {/* Main Chat Area */}
-      <div className="">
+      <div className="flex-1">
         <div 
           ref={messageListRef}
-          className=""
+          className="space-y-3 pb-3"
         >
           <AnimatePresence mode="popLayout">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="px-2"
             >
               <MessageList messages={messages} />
               {isLoading && <SkeletonMessage />}
@@ -227,12 +222,12 @@ export default function ChatInterface({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-center py-4"
+                  className="flex justify-center py-3"
                 >
                   <button
                     onClick={() => handleSendMessage(null)}
                     disabled={isLoading}
-                    className="px-6 py-2 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                   >
                     Continue Research
                   </button>
@@ -240,6 +235,17 @@ export default function ChatInterface({
               )}
             </motion.div>
           </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Chat Input Area */}
+      <div className="">
+        <div className="w-full max-w-7xl mx-auto px-2">
+          <ChatInput 
+            onSendMessage={handleSendMessage} 
+            disabled={isLoading}
+            className="transition-all duration-200 transform"
+          />
         </div>
       </div>
     </div>

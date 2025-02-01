@@ -19,24 +19,24 @@ interface HeaderProps {
 
 export default function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
   return (
-    <header className="sticky top-0 bg-slate-50 z-10 py-3">
-      <div className="flex items-center justify-between gap-4 px-4">
+    <header className="sticky top-0 bg-slate-50 z-10 py-2">
+      <div className="flex items-center justify-between gap-2 px-3">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="h-9 w-9"
+          className="h-8 w-8"
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-5 w-5 text-gray-600" />
+            <PanelLeftOpen className="h-4 w-4 text-gray-600" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-gray-600" />
+            <PanelLeftClose className="h-4 w-4 text-gray-600" />
           )}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-              <User className="h-5 w-5 text-gray-600" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+              <User className="h-4 w-4 text-gray-600" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
