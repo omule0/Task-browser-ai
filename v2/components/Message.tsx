@@ -69,6 +69,46 @@ const interviewSectionStyles = [
   "break-words overflow-x-auto"
 ] as const;
 
+const processMarkdownLinks = (content: string): string => {
+  // First, collect all references
+  const references: { [key: string]: string } = {};
+  const referenceSection = content.match(/(?:References|Sources)\n([\s\S]*?)(?:\n\n|\n?$)/);
+  
+  if (referenceSection) {
+    const referenceList = referenceSection[1];
+    const referenceRegex = /\[(\d+)\]\s*(https?:\/\/[^\s\n]+)/g;
+    let match;
+    
+    while ((match = referenceRegex.exec(referenceList)) !== null) {
+      references[match[1]] = match[2];
+    }
+  }
+
+  // Then replace inline references with proper markdown links
+  return content.replace(/\[(\d+)\](?!\()/g, (match, num) => {
+    const url = references[num];
+    return url ? `[${num}](${url})` : match;
+  });
+};
+
+const CustomLink = ({ href, children }: { href?: string; children: React.ReactNode }) => {
+  // Extract URL from reference-style links if present
+  const text = children?.toString() || '';
+  const isReference = text.match(/^\[?(\d+)\]?$/);
+  
+  return (
+    <a 
+      href={href} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-4 transition-colors"
+      title={href}
+    >
+      {isReference ? `[${isReference[1]}]` : children}
+    </a>
+  );
+};
+
 const ReportTemplate = ({ template }: { template: string }) => (
   <div className={cn(...templateProseStyles)}>
     <Markdown>{template}</Markdown>
@@ -77,14 +117,33 @@ const ReportTemplate = ({ template }: { template: string }) => (
 
 const FinalReport = ({ report }: { report: string }) => (
   <div className={cn("overflow-x-hidden", ...finalReportStyles)}>
-    <Markdown className="max-w-full">{report}</Markdown>
+    <Markdown 
+      className="max-w-full"
+      components={{
+        a: ({ href, children }) => (
+          <CustomLink href={href}>{children}</CustomLink>
+        )
+      }}
+    >
+      {processMarkdownLinks(report)}
+    </Markdown>
   </div>
 );
 
 const InterviewSection = ({ sections }: { sections: string[] }) => (
   <div className={cn("overflow-x-hidden", ...interviewSectionStyles)}>
     {sections.map((section, index) => (
-      <Markdown key={index} className="max-w-full">{section}</Markdown>
+      <Markdown 
+        key={index} 
+        className="max-w-full"
+        components={{
+          a: ({ href, children }) => (
+            <CustomLink href={href}>{children}</CustomLink>
+          )
+        }}
+      >
+        {processMarkdownLinks(section)}
+      </Markdown>
     ))}
   </div>
 );
