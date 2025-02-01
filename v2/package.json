@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@copilotkit/react-core": "^1.5.14",
+    "@copilotkit/react-ui": "^1.5.14",
+    "@copilotkit/shared": "^1.5.14",
     "@langchain/langgraph-sdk": "^0.0.36",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.5",

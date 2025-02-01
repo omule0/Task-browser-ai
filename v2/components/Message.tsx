@@ -351,29 +351,24 @@ export default function Message({
         className={cn(
           "w-full p-4",
           "bg-background",
+          isBot ? "bg-white" : "bg-blue-50",
           "ring-1 ring-inset ring-black/5 dark:ring-white/5",
           "hover:ring-primary/10 dark:hover:ring-primary/10"
         )}
       >
         <div className="flex items-start gap-3">
-          <div className="shrink-0">
-            {isBot ? <Bot className="h-6 w-6 text-muted-foreground" /> : <UserCircle className="h-6 w-6 text-muted-foreground" />}
-          </div>
-          <div className="flex-1 space-y-2">
-            {isBot && toolCalls.length > 0 && (
-              <div className="text-sm font-medium text-muted-foreground mb-2">
-                {toolCalls[0].name.split("_").map(word => 
-                  word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(" ")}
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0">
+            {isBot ? (
+              <div className="bg-blue-500 w-full h-full rounded-full flex items-center justify-center">
+                <Bot className="h-5 w-5" />
+              </div>
+            ) : (
+              <div className="bg-green-500 w-full h-full rounded-full flex items-center justify-center">
+                <UserCircle className="h-5 w-5" />
               </div>
             )}
-            <div className={cn(
-              "text-sm",
-              isBot ? "text-foreground" : "text-muted-foreground"
-            )}>
-              {messageContent}
-            </div>
           </div>
+          {messageContent}
         </div>
       </Card>
     </div>
