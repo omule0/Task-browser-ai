@@ -27,12 +27,14 @@ export default function Home() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <Hero />
         
-        <ChatInterface 
-          model={defaultModel}
-          streamMode={defaultStreamMode}
-          isInitializing={isInitializing}
-          setIsInitializing={setIsInitializing}
-        />
+        <div className="mb-12">
+          <ChatInterface 
+            model={defaultModel}
+            streamMode={defaultStreamMode}
+            isInitializing={isInitializing}
+            setIsInitializing={setIsInitializing}
+          />
+        </div>
         <AIAgents />
       </div>
     </main>
