@@ -13,11 +13,16 @@ export default function Home() {
   // Default values based on the AgentSettings component
   const defaultModel: Model = "gpt-4o-mini"
   const defaultStreamMode: StreamMode = "updates"
+  const [currentStreamMode, setCurrentStreamMode] = useState<StreamMode>(defaultStreamMode);
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasMessages, setHasMessages] = useState(false);
 
   const handleMessagesChange = (messages: Message[]) => {
     setHasMessages(messages.length > 0);
+  };
+
+  const handleStreamModeChange = (mode: StreamMode) => {
+    setCurrentStreamMode(mode);
   };
 
   return (
@@ -41,10 +46,11 @@ export default function Home() {
         <div className={`${hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
           <ChatInterface 
             model={defaultModel}
-            streamMode={defaultStreamMode}
+            streamMode={currentStreamMode}
             isInitializing={isInitializing}
             setIsInitializing={setIsInitializing}
             onMessagesChange={handleMessagesChange}
+            onStreamModeChange={handleStreamModeChange}
           />
         </div>
       </div>

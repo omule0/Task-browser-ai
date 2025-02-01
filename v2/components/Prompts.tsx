@@ -3,8 +3,6 @@
 import React from "react"
 import { FileText, Link, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import AgentSettings, { StreamMode } from "@/components/Agentsettings"
-import { Model } from "@/types"
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,7 +18,8 @@ import {
 interface PromptsProps {
   className?: string;
   onLinkClick?: () => void;
-  onMessageSelect?: (message: string) => void;
+  onMessageSelect?: (message: string | null) => void;
+  onSettingsClick?: () => void;
 }
 
 const sampleQuestions = [
@@ -41,26 +40,17 @@ const sampleQuestions = [
 export default function Prompts({
   className,
   onLinkClick,
-  onMessageSelect
+  onMessageSelect,
+  onSettingsClick
 }: PromptsProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [selectedId, setSelectedId] = React.useState<number | null>(null)
-  const [currentModel, setCurrentModel] = React.useState<Model>("gpt-4o-mini")
-  const [currentStreamMode, setCurrentStreamMode] = React.useState<StreamMode>("messages")
 
   const handlePromptClick = (id: number, message: string) => {
     setSelectedId(id)
     onMessageSelect?.(message)
     // Reset the selected state after a short delay
     setTimeout(() => setSelectedId(null), 1000)
-  }
-
-  const handleModelChange = (model: Model) => {
-    setCurrentModel(model)
-  }
-
-  const handleStreamModeChange = (mode: StreamMode) => {
-    setCurrentStreamMode(mode)
   }
 
   return (
@@ -73,13 +63,6 @@ export default function Prompts({
               <span className="text-gray-600">My Prompts</span>
             </div>
             <div className="flex items-center gap-2">
-              <AgentSettings
-                currentModel={currentModel}
-                currentStreamMode={currentStreamMode}
-                onModelChange={handleModelChange}
-                onStreamModeChange={handleStreamModeChange}
-                className="mr-2"
-              />
               <button 
                 className="p-2 hover:bg-gray-50 rounded-full transition-colors"
                 onClick={(e) => {

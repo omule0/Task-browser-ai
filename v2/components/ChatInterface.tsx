@@ -27,6 +27,7 @@ interface ChatInterfaceProps {
   isInitializing: boolean;
   setIsInitializing: (value: boolean) => void;
   onMessagesChange?: (messages: Message[]) => void;
+  onStreamModeChange?: (mode: StreamMode) => void;
 }
 
 export default function ChatInterface({ 
@@ -35,7 +36,8 @@ export default function ChatInterface({
   streamMode,
   isInitializing,
   setIsInitializing,
-  onMessagesChange
+  onMessagesChange,
+  onStreamModeChange
 }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -239,14 +241,14 @@ export default function ChatInterface({
       </div>
 
       {/* Chat Input Area */}
-      <div className="">
-        <div className="w-full max-w-7xl mx-auto px-2">
-          <ChatInput 
-            onSendMessage={handleSendMessage} 
-            disabled={isLoading}
-            className="transition-all duration-200 transform"
-          />
-        </div>
+      <div className="relative">
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          isLoading={isLoading}
+          allowNullMessage={allowNullMessage}
+          onStreamModeChange={onStreamModeChange}
+          currentStreamMode={streamMode}
+        />
       </div>
     </div>
   );
