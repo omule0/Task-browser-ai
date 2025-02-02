@@ -39,6 +39,9 @@ export default function ChatInput({
 
   return (
     <div className={cn("w-full max-w-3xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg", className)}>
+      <div className="text-left mb-4">
+        <p className="text-gray-600 text-sm font-light">Select an agent and ask away!</p>
+      </div>
       <div className="mb-6">
         <form onSubmit={handleSubmit} className="relative">
           <input

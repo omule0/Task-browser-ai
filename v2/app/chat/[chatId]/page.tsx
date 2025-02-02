@@ -24,24 +24,17 @@ export default function ChatPage({
 
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50">
-      <div className="container mx-auto max-w-7xl p-4 space-y-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Show Hero and AIAgents only when there are no messages */}
         {!hasMessages && (
           <>
-            {/* Hero Section */}
-            <div className="py-8">
-              <Hero />
-            </div>
-
-            {/* AI Agents Section */}
-            <div className="py-4">
-              <AIAgents />
-            </div>
+            <Hero />
+            <AIAgents />
           </>
         )}
 
         {/* Chat Interface */}
-        <div className={`py-4 ${!hasMessages ? 'mt-4' : ''}`}>
+        <div className={`py-4 ${!hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
           <ChatInterface
             model="gpt-4"
             streamMode="updates"

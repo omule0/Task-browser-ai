@@ -43,7 +43,7 @@ export default function Home() {
           </>
         )}
         
-        <div className={`${hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
+        <div className={`py-4${hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
           <ChatInterface 
             model={defaultModel}
             streamMode={currentStreamMode}
