@@ -40,21 +40,21 @@ export default function Home() {
           color={"#6366f1"}
           loading={isInitializing}
           width={"100%"}
-          height={3}
+          height={8}
         />
       </div>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 min-h-[calc(100vh-4rem)] flex flex-col">
         {!hasMessages && (
-          <>
+          <div className="flex-1">
             <Hero />
             <AIAgents 
               onAgentSelect={handleAgentSelect}
               selectedAgent={selectedAgent}
             />
-          </>
+          </div>
         )}
         
-        <div className={`py-4${hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
+        <div className={`py-4 ${hasMessages ? 'flex-1' : ''}`}>
           <ChatInterface 
             model={defaultModel}
             streamMode={currentStreamMode}
