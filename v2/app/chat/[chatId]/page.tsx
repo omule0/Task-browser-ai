@@ -5,15 +5,21 @@ import { use } from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import { StreamMode } from '@/components/Agentsettings';
 import Hero from '@/components/Hero';
-import AIAgents from '@/components/AIAgents';
+import AIAgents, { Agent } from '@/components/AIAgents';
+import { Model, Message } from "@/types";
 
 export default function ChatPage({
   params,
 }: {
   params: Promise<{ chatId: string }>;
 }) {
+  // Default values based on the AgentSettings component
+  const defaultModel: Model = "gpt-4o-mini";
+  const defaultStreamMode: StreamMode = "updates";
+  const [currentStreamMode, setCurrentStreamMode] = useState<StreamMode>(defaultStreamMode);
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasMessages, setHasMessages] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const resolvedParams = use(params);
 
   useEffect(() => {
@@ -22,6 +28,23 @@ export default function ChatPage({
     setIsInitializing(false);
   }, [resolvedParams.chatId]);
 
+  const handleMessagesChange = (messages: Message[]) => {
+    setHasMessages(messages.length > 0);
+    console.log('Messages changed:', messages.length);
+  };
+
+  const handleStreamModeChange = (mode: StreamMode) => {
+    setCurrentStreamMode(mode);
+    console.log('Stream mode changed:', mode);
+  };
+
+  const handleAgentSelect = (agent: Agent | null) => {
+    setSelectedAgent(agent);
+    // Reset chat state when switching agents
+    setHasMessages(false);
+    setIsInitializing(true);
+  };
+
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
@@ -29,27 +52,23 @@ export default function ChatPage({
         {!hasMessages && (
           <>
             <Hero />
-            <AIAgents />
+            <AIAgents 
+              onAgentSelect={handleAgentSelect}
+              selectedAgent={selectedAgent}
+            />
           </>
         )}
 
         {/* Chat Interface */}
         <div className={`py-4 ${!hasMessages ? 'min-h-[calc(100vh-2rem)]' : ''}`}>
           <ChatInterface
-            model="gpt-4"
-            streamMode="updates"
+            model={defaultModel}
+            streamMode={currentStreamMode}
             isInitializing={isInitializing}
             setIsInitializing={setIsInitializing}
-            onMessagesChange={(messages) => {
-              setHasMessages(messages.length > 0);
-              console.log('Messages changed:', messages.length);
-            }}
-            onLoadingChange={(isLoading) => {
-              console.log('Loading state:', isLoading);
-            }}
-            onStreamModeChange={(mode: StreamMode) => {
-              console.log('Stream mode changed:', mode);
-            }}
+            onMessagesChange={handleMessagesChange}
+            onStreamModeChange={handleStreamModeChange}
+            selectedAgent={selectedAgent}
           />
         </div>
       </div>

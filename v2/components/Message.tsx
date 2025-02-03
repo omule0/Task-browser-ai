@@ -342,7 +342,7 @@ export default function Message({
   };
 
   const messageContent = rawResponse ? (
-    <div>
+    <div className="flex-1">
       <div className="mb-2">
         <Badge variant="secondary">
           {isAnalystResponse(rawResponse) ? 'AI Analysts' : 
@@ -363,14 +363,7 @@ export default function Message({
       </div>
     </div>
   ) : (
-    <>
-      {toolCalls.length > 0 && (
-        <div className="space-y-4 mb-4">
-          {toolCalls.map((toolCall) => (
-            <ToolCall key={toolCall.id} {...toolCall} />
-          ))}
-        </div>
-      )}
+    <div className="flex-1 flex flex-col">
       <div 
         className={cn(
           "prose prose-sm max-w-none",
@@ -396,7 +389,14 @@ export default function Message({
           </Markdown>
         ) : text}
       </div>
-    </>
+      {toolCalls.length > 0 && (
+        <div className="space-y-4 mt-4 w-full">
+          {toolCalls.map((toolCall) => (
+            <ToolCall key={toolCall.id} {...toolCall} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -417,19 +417,21 @@ export default function Message({
           "hover:ring-primary/10 dark:hover:ring-primary/10"
         )}
       >
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0">
-            {isBot ? (
-              <div className="bg-blue-500 w-full h-full rounded-full flex items-center justify-center">
-                <Bot className="h-5 w-5" />
-              </div>
-            ) : (
-              <div className="bg-green-500 w-full h-full rounded-full flex items-center justify-center">
-                <UserCircle className="h-5 w-5" />
-              </div>
-            )}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0">
+              {isBot ? (
+                <div className="bg-blue-500 w-full h-full rounded-full flex items-center justify-center">
+                  <Bot className="h-5 w-5" />
+                </div>
+              ) : (
+                <div className="bg-green-500 w-full h-full rounded-full flex items-center justify-center">
+                  <UserCircle className="h-5 w-5" />
+                </div>
+              )}
+            </div>
+            {messageContent}
           </div>
-          {messageContent}
         </div>
       </Card>
     </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Search, Paperclip, Star, Send, X, MessageSquare, ThumbsUp, Loader2, Minimize2 } from "lucide-react";
+import { MessageCircle, Search, Paperclip, Star, Send, X, MessageSquare, ThumbsUp, Loader2, Minimize2, Bot } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -146,8 +146,9 @@ export function GraphInterrupt({ threadId, state, setAllowNullMessage, onContinu
                     >
                       <div className="flex -space-x-2 mb-3">
                         <Avatar className="border-2 border-[#0052FF]">
-                          <AvatarImage src="/ai-avatar.png" alt="AI Assistant" />
-                          <AvatarFallback>AI</AvatarFallback>
+                          <div className="flex items-center justify-center">
+                            <Bot className="h-6 w-6 text-white" />
+                          </div>
                         </Avatar>
                       </div>
                       <h1 className="text-xl font-semibold mb-1">{promptText.description}</h1>

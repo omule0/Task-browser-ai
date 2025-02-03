@@ -178,7 +178,7 @@ export default function ChatInterface({
           ...input,
           task: message, // The user's message becomes the essay task
           revision_number: 0,
-          max_revisions: 2, // Maximum number of revisions to perform
+          max_revisions: 1, // Maximum number of revisions to perform
           plan: "",
           draft: "",
           critique: "",

@@ -1,9 +1,22 @@
 "use client";
 import React, { useState } from "react";
-import dynamic from "next/dynamic";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-// Throws build errors if we try to import this normally
-const ReactJson = dynamic(() => import("react-json-view"), { ssr: false });
+const formatValue = (value: any): string => {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(v => formatValue(v)).join(', ');
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.entries(value)
+      .map(([k, v]) => `${k}: ${formatValue(v)}`)
+      .join(', ');
+  }
+  return String(value);
+};
 
 const ToolCall = ({
   name,
@@ -17,28 +30,24 @@ const ToolCall = ({
   const [isResultVisible, setIsResultVisible] = useState(false);
 
   let parsedArgs: Record<string, any> | null = null;
-  let isParsedArgsDefined = false;
   try {
     if (typeof args === "string") {
       parsedArgs = JSON.parse(args);
     } else if (typeof args === "object") {
       parsedArgs = args;
     }
-    isParsedArgsDefined = true;
   } catch (_) {
     // incomplete JSON, no-op
   }
 
-  let resultString: string | null = null;
   let resultObject: Record<string, any> | null = null;
+  let resultString: string | null = null;
   let isResultDefined = false;
   try {
     resultString = result;
     if (resultString) {
       isResultDefined = true;
       resultObject = JSON.parse(resultString);
-      // If we're able to parse result, then it's a JSON object and we should remove the string
-      // so it's not able to be duplicated in the rendered UI.
       resultString = null;
     }
   } catch (_) {
@@ -46,70 +55,56 @@ const ToolCall = ({
   }
 
   return (
-    <div className="bg-[#3a3a3a] text-white p-4 rounded-lg mb-2 text-sm relative flex flex-col gap-1">
-      <div className="w-full mb-2 flex justify-between items-center">
-        <div className="flex flex-row items-center justify-start gap-2">
-          <span className="text-gray-400">Tool Call:</span>
-          <p className="text-small opacity-80">{name}</p>
-        </div>
+    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm relative flex flex-col gap-2">
+      <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+        <Badge variant="secondary" className="text-xs font-medium">
+          {name}
+        </Badge>
         {isResultDefined && (
           <button
             onClick={() => setIsResultVisible(!isResultVisible)}
-            className="text-gray-400 hover:text-gray-300 focus:outline-none"
+            className="ml-auto text-xs text-muted-foreground hover:text-foreground"
           >
-            {isResultVisible ? "Hide result" : "Show result"}
+            {isResultVisible ? "Hide details" : "Show details"}
           </button>
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
-        <p className="text-gray-400">Arguments:</p>
-        <span>
-          {isParsedArgsDefined && parsedArgs ? (
-            <ReactJson
-              displayObjectSize={false}
-              style={{ backgroundColor: "transparent" }}
-              displayDataTypes={false}
-              quotesOnKeys={false}
-              enableClipboard={false}
-              name={false}
-              src={parsedArgs}
-              theme="tomorrow"
-            />
-          ) : typeof args === "string" ? (
-            <p>{args}</p>
-          ) : (
-            <code>{JSON.stringify(args, null, 2)}</code>
-          )}
-        </span>
-      </div>
+      {parsedArgs && (
+        <div className="space-y-1.5">
+          {Object.entries(parsedArgs).map(([key, value]) => (
+            <div key={key} className="flex flex-col gap-0.5">
+              <span className="text-xs font-medium text-muted-foreground">{key}</span>
+              <span className="text-sm text-foreground">{formatValue(value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {isResultDefined && (
         <div
-          className={`mt-2 overflow-y-scroll transition-all duration-500 ease-in-out ${
-            isResultVisible ? "max-h-96" : "max-h-0"
-          }`}
+          className={cn(
+            "space-y-2 overflow-hidden transition-all duration-300",
+            isResultVisible ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          )}
         >
-          <span>
-            <p className="text-gray-400">Result:</p>
-            <div>
-              {resultObject && !resultString ? (
-                <ReactJson
-                  displayObjectSize={false}
-                  style={{
-                    backgroundColor: "transparent",
-                  }}
-                  displayDataTypes={false}
-                  quotesOnKeys={false}
-                  enableClipboard={false}
-                  name={false}
-                  src={resultObject}
-                  theme="tomorrow"
-                />
-              ) : null}
-              {resultString && !resultObject && <p>{resultString}</p>}
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <span className="text-xs font-medium text-muted-foreground">Result</span>
+            <div className="mt-1 text-sm text-foreground">
+              {resultObject ? (
+                <div className="space-y-1.5">
+                  {Object.entries(resultObject).map(([key, value]) => (
+                    <div key={key} className="flex flex-col gap-0.5">
+                      <span className="text-xs font-medium text-muted-foreground">{key}</span>
+                      <span className="text-sm text-foreground">{formatValue(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                resultString && <p>{resultString}</p>
+              )}
             </div>
-          </span>
+          </div>
         </div>
       )}
     </div>
