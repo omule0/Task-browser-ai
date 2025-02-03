@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import Prompts from "./Prompts"
 import { StreamMode } from "./Agentsettings"
 import AgentSettings from "./Agentsettings"
+import { Agent } from "./AIAgents"
 
 interface ChatInputProps {
   onSendMessage: (message: string | null) => void;
@@ -16,6 +17,8 @@ interface ChatInputProps {
   onLinkClick?: () => void;
   isLoading?: boolean;
   currentStreamMode?: StreamMode;
+  selectedAgent?: Agent | null;
+  allowNullMessage?: boolean;
 }
 
 export default function ChatInput({
@@ -25,7 +28,9 @@ export default function ChatInput({
   onSettingsClick,
   onLinkClick,
   isLoading = false,
-  currentStreamMode = "updates"
+  currentStreamMode = "updates",
+  selectedAgent,
+  allowNullMessage = false
 }: ChatInputProps) {
   const [message, setMessage] = useState("")
 
@@ -40,17 +45,26 @@ export default function ChatInput({
   return (
     <div className={cn("w-full max-w-3xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg", className)}>
       <div className="text-left mb-4">
-        <p className="text-gray-600 text-sm font-light">Select an agent and ask away!</p>
+        {selectedAgent ? (
+          <div className="flex items-center gap-2">
+            <selectedAgent.icon className={`w-5 h-5 ${selectedAgent.color}`} />
+            <p className="text-gray-600 text-sm font-medium">
+              {selectedAgent.title} - Ready to help!
+            </p>
+          </div>
+        ) : (
+          <p className="text-gray-600 text-sm font-light">Select an agent and ask away!</p>
+        )}
       </div>
       <div className="mb-6">
         <form onSubmit={handleSubmit} className="relative">
           <input
             type="text"
-            placeholder="Type a message..."
+            placeholder={selectedAgent ? `Ask ${selectedAgent.title}...` : "Select an agent first..."}
             className="w-full p-4 pr-24 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all outline-none text-gray-800 placeholder-gray-400 disabled:opacity-50"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || !selectedAgent}
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <AgentSettings
@@ -63,7 +77,7 @@ export default function ChatInput({
             <button 
               type="button" 
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || !selectedAgent}
               aria-label="Voice input"
             >
               <Mic className="w-5 h-5 text-gray-600" />
@@ -71,7 +85,7 @@ export default function ChatInput({
             <button 
               type="submit" 
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || !selectedAgent}
               aria-label="Send message"
             >
               {isLoading ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import AIAgents from "@/components/AIAgents"
+import AIAgents, { Agent } from "@/components/AIAgents"
 import ChatInterface from "@/components/ChatInterface"
 import Hero from "@/components/Hero"
 import { Model } from "@/types"
@@ -16,6 +16,7 @@ export default function Home() {
   const [currentStreamMode, setCurrentStreamMode] = useState<StreamMode>(defaultStreamMode);
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasMessages, setHasMessages] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const handleMessagesChange = (messages: Message[]) => {
     setHasMessages(messages.length > 0);
@@ -23,6 +24,13 @@ export default function Home() {
 
   const handleStreamModeChange = (mode: StreamMode) => {
     setCurrentStreamMode(mode);
+  };
+
+  const handleAgentSelect = (agent: Agent | null) => {
+    setSelectedAgent(agent);
+    // Reset chat state when switching agents
+    setHasMessages(false);
+    setIsInitializing(true);
   };
 
   return (
@@ -39,7 +47,10 @@ export default function Home() {
         {!hasMessages && (
           <>
             <Hero />
-            <AIAgents />
+            <AIAgents 
+              onAgentSelect={handleAgentSelect}
+              selectedAgent={selectedAgent}
+            />
           </>
         )}
         
@@ -51,6 +62,7 @@ export default function Home() {
             setIsInitializing={setIsInitializing}
             onMessagesChange={handleMessagesChange}
             onStreamModeChange={handleStreamModeChange}
+            selectedAgent={selectedAgent}
           />
         </div>
       </div>
