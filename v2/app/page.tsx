@@ -1,6 +1,6 @@
 "use client";
 
-import AIAgents, { Agent } from "@/components/AIAgents"
+import AIAgents from "@/components/AIAgents"
 import ChatInterface from "@/components/ChatInterface"
 import Hero from "@/components/Hero"
 import { Model } from "@/types"
@@ -16,7 +16,6 @@ export default function Home() {
   const [currentStreamMode, setCurrentStreamMode] = useState<StreamMode>(defaultStreamMode);
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasMessages, setHasMessages] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   const handleMessagesChange = (messages: Message[]) => {
     setHasMessages(messages.length > 0);
@@ -24,13 +23,6 @@ export default function Home() {
 
   const handleStreamModeChange = (mode: StreamMode) => {
     setCurrentStreamMode(mode);
-  };
-
-  const handleAgentSelect = (agent: Agent | null) => {
-    setSelectedAgent(agent);
-    // Reset chat state when switching agents
-    setHasMessages(false);
-    setIsInitializing(true);
   };
 
   return (
@@ -45,16 +37,13 @@ export default function Home() {
       </div>
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 min-h-[calc(100vh-4rem)] flex flex-col">
         {!hasMessages && (
-          <div className="flex-1">
+           <div className="flex-1">
             <Hero />
-            <AIAgents 
-              onAgentSelect={handleAgentSelect}
-              selectedAgent={selectedAgent}
-            />
+            <AIAgents />
           </div>
         )}
         
-        <div className={`py-4 ${hasMessages ? 'flex-1' : ''}`}>
+        <div className={`py-4${hasMessages ? 'flex-1' : ''}`}>
           <ChatInterface 
             model={defaultModel}
             streamMode={currentStreamMode}
@@ -62,11 +51,9 @@ export default function Home() {
             setIsInitializing={setIsInitializing}
             onMessagesChange={handleMessagesChange}
             onStreamModeChange={handleStreamModeChange}
-            selectedAgent={selectedAgent}
           />
         </div>
       </div>
     </main>
   )
 }
-

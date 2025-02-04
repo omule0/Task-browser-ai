@@ -19,7 +19,6 @@ import { getCookie, setCookie } from "@/utils/cookies";
 import { GraphInterrupt } from "./GraphInterrupt";
 import { useToast } from "@/hooks/use-toast";
 import SkeletonMessage from "./SkeletonMessage";
-import { Agent } from "./AIAgents";
 
 interface ChatInterfaceProps {
   onLoadingChange?: (isLoading: boolean) => void;
@@ -29,7 +28,6 @@ interface ChatInterfaceProps {
   setIsInitializing: (value: boolean) => void;
   onMessagesChange?: (messages: Message[]) => void;
   onStreamModeChange?: (mode: StreamMode) => void;
-  selectedAgent?: Agent | null;
 }
 
 export default function ChatInterface({ 
@@ -39,8 +37,7 @@ export default function ChatInterface({
   isInitializing,
   setIsInitializing,
   onMessagesChange,
-  onStreamModeChange,
-  selectedAgent
+  onStreamModeChange
 }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -57,28 +54,21 @@ export default function ChatInterface({
   useEffect(() => {
     const initializeChat = async () => {
       try {
-        if (!selectedAgent) {
-          return;
-        }
-
-        // Create a unique cookie key for each agent type
-        const cookieKey = `${ASSISTANT_ID_COOKIE}_${selectedAgent.graphId}`;
-        let assistantId = getCookie(cookieKey);
-
+        let assistantId = getCookie(ASSISTANT_ID_COOKIE);
         if (!assistantId) {
-          const assistant = await createAssistant(selectedAgent.graphId);
+          const assistant = await createAssistant("research_assistant");
           assistantId = assistant.assistant_id;
-          setCookie(cookieKey, assistantId);
+          setCookie(ASSISTANT_ID_COOKIE, assistantId);
         }
 
         const { thread_id } = await createThread();
         setThreadId(thread_id);
         setAssistantId(assistantId);
         setUserId(uuidv4());
-        setMessages([]); // Clear messages when switching agents
       } catch (err) {
         console.error("Error initializing chat:", err);
         
+        // Handle network errors specifically
         if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
           toast({
             variant: "destructive",
@@ -89,6 +79,7 @@ export default function ChatInterface({
           return;
         }
 
+        // Handle other known errors
         if (err instanceof Error) {
           toast({
             variant: "destructive",
@@ -105,11 +96,12 @@ export default function ChatInterface({
           });
         }
 
-        if (selectedAgent && !getCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgent.graphId}`)) {
+        // Show an additional toast if the assistant creation specifically failed
+        if (!getCookie(ASSISTANT_ID_COOKIE)) {
           toast({
             variant: "destructive",
             title: "Assistant Creation Failed",
-            description: `Failed to create the ${selectedAgent.title} assistant. This might affect chat functionality.`,
+            description: "Failed to create a new research assistant. This might affect chat functionality.",
             duration: 5000,
           });
         }
@@ -119,7 +111,7 @@ export default function ChatInterface({
     };
 
     initializeChat();
-  }, [selectedAgent?.graphId]);
+  }, [toast]);
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -140,15 +132,6 @@ export default function ChatInterface({
       return;
     }
 
-    if (!selectedAgent) {
-      toast({
-        variant: "destructive",
-        title: "No Agent Selected",
-        description: "Please select an AI agent before sending a message.",
-      });
-      return;
-    }
-
     const messageId = uuidv4();
     if (message !== null) {
       setMessages((prev) => [...prev, { text: message, sender: "user", id: messageId }]);
@@ -160,46 +143,14 @@ export default function ChatInterface({
       setGraphInterrupted(false);
       setAllowNullMessage(false);
 
-      // Initialize agent-specific state
-      let input: any = {
-        messages: [
-          {
-            id: messageId,
-            role: "human",
-            content: message,
-          },
-        ],
-        userId: userId,
-      };
-
-      // Add agent-specific initialization
-      if (selectedAgent.graphId === "essay_writer") {
-        input = {
-          ...input,
-          task: message, // The user's message becomes the essay task
-          revision_number: 0,
-          max_revisions: 1, // Maximum number of revisions to perform
-          plan: "",
-          draft: "",
-          critique: "",
-          content: [],
-        };
-      } else if (selectedAgent.graphId === "research_assistant") {
-        input = {
-          ...input,
-          topic: message?.trim(),
-        };
-      }
-
       const response = await sendMessage({
         threadId,
         assistantId,
-        message: null, // We're sending the structured input instead
+        message,
         messageId,
         model,
         userId,
         streamMode,
-        input, // Pass the structured input
       });
 
       for await (const chunk of response) {
@@ -298,7 +249,6 @@ export default function ChatInterface({
           allowNullMessage={allowNullMessage}
           onStreamModeChange={onStreamModeChange}
           currentStreamMode={streamMode}
-          selectedAgent={selectedAgent}
         />
       </div>
     </div>

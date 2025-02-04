@@ -1,58 +1,51 @@
 "use client"
 
-import { FileText, PenSquare, LucideIcon } from "lucide-react"
+import { Mail, PlayCircle, Code, Image, ChevronRight } from "lucide-react"
 import { useState } from "react"
 
-export interface Agent {
-  icon: LucideIcon;
-  color: string;
-  bgColor: string;
-  title: string;
-  description: string;
-  graphId: string;
-}
-
-const agents: Agent[] = [
+const agents = [
   {
-    icon: FileText,
-    color: "text-blue-500",
-    bgColor: "bg-blue-50",
-    title: "Research Assistant",
-    description: "Expert at conducting research, analyzing information, and providing comprehensive insights on any topic.",
-    graphId: "research_assistant"
+    icon: Mail,
+    color: "text-amber-500",
+    bgColor: "bg-amber-50",
+    title: "Cold Email Template Expert",
+    description: "Helped many people before to create cold email templates for various purposes.",
   },
   {
-    icon: PenSquare,
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-50",
-    title: "Essay Writer",
-    description: "Specialized in crafting well-structured essays with clear arguments and supporting evidence.",
-    graphId: "essay_writer"
-  }
+    icon: PlayCircle,
+    color: "text-red-500",
+    bgColor: "bg-red-50",
+    title: "YouTube Content Writer",
+    description: "Helped many people before to create cold email templates for various purposes.",
+  },
+  {
+    icon: Code,
+    color: "text-purple-500",
+    bgColor: "bg-purple-50",
+    title: "Pro Coder",
+    description: "Helped many people before to create cold email templates for various purposes.",
+  },
+  {
+    icon: Image,
+    color: "text-orange-500",
+    bgColor: "bg-orange-50",
+    title: "Blog Image Generator",
+    description: "Helped many people before to create cold email templates for various purposes.",
+  },
 ]
 
-interface AIAgentsProps {
-  onAgentSelect?: (agent: Agent | null) => void;
-  selectedAgent?: Agent | null;
-}
-
-export default function AIAgents({ onAgentSelect, selectedAgent }: AIAgentsProps) {
-  const [localSelectedAgent, setLocalSelectedAgent] = useState<Agent | null>(selectedAgent || null)
-
-  const handleAgentSelect = (agent: Agent) => {
-    const newSelectedAgent = localSelectedAgent?.title === agent.title ? null : agent
-    setLocalSelectedAgent(newSelectedAgent)
-    onAgentSelect?.(newSelectedAgent)
-  }
+export default function AIAgents() {
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
 
   return (
     <div id="webcrumbs" className="w-full px-4 sm:px-6 md:px-8">
       <div className="max-w-[1200px] mx-auto">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h2 className="text-lg sm:text-xl font-semibold">Your AI agents</h2>
-          <div className="text-xs sm:text-sm text-muted-foreground">
-            {agents.length} agents available
-          </div>
+          <a href="#" className="flex items-center text-xs sm:text-sm hover:underline group">
+            All agents
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+          </a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -60,9 +53,9 @@ export default function AIAgents({ onAgentSelect, selectedAgent }: AIAgentsProps
             <div
               key={agent.title}
               className={`bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-100 cursor-pointer ${
-                (selectedAgent || localSelectedAgent)?.title === agent.title ? "ring-2 ring-blue-500" : ""
+                selectedAgent === agent.title ? "ring-2 ring-blue-500" : ""
               }`}
-              onClick={() => handleAgentSelect(agent)}
+              onClick={() => setSelectedAgent(agent.title)}
             >
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className={`${agent.bgColor} p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0`}>
@@ -80,4 +73,3 @@ export default function AIAgents({ onAgentSelect, selectedAgent }: AIAgentsProps
     </div>
   )
 }
-
