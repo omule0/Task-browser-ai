@@ -13,6 +13,7 @@ import {
   createThread,
   getThreadState,
   sendMessage,
+  updateState,
 } from "../utils/chatApi";
 import { ASSISTANT_ID_COOKIE } from "@/constants";
 import { getCookie, setCookie } from "@/utils/cookies";
@@ -28,6 +29,7 @@ interface ChatInterfaceProps {
   setIsInitializing: (value: boolean) => void;
   onMessagesChange?: (messages: Message[]) => void;
   onStreamModeChange?: (mode: StreamMode) => void;
+  selectedAgentId?: string;
 }
 
 export default function ChatInterface({ 
@@ -37,7 +39,8 @@ export default function ChatInterface({
   isInitializing,
   setIsInitializing,
   onMessagesChange,
-  onStreamModeChange
+  onStreamModeChange,
+  selectedAgentId = "research_assistant"
 }: ChatInterfaceProps) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,11 +57,11 @@ export default function ChatInterface({
   useEffect(() => {
     const initializeChat = async () => {
       try {
-        let assistantId = getCookie(ASSISTANT_ID_COOKIE);
+        let assistantId = getCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgentId}`);
         if (!assistantId) {
-          const assistant = await createAssistant("research_assistant");
+          const assistant = await createAssistant(selectedAgentId);
           assistantId = assistant.assistant_id;
-          setCookie(ASSISTANT_ID_COOKIE, assistantId);
+          setCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgentId}`, assistantId);
         }
 
         const { thread_id } = await createThread();
@@ -68,7 +71,6 @@ export default function ChatInterface({
       } catch (err) {
         console.error("Error initializing chat:", err);
         
-        // Handle network errors specifically
         if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
           toast({
             variant: "destructive",
@@ -79,7 +81,6 @@ export default function ChatInterface({
           return;
         }
 
-        // Handle other known errors
         if (err instanceof Error) {
           toast({
             variant: "destructive",
@@ -96,12 +97,11 @@ export default function ChatInterface({
           });
         }
 
-        // Show an additional toast if the assistant creation specifically failed
-        if (!getCookie(ASSISTANT_ID_COOKIE)) {
+        if (!getCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgentId}`)) {
           toast({
             variant: "destructive",
             title: "Assistant Creation Failed",
-            description: "Failed to create a new research assistant. This might affect chat functionality.",
+            description: "Failed to create a new assistant. This might affect chat functionality.",
             duration: 5000,
           });
         }
@@ -110,8 +110,16 @@ export default function ChatInterface({
       }
     };
 
+    // Reset state when agent changes
+    setMessages([]);
+    setThreadId(null);
+    setAssistantId(null);
+    setThreadState(undefined);
+    setGraphInterrupted(false);
+    setAllowNullMessage(false);
+    
     initializeChat();
-  }, [toast]);
+  }, [selectedAgentId, toast, setIsInitializing]);
 
   useEffect(() => {
     if (messageListRef.current) {
@@ -121,6 +129,80 @@ export default function ChatInterface({
       });
     }
   }, [messages]);
+
+  const handleInterruptResponse = async (response: string, node: string) => {
+    if (!threadId || !assistantId) return;
+
+    try {
+      if (selectedAgentId === "research_assistant") {
+        setIsLoading(true);  // Set loading state at the start
+
+        // First update the state with the feedback
+        const newState = node === "template_feedback_node" 
+          ? { 
+              template_feedback: response,
+              topic: threadState?.values.topic || "",
+              messages: [],
+              progress_messages: []
+            }
+          : { 
+              human_analyst_feedback: response,
+              topic: threadState?.values.topic || "",
+              messages: [],
+              progress_messages: []
+            };
+
+        // Update state with the feedback
+        await updateState(threadId, {
+          newState,
+          asNode: node
+        });
+
+        // Wait for state to be processed
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Reset states
+        setGraphInterrupted(false);
+        setAllowNullMessage(false);
+
+        // Send a null message to continue the flow
+        const messageResponse = await sendMessage({
+          threadId,
+          assistantId,
+          message: null,
+          messageId: uuidv4(),
+          model,
+          userId,
+          streamMode,
+          initialState: undefined
+        });
+
+        // Process the response
+        for await (const chunk of messageResponse) {
+          handleStreamEvent(chunk, setMessages, streamMode);
+        }
+
+        // Get and check the new state
+        const currentState = await getThreadState(threadId);
+        setThreadState(currentState);
+
+        // Check if we need to show another interrupt
+        if (currentState.next.includes("template_feedback_node") ||
+            currentState.next.includes("human_feedback")) {
+          setGraphInterrupted(true);
+        }
+      }
+    } catch (err) {
+      console.error("Error handling interrupt response:", err);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process your response. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);  // Reset loading state at the end
+    }
+  };
 
   const handleSendMessage = async (message: string | null) => {
     if (!threadId || !assistantId) {
@@ -143,6 +225,39 @@ export default function ChatInterface({
       setGraphInterrupted(false);
       setAllowNullMessage(false);
 
+      // For initial message, include full state based on agent type
+      let initialState;
+      if (message !== null) {
+        if (selectedAgentId === "essay_writer") {
+          initialState = {
+            task: message,
+            plan: "",
+            draft: "",
+            critique: "",
+            content: [],
+            revision_number: 0,
+            max_revisions: 1
+          };
+        } else {
+          // For research assistant
+          initialState = {
+            topic: message.trim(),
+            messages: [{
+              id: messageId,
+              role: "human",
+              content: message,
+            }],
+            progress_messages: [],
+            template_feedback: "",
+            human_analyst_feedback: "",
+            analysts: [],
+            sections: [],
+            report_template: "",
+            final_report: ""
+          };
+        }
+      }
+
       const response = await sendMessage({
         threadId,
         assistantId,
@@ -151,6 +266,7 @@ export default function ChatInterface({
         model,
         userId,
         streamMode,
+        initialState,
       });
 
       for await (const chunk of response) {
@@ -160,10 +276,9 @@ export default function ChatInterface({
       const currentState = await getThreadState(threadId);
       setThreadState(currentState);
 
-      if (
-        currentState.next.includes("template_feedback_node") ||
-        currentState.next.includes("human_feedback")
-      ) {
+      if (selectedAgentId === "research_assistant" && 
+          (currentState.next.includes("template_feedback_node") ||
+           currentState.next.includes("human_feedback"))) {
         setGraphInterrupted(true);
       }
     } catch (err) {
@@ -192,7 +307,6 @@ export default function ChatInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Main Chat Area */}
       <div className="flex-1">
         <div 
           ref={messageListRef}
@@ -218,6 +332,7 @@ export default function ChatInterface({
                     threadId={threadId}
                     state={threadState}
                     onContinue={handleSendMessage}
+                    onInterruptResponse={handleInterruptResponse}
                   />
                 </motion.div>
               )}
@@ -232,7 +347,7 @@ export default function ChatInterface({
                     disabled={isLoading}
                     className="px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                   >
-                    Continue Research
+                    Continue
                   </button>
                 </motion.div>
               )}
@@ -241,7 +356,6 @@ export default function ChatInterface({
         </div>
       </div>
 
-      {/* Chat Input Area */}
       <div className="relative">
         <ChatInput
           onSendMessage={handleSendMessage}
@@ -249,6 +363,7 @@ export default function ChatInterface({
           allowNullMessage={allowNullMessage}
           onStreamModeChange={onStreamModeChange}
           currentStreamMode={streamMode}
+          selectedAgentId={selectedAgentId}
         />
       </div>
     </div>

@@ -16,6 +16,7 @@ export default function Home() {
   const [currentStreamMode, setCurrentStreamMode] = useState<StreamMode>(defaultStreamMode);
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasMessages, setHasMessages] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("research_assistant");
 
   const handleMessagesChange = (messages: Message[]) => {
     setHasMessages(messages.length > 0);
@@ -23,6 +24,12 @@ export default function Home() {
 
   const handleStreamModeChange = (mode: StreamMode) => {
     setCurrentStreamMode(mode);
+  };
+
+  const handleAgentSelect = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    // Reset messages when switching agents
+    setHasMessages(false);
   };
 
   return (
@@ -39,7 +46,10 @@ export default function Home() {
         {!hasMessages && (
            <div className="flex-1">
             <Hero />
-            <AIAgents />
+            <AIAgents 
+              onAgentSelect={handleAgentSelect}
+              selectedAgentId={selectedAgentId}
+            />
           </div>
         )}
         
@@ -51,6 +61,7 @@ export default function Home() {
             setIsInitializing={setIsInitializing}
             onMessagesChange={handleMessagesChange}
             onStreamModeChange={handleStreamModeChange}
+            selectedAgentId={selectedAgentId}
           />
         </div>
       </div>

@@ -17,7 +17,19 @@ interface ChatInputProps {
   isLoading?: boolean;
   currentStreamMode?: StreamMode;
   allowNullMessage: boolean;
+  selectedAgentId?: string;
 }
+
+const getPlaceholderText = (agentId?: string) => {
+  switch (agentId) {
+    case 'essay_writer':
+      return "Enter your essay topic or requirements...";
+    case 'research_assistant':
+      return "Ask me to research any topic...";
+    default:
+      return "Type a message...";
+  }
+};
 
 export default function ChatInput({
   onSendMessage,
@@ -27,7 +39,8 @@ export default function ChatInput({
   onLinkClick,
   isLoading = false,
   currentStreamMode = "updates",
-  allowNullMessage
+  allowNullMessage,
+  selectedAgentId
 }: ChatInputProps) {
   const [message, setMessage] = useState("")
 
@@ -39,16 +52,22 @@ export default function ChatInput({
     }
   }
 
+  const placeholderText = getPlaceholderText(selectedAgentId);
+
   return (
     <div className={cn("w-full max-w-3xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-lg", className)}>
       <div className="text-left mb-4">
-        <p className="text-gray-600 text-sm font-light">Select an agent and ask away!</p>
+        <p className="text-gray-600 text-sm font-light">
+          {selectedAgentId === 'essay_writer' 
+            ? "Let me help you write a well-structured essay!"
+            : "Select an agent and ask away!"}
+        </p>
       </div>
       <div className="mb-6">
         <form onSubmit={handleSubmit} className="relative">
           <input
             type="text"
-            placeholder="Type a message..."
+            placeholder={placeholderText}
             className="w-full p-4 pr-24 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all outline-none text-gray-800 placeholder-gray-400 disabled:opacity-50"
             value={message}
             onChange={(e) => setMessage(e.target.value)}

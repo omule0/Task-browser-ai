@@ -48,12 +48,13 @@ export const sendMessage = async (params: {
   model: string;
   userId: string;
   streamMode: StreamMode;
+  initialState?: Record<string, any>;
 }) => {
   const client = createClient();
 
-  let input: Partial<ThreadStateData> | null = null;
-  if (params.message !== null) {
-    input = {
+  let input: Record<string, any> | null = null;
+  if (params.message !== null || params.initialState) {
+    input = params.initialState || {
       messages: [
         {
           id: params.messageId,
@@ -62,7 +63,7 @@ export const sendMessage = async (params: {
         },
       ],
       userId: params.userId,
-      topic: params.message.trim(),
+      topic: params.message?.trim(),
     };
   }
 

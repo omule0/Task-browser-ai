@@ -36,6 +36,16 @@ export interface ResearchState {
   final_report?: string;
 }
 
+export interface EssayWriterState {
+  task: string;
+  plan: string;
+  draft: string;
+  critique: string;
+  content: string[];
+  revision_number: number;
+  max_revisions: number;
+}
+
 export interface ThreadStateData {
   messages: Array<{
     id: string;
@@ -50,6 +60,14 @@ export interface ThreadStateData {
   sections?: string[];
   report_template?: string;
   final_report?: string;
+  // Essay writer state fields
+  task?: string;
+  plan?: string;
+  draft?: string;
+  critique?: string;
+  content?: string[];
+  revision_number?: number;
+  max_revisions?: number;
   [key: string]: unknown;
 }
 

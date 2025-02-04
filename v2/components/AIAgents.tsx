@@ -1,9 +1,25 @@
 "use client"
 
-import { Mail, PlayCircle, Code, Image, ChevronRight } from "lucide-react"
+import { Mail, PlayCircle, Code, Image, ChevronRight, BookOpen } from "lucide-react"
 import { useState } from "react"
 
 const agents = [
+  {
+    id: "research_assistant",
+    icon: Code,
+    color: "text-purple-500",
+    bgColor: "bg-purple-50",
+    title: "Research Assistant",
+    description: "AI-powered research assistant that helps gather and analyze information on any topic.",
+  },
+  {
+    id: "essay_writer",
+    icon: BookOpen,
+    color: "text-blue-500",
+    bgColor: "bg-blue-50",
+    title: "Essay Writer",
+    description: "Expert essay writer that helps create well-structured essays with proper research and citations.",
+  },
   {
     icon: Mail,
     color: "text-amber-500",
@@ -18,25 +34,14 @@ const agents = [
     title: "YouTube Content Writer",
     description: "Helped many people before to create cold email templates for various purposes.",
   },
-  {
-    icon: Code,
-    color: "text-purple-500",
-    bgColor: "bg-purple-50",
-    title: "Pro Coder",
-    description: "Helped many people before to create cold email templates for various purposes.",
-  },
-  {
-    icon: Image,
-    color: "text-orange-500",
-    bgColor: "bg-orange-50",
-    title: "Blog Image Generator",
-    description: "Helped many people before to create cold email templates for various purposes.",
-  },
 ]
 
-export default function AIAgents() {
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
+interface AIAgentsProps {
+  onAgentSelect?: (agentId: string) => void;
+  selectedAgentId?: string;
+}
 
+export default function AIAgents({ onAgentSelect, selectedAgentId }: AIAgentsProps) {
   return (
     <div id="webcrumbs" className="w-full px-4 sm:px-6 md:px-8">
       <div className="max-w-[1200px] mx-auto">
@@ -53,9 +58,9 @@ export default function AIAgents() {
             <div
               key={agent.title}
               className={`bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-100 cursor-pointer ${
-                selectedAgent === agent.title ? "ring-2 ring-blue-500" : ""
+                selectedAgentId === agent.id ? "ring-2 ring-blue-500" : ""
               }`}
-              onClick={() => setSelectedAgent(agent.title)}
+              onClick={() => agent.id && onAgentSelect?.(agent.id)}
             >
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className={`${agent.bgColor} p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0`}>

@@ -11,51 +11,57 @@ import { cn } from "@/lib/utils";
 import { MessageCircle, Search, Paperclip, Star, Send, X, MessageSquare, ThumbsUp, Loader2, Minimize2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   threadId: string;
   state: ThreadState;
   setAllowNullMessage: (allow: boolean) => void;
   onContinue: (message: string | null) => void;
+  onInterruptResponse?: (response: string, node: string) => Promise<void>;
 }
 
-export function GraphInterrupt({ threadId, state, setAllowNullMessage, onContinue }: Props) {
+export function GraphInterrupt({
+  threadId,
+  state,
+  setAllowNullMessage,
+  onContinue,
+  onInterruptResponse
+}: Props) {
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleApprove = async () => {
     setIsSubmitting(true);
     try {
-      const nextNode = state.next[0];
-      const newState: Partial<ResearchState> = {};
-      const isApproval = !feedback;
-      
-      if (nextNode === "template_feedback_node") {
-        newState.template_feedback = feedback || "approve";
-      } else if (nextNode === "human_feedback") {
-        newState.human_analyst_feedback = feedback || "approve";
-      }
-
-      await updateState(threadId, {
-        newState,
-        asNode: nextNode,
-      });
-
-      // Automatically continue research if it's an approval
-      if (isApproval) {
-        setAllowNullMessage(true);
+      if (onInterruptResponse) {
+        const node = state.next[0];
+        await onInterruptResponse("approve", node);
         setIsOpen(false);
-        // Automatically continue research
-        onContinue(null);
       } else {
         setAllowNullMessage(true);
       }
-    } catch (error) {
-      console.error("Error updating state:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!feedback.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      if (onInterruptResponse) {
+        const node = state.next[0];
+        await onInterruptResponse(feedback, node);
+        setIsOpen(false);
+      }
+      setFeedback("");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getPromptText = () => {
@@ -177,7 +183,7 @@ export function GraphInterrupt({ threadId, state, setAllowNullMessage, onContinu
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                onClick={handleSubmit}
+                                onClick={handleApprove}
                                 disabled={isSubmitting}
                                 className={cn(
                                   "min-w-[120px]",
