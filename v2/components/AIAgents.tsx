@@ -1,7 +1,6 @@
 "use client"
 
-import { Mail, PlayCircle, Code, Image, ChevronRight, BookOpen } from "lucide-react"
-import { useState } from "react"
+import { Code, BookOpen, ChevronRight } from "lucide-react"
 
 const agents = [
   {
@@ -19,20 +18,6 @@ const agents = [
     bgColor: "bg-blue-50",
     title: "Essay Writer",
     description: "Expert essay writer that helps create well-structured essays with proper research and citations.",
-  },
-  {
-    icon: Mail,
-    color: "text-amber-500",
-    bgColor: "bg-amber-50",
-    title: "Cold Email Template Expert",
-    description: "Helped many people before to create cold email templates for various purposes.",
-  },
-  {
-    icon: PlayCircle,
-    color: "text-red-500",
-    bgColor: "bg-red-50",
-    title: "YouTube Content Writer",
-    description: "Helped many people before to create cold email templates for various purposes.",
   },
 ]
 

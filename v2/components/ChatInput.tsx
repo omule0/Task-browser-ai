@@ -60,6 +60,8 @@ export default function ChatInput({
         <p className="text-gray-600 text-sm font-light">
           {selectedAgentId === 'essay_writer' 
             ? "Let me help you write a well-structured essay!"
+            : selectedAgentId === 'research_assistant'
+            ? "I'm ready to help you research any topic in depth!"
             : "Select an agent and ask away!"}
         </p>
       </div>

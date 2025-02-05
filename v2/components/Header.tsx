@@ -3,14 +3,14 @@
 import type React from "react"
 import { User, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
 
 interface HeaderProps {
   isCollapsed: boolean
@@ -33,7 +33,8 @@ export default function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
             <PanelLeftClose className="h-4 w-4 text-gray-600" />
           )}
         </Button>
-        <DropdownMenu>
+        {/* uncomment when sign in is implemented */}
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
               <User className="h-4 w-4 text-gray-600" />
@@ -46,7 +47,7 @@ export default function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
     </header>
   )
