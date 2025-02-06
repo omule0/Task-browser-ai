@@ -19,7 +19,7 @@ interface HeaderProps {
 
 export default function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
   return (
-    <header className="sticky top-0 bg-slate-50 z-10 py-2">
+    <header className="sticky top-0 bg-white z-10 py-2">
       <div className="flex items-center justify-between gap-2 px-3">
         <Button
           variant="ghost"

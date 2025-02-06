@@ -23,7 +23,7 @@ export default function ChatPage({
   }, [resolvedParams.chatId]);
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50">
+    <main className="flex-1 overflow-y-auto bg-white">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Show Hero and AIAgents only when there are no messages */}
         {!hasMessages && (

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import {
   Plus,
   MessageSquare,
+  FileText,
   type LucideIcon
 } from "lucide-react"
 import { v4 as uuidv4 } from 'uuid'
@@ -27,6 +28,11 @@ const sidebarItems: SidebarItem[] = [
     label: "Chat", 
     action: ""
   },
+  {
+    icon: FileText,
+    label: "Report Agent",
+    action: "report_agent"
+  }
 ]
 
 interface SidebarProps {
@@ -66,7 +72,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "h-screen bg-white shadow-lg flex flex-col py-4 fixed left-0 top-0 transition-all duration-300",
+        "h-screen bg-slate-50 shadow-lg flex flex-col py-4 fixed left-0 top-0 transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
       )}
       aria-label="Main navigation"
