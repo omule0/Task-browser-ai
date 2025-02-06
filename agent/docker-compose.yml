@@ -1,0 +1,44 @@
+volumes:
+    langgraph-data:
+        driver: local
+services:
+    langgraph-redis:
+        image: redis:6
+        healthcheck:
+            test: redis-cli ping
+            interval: 5s
+            timeout: 1s
+            retries: 5
+    langgraph-postgres:
+        image: postgres:16
+        ports:
+            - "5433:5432"
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        volumes:
+            - langgraph-data:/var/lib/postgresql/data
+        healthcheck:
+            test: pg_isready -U postgres
+            start_period: 10s
+            timeout: 1s
+            retries: 5
+            interval: 5s
+    langgraph-api:
+        image: "agent"
+        ports:
+            - "8123:8000"
+        depends_on:
+            langgraph-redis:
+                condition: service_healthy
+            langgraph-postgres:
+                condition: service_healthy
+        environment:
+            REDIS_URI: redis://langgraph-redis:6379
+            OPENAI_API_KEY: "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"
+            LANGSMITH_API_KEY: "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"
+            POSTGRES_URI: postgres://postgres:postgres@langgraph-postgres:5432/postgres?sslmode=disable
+            BING_SEARCH_URL: https://api.bing.microsoft.com/v7.0/search
+            BING_SUBSCRIPTION_KEY: "509355b42ea14ed5a196a3322fc7e2af"
+            TAVILY_API_KEY: "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"
