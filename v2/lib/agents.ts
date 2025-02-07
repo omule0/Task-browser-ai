@@ -9,6 +9,7 @@ export interface AgentInfo {
   color: string;
   bgColor: string;
   borderColor: string;
+  samplePrompts: string[];
 }
 
 export const agentInfo: Record<AgentType, AgentInfo> = {
@@ -19,6 +20,11 @@ export const agentInfo: Record<AgentType, AgentInfo> = {
     color: "text-blue-600",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-500",
+    samplePrompts: [
+      "Create a market analysis report for electric vehicles in Europe",
+      "Generate a technical report on renewable energy technologies",
+      "Write a business impact report for AI adoption in healthcare"
+    ]
   },
   research_assistant: {
     name: "Research Assistant",
@@ -27,6 +33,11 @@ export const agentInfo: Record<AgentType, AgentInfo> = {
     color: "text-purple-600",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-500",
+    samplePrompts: [
+      "Research the latest advancements in quantum computing",
+      "Analyze the impact of social media on mental health",
+      "Investigate sustainable agriculture practices in urban areas"
+    ]
   },
   essay_writer: {
     name: "Essay Writer",
@@ -35,5 +46,10 @@ export const agentInfo: Record<AgentType, AgentInfo> = {
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     borderColor: "border-emerald-500",
+    samplePrompts: [
+      "Write an essay about the future of artificial intelligence",
+      "Compare and contrast traditional and online education",
+      "Discuss the role of technology in modern art"
+    ]
   }
-}; 
+};

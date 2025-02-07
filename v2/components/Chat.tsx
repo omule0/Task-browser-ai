@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { createAssistantThread, sendMessage, getMessages } from "@/lib/langchain"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { Mic, SendHorizontal } from "lucide-react"
+import { Mic, SendHorizontal, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AgentType, agentInfo } from "@/lib/agents"
 
@@ -81,6 +81,10 @@ export default function Chat({ setIsInitializing }: ChatProps) {
       setIsLoading(false)
     }
   }
+
+  const handlePromptSelect = (prompt: string) => {
+    setInputMessage(prompt);
+  };
 
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto space-y-6">
@@ -166,6 +170,27 @@ export default function Chat({ setIsInitializing }: ChatProps) {
           </div>
         </form>
       </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Sparkles className="w-4 h-4" />
+          <h3 className="text-sm font-medium">Sample Prompts</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-3">
+          {agentInfo[selectedAgent].samplePrompts.map((prompt, index) => (
+            <Card
+              key={index}
+              className={cn(
+                "p-4 cursor-pointer transition-all hover:shadow-md group border border-gray-200",
+                "hover:border-gray-300 hover:bg-gray-50"
+              )}
+              onClick={() => handlePromptSelect(prompt)}
+            >
+              <p className="text-sm text-gray-600">{prompt}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   )
-} 
+}
