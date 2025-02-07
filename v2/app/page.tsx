@@ -18,15 +18,25 @@ export default function Home() {
   const [hasMessages, setHasMessages] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("research_assistant");
 
+  console.log("[Home] Initial render with state:", {
+    currentStreamMode,
+    isInitializing,
+    hasMessages,
+    selectedAgentId
+  });
+
   const handleMessagesChange = (messages: Message[]) => {
+    console.log("[Home] Messages changed:", { messageCount: messages.length });
     setHasMessages(messages.length > 0);
   };
 
   const handleStreamModeChange = (mode: StreamMode) => {
+    console.log("[Home] Stream mode changed:", { mode });
     setCurrentStreamMode(mode);
   };
 
   const handleAgentSelect = (agentId: string) => {
+    console.log("[Home] Agent selected:", { agentId });
     setSelectedAgentId(agentId);
     // Reset messages when switching agents
     setHasMessages(false);

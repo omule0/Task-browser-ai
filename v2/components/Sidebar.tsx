@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import {
-  Plus,
   MessageSquare,
   FileText,
   type LucideIcon
@@ -18,11 +17,6 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { 
-    icon: Plus, 
-    label: "New Chat", 
-    action: "new-chat"
-  },
   { 
     icon: MessageSquare, 
     label: "Chat", 

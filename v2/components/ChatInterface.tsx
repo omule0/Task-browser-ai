@@ -56,20 +56,40 @@ export default function ChatInterface({
 
   useEffect(() => {
     const initializeChat = async () => {
+      console.log("[ChatInterface] Starting chat initialization");
       try {
         let assistantId = getCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgentId}`);
+        console.log("[ChatInterface] Retrieved assistant ID from cookie:", assistantId);
+
         if (!assistantId) {
+          console.log("[ChatInterface] No assistant ID found, creating new assistant");
           const assistant = await createAssistant(selectedAgentId);
           assistantId = assistant.assistant_id;
+          console.log("[ChatInterface] New assistant created:", assistantId);
           setCookie(`${ASSISTANT_ID_COOKIE}_${selectedAgentId}`, assistantId);
         }
 
-        const { thread_id } = await createThread();
-        setThreadId(thread_id);
+        console.log("[ChatInterface] Creating new thread");
+        const thread = await createThread();
+        console.log("[ChatInterface] Thread creation response:", thread);
+        
+        const threadId = thread?.thread_id;
+        console.log("[ChatInterface] Setting thread ID:", threadId);
+        
+        if (!threadId) {
+          throw new Error("Failed to get thread ID from response");
+        }
+
+        setThreadId(threadId);
         setAssistantId(assistantId);
         setUserId(uuidv4());
+        console.log("[ChatInterface] Chat initialization complete", {
+          threadId,
+          assistantId,
+          selectedAgentId
+        });
       } catch (err) {
-        console.error("Error initializing chat:", err);
+        console.error("[ChatInterface] Error initializing chat:", err);
         
         if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
           toast({
@@ -111,6 +131,7 @@ export default function ChatInterface({
     };
 
     // Reset state when agent changes
+    console.log("[ChatInterface] Resetting state for agent change");
     setMessages([]);
     setThreadId(null);
     setAssistantId(null);
@@ -119,7 +140,7 @@ export default function ChatInterface({
     setAllowNullMessage(false);
     
     initializeChat();
-  }, [selectedAgentId, toast, setIsInitializing]);
+  }, [selectedAgentId, toast]);
 
   useEffect(() => {
     if (messageListRef.current) {

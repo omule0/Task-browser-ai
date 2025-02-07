@@ -60,6 +60,11 @@ export const handleStreamEvent = (
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   streamMode: StreamMode
 ) => {
+  console.log("[StreamHandler] Received event:", { 
+    type: event.event,
+    streamMode 
+  });
+
   if (streamMode === "messages") {
     handleStreamMessageEvent(event as MessageEvent, setMessages);
   } else if (streamMode === "events") {
@@ -75,6 +80,11 @@ const handleStreamMessageEvent = (
   event: MessageEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
+  console.log("[StreamHandler] Processing message event:", {
+    eventType: event.event,
+    messageCount: event.data.length
+  });
+
   if (event.event === "messages/partial") {
     event.data.forEach((dataItem) => {
       const toolCalls = dataItem.tool_calls;
@@ -83,6 +93,10 @@ const handleStreamMessageEvent = (
         toolCalls &&
         toolCalls.length > 0
       ) {
+        console.log("[StreamHandler] Processing AI message with tool calls:", {
+          messageId: dataItem.id,
+          toolCallCount: toolCalls.length
+        });
         setMessages((prevMessages) => {
           const lastMessage = prevMessages[prevMessages.length - 1];
           if (lastMessage && lastMessage.sender === "ai") {
