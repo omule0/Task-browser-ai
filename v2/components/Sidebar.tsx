@@ -1,13 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import {
-  MessageSquare,
-  FileText,
+  PlusCircle,
   type LucideIcon
 } from "lucide-react"
-import { v4 as uuidv4 } from 'uuid'
 import { cn } from "@/lib/utils"
 
 interface SidebarItem {
@@ -17,15 +14,10 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { 
-    icon: MessageSquare, 
-    label: "Chat", 
-    action: ""
-  },
   {
-    icon: FileText,
-    label: "Report Agent",
-    action: "report_agent"
+    icon: PlusCircle,
+    label: "New Thread",
+    action: ""
   }
 ]
 
@@ -34,26 +26,11 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed }: SidebarProps) {
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
-  const handleItemClick = async (label: string, action: string) => {
-    try {
-      setIsLoading(true)
-      
-      if (action === "new-chat") {
-        const chatId = uuidv4()
-        router.push(`/chat/${chatId}`)
-        return
-      }
-      
-      router.push(`/${action}`)
-    } catch (error) {
-      console.error('Navigation error:', error)
-    } finally {
-      setIsLoading(false)
-    }
+  const handleItemClick = (label: string, action: string) => {
+    router.push(`/${action}`)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, label: string, action: string) => {
@@ -88,17 +65,17 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               className={cn(
                 "p-2 rounded-lg transition-all cursor-pointer group relative flex items-center",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                "hover:bg-neutral-100",
-                isActive && "bg-neutral-100"
+                "hover:bg-neutral-200",
+                isActive && "bg-neutral-200"
               )}
-              onClick={() => !isLoading && handleItemClick(item.label, item.action)}
+              onClick={() => handleItemClick(item.label, item.action)}
               onKeyDown={(e) => handleKeyDown(e, item.label, item.action)}
             >
               <div className="flex items-center">
                 <item.icon 
                   className={cn(
                     "w-6 h-6",
-                    isLoading ? "text-neutral-400" : item.action === "new-chat" ? "text-blue-600" : "text-neutral-600"
+                    isActive ? "text-blue-700" : "text-neutral-600"
                   )} 
                   aria-hidden="true"
                 />
@@ -106,7 +83,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
                   <span 
                     className={cn(
                       "ml-3 text-sm font-medium",
-                      isLoading ? "text-neutral-400" : item.action === "new-chat" ? "text-blue-600" : "text-neutral-600"
+                      isActive ? "text-blue-700" : "text-neutral-600"
                     )}
                   >
                     {item.label}
@@ -126,14 +103,6 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
           )
         })}
       </div>
-
-      {isLoading && (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-          <div className="animate-pulse text-neutral-400 text-xs">
-            Loading...
-          </div>
-        </div>
-      )}
     </aside>
   )
 }

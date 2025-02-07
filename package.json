@@ -1,0 +1,16 @@
+{
+  "name": "digest_ai_dashbord",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/langgraph-sdk": "^0.0.36"
+  }
+}
