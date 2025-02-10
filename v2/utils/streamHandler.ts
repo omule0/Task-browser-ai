@@ -1,32 +1,87 @@
-import { StreamMode } from "@/components/Settings";
-import { Message, ToolCall } from "../types";
+import { StreamMode } from "@/components/Agentsettings";
+import { Message, ToolCall, ResearchState } from "../types";
+
+interface StreamEvent {
+  event: string;
+  data: unknown;
+}
+
+type MessageDataItem = {
+  id: string;
+  type: string;
+  content?: string;
+  tool_calls?: ToolCall[];
+  tool_call_id?: string;
+  name?: string;
+  artifact?: string;
+};
+
+interface MessageEvent extends StreamEvent {
+  event: "messages/partial" | "messages/complete";
+  data: MessageDataItem[];
+}
+
+interface EventData {
+  run_id: string;
+  event: string;
+  name: string;
+  metadata: Record<string, unknown>;
+}
+
+interface EventEvent extends StreamEvent {
+  event: "events";
+  data: EventData;
+}
+
+interface UpdateData extends Partial<ResearchState> {
+  run_id: string;
+  step: string;
+  next: string[];
+  values: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+}
+
+interface UpdateEvent extends StreamEvent {
+  event: "updates";
+  data: UpdateData;
+}
+
+interface ValueData extends Partial<ResearchState> {
+  run_id: string;
+}
+
+interface ValueEvent extends StreamEvent {
+  event: "values";
+  data: ValueData;
+}
 
 export const handleStreamEvent = (
-  event: any,
+  event: StreamEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   streamMode: StreamMode
 ) => {
   if (streamMode === "messages") {
-    handleStreamMessageEvent(event, setMessages);
+    handleStreamMessageEvent(event as MessageEvent, setMessages);
   } else if (streamMode === "events") {
-    handleStreamEventEvent(event, setMessages);
+    handleStreamEventEvent(event as EventEvent, setMessages);
   } else if (streamMode === "updates") {
-    handleStreamUpdatesEvent(event, setMessages);
+    handleStreamUpdatesEvent(event as UpdateEvent, setMessages);
   } else if (streamMode === "values") {
-    handleStreamValuesEvent(event, setMessages);
+    handleStreamValuesEvent(event as ValueEvent, setMessages);
   }
 };
 
 const handleStreamMessageEvent = (
-  event: any,
+  event: MessageEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
   if (event.event === "messages/partial") {
-    event.data.forEach((dataItem: any) => {
+    event.data.forEach((dataItem) => {
+      const toolCalls = dataItem.tool_calls;
       if (
         dataItem.type === "ai" &&
-        Array.isArray(dataItem.tool_calls) &&
-        dataItem.tool_calls.length > 0
+        toolCalls &&
+        toolCalls.length > 0
       ) {
         setMessages((prevMessages) => {
           const lastMessage = prevMessages[prevMessages.length - 1];
@@ -34,15 +89,15 @@ const handleStreamMessageEvent = (
             // Merge new tool calls with existing ones
             const mergedToolCalls = [
               ...(lastMessage.toolCalls || []),
-              ...dataItem.tool_calls.filter(
-                (newTc: ToolCall) =>
+              ...toolCalls.filter(
+                (newTc) =>
                   !lastMessage.toolCalls?.some(
                     (existingTc) => existingTc.id === newTc.id
                   )
               ),
-            ].map((tc: ToolCall) => {
-              const updatedTc = dataItem.tool_calls.find(
-                (newTc: ToolCall) => newTc.id === tc.id
+            ].map((tc) => {
+              const updatedTc = toolCalls.find(
+                (newTc) => newTc.id === tc.id
               );
               return updatedTc ? { ...tc, ...updatedTc } : tc;
             });
@@ -56,15 +111,13 @@ const handleStreamMessageEvent = (
             ];
           } else {
             // If the last message was not from AI, add a new message
-            return [
-              ...prevMessages,
-              {
-                text: "",
-                sender: "ai",
-                toolCalls: dataItem.tool_calls,
-                id: dataItem.id,
-              },
-            ];
+            const message: Message = {
+              text: "",
+              sender: "ai",
+              toolCalls,
+              id: dataItem.id,
+            };
+            return [...prevMessages, message];
           }
         });
       } else if (dataItem.content) {
@@ -75,19 +128,17 @@ const handleStreamMessageEvent = (
               ...prevMessages.slice(0, -1),
               {
                 ...lastMessage,
-                text: dataItem.content,
+                text: dataItem.content || "",
               },
             ];
           } else {
-            return [
-              ...prevMessages,
-              {
-                text: dataItem.content,
-                sender: "ai",
-                toolCalls: [],
-                id: dataItem.id,
-              },
-            ];
+            const message: Message = {
+              text: dataItem.content || "",
+              sender: "ai",
+              toolCalls: [],
+              id: dataItem.id,
+            };
+            return [...prevMessages, message];
           }
         });
       }
@@ -120,15 +171,13 @@ const handleStreamMessageEvent = (
             },
           ];
         } else {
-          return [
-            ...prevMessages,
-            {
-              text: "",
-              sender: "ai",
-              toolCalls: [toolCall as ToolCall],
-              id: dataItem.id,
-            },
-          ];
+          const message: Message = {
+            text: "",
+            sender: "ai",
+            toolCalls: [toolCall as ToolCall],
+            id: dataItem.id,
+          };
+          return [...prevMessages, message];
         }
       });
     } else if (dataItem.type === "ai" && dataItem.content) {
@@ -142,72 +191,71 @@ const handleStreamMessageEvent = (
         }
 
         const messageStreamed = prevMessages.find((msg) =>
-          dataItem.content.startsWith(msg.text)
+          dataItem.content?.startsWith(msg.text)
         );
 
         if (messageStreamed) {
           // Message has already partially been streamed, update it
           return prevMessages.map((msg) => {
-            if (msg.id === messageStreamed.id) {
+            if (msg.id === messageStreamed.id && dataItem.content) {
               return { ...messageStreamed, text: dataItem.content };
             }
             return msg;
           });
         }
 
-        return [
-          ...prevMessages,
-          { id: dataItem.id, text: dataItem.content, sender: "ai" },
-        ];
+        const message: Message = {
+          id: dataItem.id,
+          text: dataItem.content || "",
+          sender: "ai",
+        };
+        return [...prevMessages, message];
       });
     }
   }
 };
 
 const handleStreamEventEvent = (
-  event: any,
+  event: EventEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
   if (event.event !== "events") return;
   const data = event.data;
-  setMessages((prevMessages) => {
-    return [
-      ...prevMessages,
-      { rawResponse: data, sender: "ai", id: data.run_id },
-    ];
-  });
+  const message: Message = {
+    text: "",
+    rawResponse: data,
+    sender: "ai",
+    id: data.run_id,
+  };
+  setMessages((prevMessages) => [...prevMessages, message]);
 };
 
 const handleStreamUpdatesEvent = (
-  event: any,
+  event: UpdateEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
-  if (event.event !== "updates") {
-    // Not an update, return
-    return;
-  }
+  if (event.event !== "updates") return;
   const data = event.data;
-  setMessages((prevMessages) => {
-    return [
-      ...prevMessages,
-      { rawResponse: data, sender: "ai", id: data.run_id },
-    ];
-  });
+  const message: Message = {
+    text: "",
+    rawResponse: data,
+    sender: "ai",
+    id: data.run_id,
+  };
+  setMessages((prevMessages) => [...prevMessages, message]);
 };
 
 const handleStreamValuesEvent = (
-  event: any,
+  event: ValueEvent,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
-  if (event.event !== "values") {
-    // Not an update, return
-    return;
-  }
+  if (event.event !== "values") return;
   const data = event.data;
-  setMessages((prevMessages) => {
-    return [
-      ...prevMessages,
-      { rawResponse: data, sender: "ai", id: data.run_id },
-    ];
-  });
-};
+  const message: Message = {
+    text: "",
+    rawResponse: data,
+    sender: "ai",
+    id: data.run_id,
+  };
+  setMessages((prevMessages) => [...prevMessages, message]);
+}; 

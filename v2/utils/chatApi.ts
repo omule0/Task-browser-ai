@@ -1,5 +1,6 @@
-import { StreamMode } from "@/components/Settings";
-import { ThreadState, Client } from "@langchain/langgraph-sdk";
+import { StreamMode } from "@/components/Agentsettings";
+import { ThreadState, ThreadStateData, ResearchState } from "../types";
+import { Client } from "@langchain/langgraph-sdk";
 
 const createClient = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
@@ -20,7 +21,7 @@ export const createThread = async () => {
 
 export const getThreadState = async (
   threadId: string
-): Promise<ThreadState<Record<string, any>>> => {
+): Promise<ThreadState> => {
   const client = createClient();
   return client.threads.getState(threadId);
 };
@@ -28,7 +29,7 @@ export const getThreadState = async (
 export const updateState = async (
   threadId: string,
   fields: {
-    newState: Record<string, any>;
+    newState: Partial<ResearchState>;
     asNode?: string;
   }
 ) => {
@@ -46,14 +47,14 @@ export const sendMessage = async (params: {
   message: string | null;
   model: string;
   userId: string;
-  systemInstructions: string;
   streamMode: StreamMode;
+  initialState?: Record<string, any>;
 }) => {
   const client = createClient();
 
   let input: Record<string, any> | null = null;
-  if (params.message !== null) {
-    input = {
+  if (params.message !== null || params.initialState) {
+    input = params.initialState || {
       messages: [
         {
           id: params.messageId,
@@ -62,12 +63,13 @@ export const sendMessage = async (params: {
         },
       ],
       userId: params.userId,
+      topic: params.message?.trim(),
     };
   }
+
   const config = {
     configurable: {
       model_name: params.model,
-      system_instructions: params.systemInstructions,
     },
   };
 
@@ -76,4 +78,26 @@ export const sendMessage = async (params: {
     config,
     streamMode: params.streamMode,
   });
+};
+
+export const verifyAssistant = async (assistantId: string, graphId: string) => {
+  const client = createClient();
+  try {
+    await client.assistants.get(assistantId);
+    return true;
+  } catch (error) {
+    console.error("Error verifying assistant:", error);
+    return false;
+  }
+};
+
+export const verifyThread = async (threadId: string) => {
+  const client = createClient();
+  try {
+    await client.threads.getState(threadId);
+    return true;
+  } catch (error) {
+    console.error("Error verifying thread:", error);
+    return false;
+  }
 };
