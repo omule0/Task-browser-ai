@@ -1,42 +1,62 @@
 "use client"
 
-import { Send } from "lucide-react"
+import { templates } from "./components/ReportTemplate"
+import { useState } from "react"
+import ReportChatInterface from "./components/ReportChatInterface"
+import { StreamMode } from "@/components/Agentsettings"
+
+const templateDescriptions = {
+  comparative_analysis: "Compare and analyze different offerings, examining their features, architecture, and use cases to provide clear recommendations.",
+  business_strategy: "Learn from successful case studies to develop actionable business strategies and insights for your specific challenge.",
+  how_to: "Get detailed technical implementation guides with step-by-step instructions and best practices.",
+  recent_events: "Track and analyze recent developments, market trends, and significant events across companies in your industry."
+}
 
 export default function ReportAgentPage() {
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [query, setQuery] = useState("")
+  const [isInitializing, setIsInitializing] = useState(true)
+  const [streamMode, setStreamMode] = useState<StreamMode>("updates")
+
   return (
     <div className="flex justify-center p-8">
       <div className="w-[800px] bg-white rounded-lg p-8">
         <h1 className="text-3xl font-bold text-center mb-8">Create Report</h1>
-        
-        <div className="w-full h-[60px] bg-white rounded-full shadow-lg flex items-center px-6 hover:shadow-xl transition-shadow duration-300 mb-8">
-          <input 
-            type="text"
-            placeholder="Ask me to research any topic..."
-            className="flex-1 text-lg text-gray-600 placeholder-gray-400 outline-none"
-          />
-          <div className="flex items-center ml-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
-              <Send className="w-5 h-5 text-blue-600" />
-            </button>
+
+        {/* Template Selection */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Select Report Template</h2>
+          <div className="grid grid-cols-2 gap-6">
+            {Object.entries(templates).map(([key, template]) => (
+              <div 
+                key={key}
+                onClick={() => setSelectedTemplate(key)}
+                className={`bg-white rounded-xl p-6 border border-neutral-200 cursor-pointer transition-all ${
+                  selectedTemplate === key 
+                    ? 'ring-2 ring-blue-500 shadow-lg' 
+                    : 'hover:shadow-lg hover:border-blue-200'
+                }`}
+              >
+                <h3 className="text-lg font-semibold text-blue-600 mb-2">{template.templateName}</h3>
+                <p className="text-neutral-600 text-sm">
+                  {templateDescriptions[key as keyof typeof templateDescriptions]}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      
-        <div className="grid grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 border border-neutral-200 hover:shadow-lg transition-all cursor-pointer group">
-            <h3 className="text-lg font-semibold text-blue-600 mb-3">Scientific basis for 40HZ gamma sound and light treatment of Alzheimer&apos;s disease</h3>
-            <p className="text-neutral-600 text-sm line-clamp-3 group-hover:text-neutral-900">The scientific basis for 40Hz gamma sound and light treatment represents a novel and promising approach in addressing Alzheimer&apos;s disease symptoms and progression.</p>
-          </div>
-      
-          <div className="bg-white rounded-xl p-6 border border-neutral-200 hover:shadow-lg transition-all cursor-pointer group">
-            <h3 className="text-lg font-semibold text-blue-600 mb-3">Smart cities and the role of digital technology, examples</h3>
-            <p className="text-neutral-600 text-sm line-clamp-3 group-hover:text-neutral-900">Smart cities represent an evolving concept at the intersection of urban development and digital innovation, leveraging technology to enhance quality of life.</p>
-          </div>
-      
-          <div className="bg-white rounded-xl p-6 border border-neutral-200 hover:shadow-lg transition-all cursor-pointer group">
-            <h3 className="text-lg font-semibold text-blue-600 mb-3">Automatic Knowledge Curation</h3>
-            <p className="text-neutral-600 text-sm line-clamp-3 group-hover:text-neutral-900">Automatic Knowledge Curation encompasses the automated processes of collecting, organizing, and managing information to transform raw data into valuable insights.</p>
-          </div>
-        </div>
+
+        {/* Chat Interface */}
+        <ReportChatInterface
+          model="gpt-4"
+          streamMode={streamMode}
+          isInitializing={isInitializing}
+          setIsInitializing={setIsInitializing}
+          onStreamModeChange={setStreamMode}
+          selectedTemplate={selectedTemplate}
+          query={query}
+          setQuery={setQuery}
+        />
       </div>
     </div>
   )

@@ -28,12 +28,16 @@ export interface Analyst {
 
 export interface ResearchState {
   topic: string;
-  human_analyst_feedback: string;
-  template_feedback: string;
-  analysts: Analyst[];
-  sections?: string[];
-  report_template: string;
-  final_report?: string;
+  feedback_on_report_plan: string;
+  accept_report_plan: boolean;
+  report_structure: string;
+  number_of_queries?: number;
+  tavily_topic?: string;
+  tavily_days?: number;
+  sections: any[];
+  completed_sections: any[];
+  report_sections_from_research: string;
+  final_report: string;
 }
 
 export interface EssayWriterState {

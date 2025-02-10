@@ -4,9 +4,9 @@ import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import {
   Plus,
-  MessageSquare,
   FileText,
-  type LucideIcon
+  type LucideIcon,
+  Loader2
 } from "lucide-react"
 import { v4 as uuidv4 } from 'uuid'
 import { cn } from "@/lib/utils"
@@ -67,7 +67,8 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "h-screen bg-slate-50 shadow-lg flex flex-col py-4 fixed left-0 top-0 transition-all duration-300",
+        "h-screen bg-slate-50 shadow-lg flex flex-col py-4 fixed left-0 top-0",
+        "transition-all duration-300 ease-in-out border-r border-slate-200",
         isCollapsed ? "w-16" : "w-64"
       )}
       aria-label="Main navigation"
@@ -87,27 +88,31 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "p-2 rounded-lg transition-all cursor-pointer group relative flex items-center",
+                "p-2 rounded-lg transition-all duration-200 cursor-pointer group relative flex items-center",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                "hover:bg-neutral-100",
-                isActive && "bg-neutral-100"
+                "hover:bg-slate-200/50",
+                isActive && "bg-blue-50 hover:bg-blue-100"
               )}
               onClick={() => !isLoading && handleItemClick(item.label, item.action)}
               onKeyDown={(e) => handleKeyDown(e, item.label, item.action)}
             >
-              <div className="flex items-center">
+              <div className="flex items-center w-full">
                 <item.icon 
                   className={cn(
-                    "w-6 h-6",
-                    isLoading ? "text-neutral-400" : item.action === "new-chat" ? "text-blue-600" : "text-neutral-600"
+                    "w-5 h-5 transition-colors duration-200",
+                    isLoading ? "text-slate-400" : 
+                    item.action === "new-chat" ? "text-blue-600" : 
+                    isActive ? "text-blue-600" : "text-slate-600"
                   )} 
                   aria-hidden="true"
                 />
                 {!isCollapsed && (
                   <span 
                     className={cn(
-                      "ml-3 text-sm font-medium",
-                      isLoading ? "text-neutral-400" : item.action === "new-chat" ? "text-blue-600" : "text-neutral-600"
+                      "ml-3 text-sm font-medium transition-colors duration-200",
+                      isLoading ? "text-slate-400" : 
+                      item.action === "new-chat" ? "text-blue-600" : 
+                      isActive ? "text-blue-600" : "text-slate-600"
                     )}
                   >
                     {item.label}
@@ -117,7 +122,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               
               {isCollapsed && (
                 <span 
-                  className="absolute left-full ml-2 bg-neutral-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10"
+                  className="absolute left-full ml-2 bg-slate-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 shadow-lg"
                   role="tooltip"
                 >
                   {item.label}
@@ -129,10 +134,11 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       {isLoading && (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-          <div className="animate-pulse text-neutral-400 text-xs">
-            Loading...
-          </div>
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center space-x-2">
+          <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+          {!isCollapsed && (
+            <span className="text-slate-600 text-sm">Loading...</span>
+          )}
         </div>
       )}
     </aside>

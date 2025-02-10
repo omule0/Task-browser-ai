@@ -1,37 +1,37 @@
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 
 from langgraph.constants import Send
 from langgraph.graph import START, END, StateGraph
 
+
 from report_maistro.state import ReportStateInput, ReportStateOutput, Sections, ReportState, SectionState, SectionOutputState, Queries
 from report_maistro.prompts import report_planner_query_writer_instructions, report_planner_instructions, query_writer_instructions, section_writer_instructions, final_section_writer_instructions
-from report_maistro.configuration import Configuration
 from report_maistro.utils import tavily_search_async, deduplicate_and_format_sources, format_sections
 
 # LLMs
 planner_model = ChatOpenAI(
-    model=Configuration.planner_model)
+    model="gpt-4o-mini")
 writer_model = ChatOpenAI(
-    model=Configuration.writer_model)
+    model="gpt-4o-mini")
 
 # Nodes
 
 
-async def generate_report_plan(state: ReportState, config: RunnableConfig):
+async def generate_report_plan(state: ReportState):
     """ Generate the report plan """
 
     # Inputs
     topic = state["topic"]
     feedback = state.get("feedback_on_report_plan", None)
+    report_structure = state["report_structure"]
 
-    # Get configuration
-    configurable = Configuration.from_runnable_config(config)
-    report_structure = configurable.report_structure
-    number_of_queries = configurable.number_of_queries
-    tavily_topic = configurable.tavily_topic
-    tavily_days = configurable.tavily_days
+    # Get configuration with defaults
+    number_of_queries = state.get(
+        "number_of_queries", 2)  # Default to 2 queries
+    # Default to general search
+    tavily_topic = state.get("tavily_topic", "general")
+    tavily_days = state.get("tavily_days", None)  # Optional parameter
 
     # Convert JSON object to string if necessary
     if isinstance(report_structure, dict):
@@ -51,8 +51,11 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
     # Web search
     query_list = [query.search_query for query in results.queries]
 
-    # Search web
-    search_docs = await tavily_search_async(query_list, tavily_topic, tavily_days)
+    # Search web with optional tavily_days parameter
+    search_kwargs = {"topic": tavily_topic}
+    if tavily_days is not None:
+        search_kwargs["days"] = tavily_days
+    search_docs = await tavily_search_async(query_list, **search_kwargs)
 
     # Deduplicate and format sources
     source_str = deduplicate_and_format_sources(
@@ -75,15 +78,14 @@ def human_feedback(state: ReportState):
     pass
 
 
-def generate_queries(state: SectionState, config: RunnableConfig):
+def generate_queries(state: SectionState):
     """ Generate search queries for a report section """
 
     # Get state
     section = state["section"]
 
     # Get configuration
-    configurable = Configuration.from_runnable_config(config)
-    number_of_queries = configurable.number_of_queries
+    number_of_queries = state["number_of_queries"]
 
     # Generate queries
     structured_llm = writer_model.with_structured_output(Queries)
@@ -99,20 +101,24 @@ def generate_queries(state: SectionState, config: RunnableConfig):
     return {"search_queries": queries.queries}
 
 
-async def search_web(state: SectionState, config: RunnableConfig):
+async def search_web(state: SectionState):
     """ Search the web for each query, then return a list of raw sources and a formatted string of sources."""
 
     # Get state
     search_queries = state["search_queries"]
 
     # Get configuration
-    configurable = Configuration.from_runnable_config(config)
-    tavily_topic = configurable.tavily_topic
-    tavily_days = configurable.tavily_days
+    tavily_topic = state["tavily_topic"]
+    tavily_days = state.get("tavily_days")
 
     # Web search
     query_list = [query.search_query for query in search_queries]
-    search_docs = await tavily_search_async(query_list, tavily_topic, tavily_days)
+
+    # Search web with optional tavily_days parameter
+    search_kwargs = {"topic": tavily_topic}
+    if tavily_days is not None:
+        search_kwargs["days"] = tavily_days
+    search_docs = await tavily_search_async(query_list, **search_kwargs)
 
     # Deduplicate and format sources
     source_str = deduplicate_and_format_sources(
@@ -149,6 +155,11 @@ def initiate_section_writing(state: ReportState):
     # Get feedback
     feedback = state.get("feedback_on_report_plan", None)
 
+    # Get search configuration
+    number_of_queries = state.get("number_of_queries", 2)
+    tavily_topic = state.get("tavily_topic", "general")
+    tavily_days = state.get("tavily_days", None)
+
     # Feedback is by default None and accept_report_plan is by default False
     # If a user hits "Continue" in Studio, we want to proceed with the report plan
     # If a user enters feedback_on_report_plan in Studio, we want to regenerate the report plan
@@ -159,7 +170,12 @@ def initiate_section_writing(state: ReportState):
     # Kick off section writing in parallel via Send() API for any sections that require research
     else:
         return [
-            Send("build_section_with_web_research", {"section": s})
+            Send("build_section_with_web_research", {
+                "section": s,
+                "number_of_queries": number_of_queries,
+                "tavily_topic": tavily_topic,
+                "tavily_days": tavily_days
+            })
             for s in state["sections"]
             if s.research
         ]
@@ -247,7 +263,7 @@ section_builder.add_edge("write_section", END)
 
 # Add nodes
 builder = StateGraph(ReportState, input=ReportStateInput,
-                     output=ReportStateOutput, config_schema=Configuration)
+                     output=ReportStateOutput)
 builder.add_node("generate_report_plan", generate_report_plan)
 builder.add_node("human_feedback", human_feedback)
 builder.add_node("build_section_with_web_research", section_builder.compile())
