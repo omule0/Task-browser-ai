@@ -78,70 +78,46 @@ const handleStreamMessageEvent = (
   if (event.event === "messages/partial") {
     event.data.forEach((dataItem) => {
       const toolCalls = dataItem.tool_calls;
-      if (
-        dataItem.type === "ai" &&
-        toolCalls &&
-        toolCalls.length > 0
-      ) {
-        setMessages((prevMessages) => {
-          const lastMessage = prevMessages[prevMessages.length - 1];
-          if (lastMessage && lastMessage.sender === "ai") {
-            // Merge new tool calls with existing ones
-            const mergedToolCalls = [
-              ...(lastMessage.toolCalls || []),
-              ...toolCalls.filter(
-                (newTc) =>
-                  !lastMessage.toolCalls?.some(
-                    (existingTc) => existingTc.id === newTc.id
-                  )
-              ),
-            ].map((tc) => {
-              const updatedTc = toolCalls.find(
-                (newTc) => newTc.id === tc.id
-              );
-              return updatedTc ? { ...tc, ...updatedTc } : tc;
-            });
+      
+      setMessages((prevMessages) => {
+        // Try to find an existing message with the same ID or content that starts with the new content
+        const existingMessageIndex = prevMessages.findIndex(
+          (msg) => 
+            msg.id === dataItem.id || 
+            (dataItem.content && msg.text && dataItem.content.startsWith(msg.text))
+        );
 
-            return [
-              ...prevMessages.slice(0, -1),
-              {
-                ...lastMessage,
-                toolCalls: mergedToolCalls,
-              },
-            ];
-          } else {
-            // If the last message was not from AI, add a new message
-            const message: Message = {
-              text: "",
-              sender: "ai",
-              toolCalls,
-              id: dataItem.id,
-            };
-            return [...prevMessages, message];
-          }
-        });
-      } else if (dataItem.content) {
-        setMessages((prevMessages) => {
-          const lastMessage = prevMessages[prevMessages.length - 1];
-          if (lastMessage && dataItem.id === lastMessage.id) {
-            return [
-              ...prevMessages.slice(0, -1),
-              {
-                ...lastMessage,
-                text: dataItem.content || "",
-              },
-            ];
-          } else {
-            const message: Message = {
-              text: dataItem.content || "",
-              sender: "ai",
-              toolCalls: [],
-              id: dataItem.id,
-            };
-            return [...prevMessages, message];
-          }
-        });
-      }
+        if (existingMessageIndex !== -1) {
+          // Update existing message
+          const updatedMessages = [...prevMessages];
+          const existingMessage = updatedMessages[existingMessageIndex];
+          
+          updatedMessages[existingMessageIndex] = {
+            ...existingMessage,
+            id: dataItem.id || existingMessage.id || `msg_${Date.now()}`,
+            text: dataItem.content || existingMessage.text || "",
+            toolCalls: toolCalls ? [
+              ...(existingMessage.toolCalls || []),
+              ...toolCalls.filter(
+                (newTc) => !existingMessage.toolCalls?.some(
+                  (existingTc) => existingTc.id === newTc.id
+                )
+              ),
+            ] : existingMessage.toolCalls
+          };
+          
+          return updatedMessages;
+        } else {
+          // Create new message if no existing message found
+          const newMessage: Message = {
+            id: dataItem.id || `msg_${Date.now()}`,
+            text: dataItem.content || "",
+            sender: dataItem.type as "ai" | "user",
+            toolCalls: toolCalls || []
+          };
+          return [...prevMessages, newMessage];
+        }
+      });
     });
   } else if (event.event === "messages/complete") {
     const dataItem = event.data[event.data.length - 1];
@@ -153,66 +129,55 @@ const handleStreamMessageEvent = (
         result: dataItem.content,
       };
 
-      // Only set args if it's truthy
       if (dataItem.artifact) {
         toolCall.args = dataItem.artifact;
       }
 
       setMessages((prevMessages) => {
-        const lastMessage = prevMessages[prevMessages.length - 1];
-        if (lastMessage && lastMessage.sender === "ai") {
-          return [
-            ...prevMessages.slice(0, -1),
-            {
-              ...lastMessage,
-              toolCalls: lastMessage.toolCalls?.map((tc) =>
-                tc.id === toolCall.id ? { ...tc, ...toolCall } : tc
-              ) || [toolCall as ToolCall],
-            },
-          ];
-        } else {
-          const message: Message = {
-            text: "",
-            sender: "ai",
-            toolCalls: [toolCall as ToolCall],
-            id: dataItem.id,
+        const existingMessageIndex = prevMessages.findIndex(
+          msg => msg.toolCalls?.some(tc => tc.id === toolCall.id)
+        );
+
+        if (existingMessageIndex !== -1) {
+          const updatedMessages = [...prevMessages];
+          const existingMessage = updatedMessages[existingMessageIndex];
+          
+          updatedMessages[existingMessageIndex] = {
+            ...existingMessage,
+            toolCalls: existingMessage.toolCalls?.map(tc =>
+              tc.id === toolCall.id ? { ...tc, ...toolCall } : tc
+            ) || [toolCall as ToolCall]
           };
-          return [...prevMessages, message];
+          
+          return updatedMessages;
         }
+        
+        return prevMessages;
       });
     } else if (dataItem.type === "ai" && dataItem.content) {
       setMessages((prevMessages) => {
-        const messageExists = prevMessages.some(
-          (msg) => msg.id === dataItem.id
-        );
-        // Message already exists, don't add it again
-        if (messageExists) {
-          return prevMessages;
-        }
-
-        const messageStreamed = prevMessages.find((msg) =>
-          dataItem.content?.startsWith(msg.text)
+        const existingMessageIndex = prevMessages.findIndex(
+          msg => msg.id === dataItem.id || (dataItem.content && msg.text && dataItem.content.startsWith(msg.text))
         );
 
-        if (messageStreamed) {
-          // Message has already partially been streamed, update it
-          return prevMessages.map((msg) => {
-            if (msg.id === messageStreamed.id && dataItem.content) {
-              return { ...messageStreamed, text: dataItem.content };
-            }
-            return msg;
-          });
+        if (existingMessageIndex !== -1) {
+          const updatedMessages = [...prevMessages];
+          updatedMessages[existingMessageIndex] = {
+            ...updatedMessages[existingMessageIndex],
+            id: dataItem.id,
+            text: dataItem.content
+          };
+          return updatedMessages;
         }
 
-        const message: Message = {
-          id: dataItem.id,
-          text: dataItem.content || "",
-          sender: "ai",
-        };
-        return [...prevMessages, message];
+        return prevMessages;
       });
     }
   }
+};
+
+const convertToRecord = <T extends object>(data: T): Record<string, unknown> => {
+  return JSON.parse(JSON.stringify(data)) as Record<string, unknown>;
 };
 
 const handleStreamEventEvent = (
@@ -223,7 +188,7 @@ const handleStreamEventEvent = (
   const data = event.data;
   const message: Message = {
     text: "",
-    rawResponse: data,
+    rawResponse: convertToRecord(data),
     sender: "ai",
     id: data.run_id,
   };
@@ -238,7 +203,7 @@ const handleStreamUpdatesEvent = (
   const data = event.data;
   const message: Message = {
     text: "",
-    rawResponse: data,
+    rawResponse: convertToRecord(data),
     sender: "ai",
     id: data.run_id,
   };
@@ -253,7 +218,7 @@ const handleStreamValuesEvent = (
   const data = event.data;
   const message: Message = {
     text: "",
-    rawResponse: data,
+    rawResponse: convertToRecord(data),
     sender: "ai",
     id: data.run_id,
   };

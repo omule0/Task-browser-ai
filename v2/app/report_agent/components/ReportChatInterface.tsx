@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { AnimatePresence, motion } from "framer-motion";
 import MessageList from "@/components/MessageList";
 import { StreamMode } from "@/components/Agentsettings";
 import { Message, Model, ThreadState } from "@/types";
@@ -423,17 +422,10 @@ export default function ReportChatInterface({
             ref={messageListRef}
             className="space-y-3"
           >
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="px-2"
-              >
-                <MessageList messages={messages} />
-                {isLoading && <SkeletonMessage />}
-              </motion.div>
-            </AnimatePresence>
+            <div className="px-2">
+              <MessageList messages={messages} />
+              {isLoading && <SkeletonMessage />}
+            </div>
           </div>
         </div>
       )}

@@ -29,13 +29,13 @@ interface AIAgentsProps {
 export default function AIAgents({ onAgentSelect, selectedAgentId }: AIAgentsProps) {
   return (
     <div id="webcrumbs" className="w-full px-4 sm:px-6 md:px-8">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h2 className="text-lg sm:text-xl font-semibold">Your AI agents</h2>
-          <a href="#" className="flex items-center text-xs sm:text-sm hover:underline group">
+          {/* <a href="#" className="flex items-center text-xs sm:text-sm hover:underline group">
             All agents
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-          </a>
+          </a> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

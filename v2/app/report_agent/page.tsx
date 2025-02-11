@@ -16,7 +16,7 @@ export default function ReportAgentPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [isInitializing, setIsInitializing] = useState(true)
-  const [streamMode, setStreamMode] = useState<StreamMode>("updates")
+  const [streamMode, setStreamMode] = useState<StreamMode>("custom")
 
   return (
     <div className="flex justify-center p-8">

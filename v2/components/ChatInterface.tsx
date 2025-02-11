@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { AnimatePresence, motion } from "framer-motion";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 import { StreamMode } from "./Agentsettings";
@@ -358,47 +357,32 @@ export default function ChatInterface({
           ref={messageListRef}
           className="space-y-3 pb-3"
         >
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="px-2"
-            >
-              <MessageList messages={messages} />
-              {isLoading && <SkeletonMessage />}
-              {graphInterrupted && threadState && threadId && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="transition-all duration-200 ease-in-out"
+          <div className="px-2">
+            <MessageList messages={messages} />
+            {isLoading && <SkeletonMessage />}
+            {graphInterrupted && threadState && threadId && (
+              <div className="transition-all duration-200 ease-in-out">
+                <GraphInterrupt
+                  setAllowNullMessage={setAllowNullMessage}
+                  threadId={threadId}
+                  state={threadState}
+                  onContinue={handleSendMessage}
+                  onInterruptResponse={handleInterruptResponse}
+                />
+              </div>
+            )}
+            {allowNullMessage && !graphInterrupted && (
+              <div className="flex justify-center py-3">
+                <button
+                  onClick={() => handleSendMessage(null)}
+                  disabled={isLoading}
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                 >
-                  <GraphInterrupt
-                    setAllowNullMessage={setAllowNullMessage}
-                    threadId={threadId}
-                    state={threadState}
-                    onContinue={handleSendMessage}
-                    onInterruptResponse={handleInterruptResponse}
-                  />
-                </motion.div>
-              )}
-              {allowNullMessage && !graphInterrupted && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-center py-3"
-                >
-                  <button
-                    onClick={() => handleSendMessage(null)}
-                    disabled={isLoading}
-                    className="px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-full hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-                  >
-                    Continue
-                  </button>
-                </motion.div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+                  Continue
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

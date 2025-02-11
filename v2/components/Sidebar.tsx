@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import {
-  Plus,
   FileText,
   type LucideIcon,
   Loader2
@@ -18,11 +17,6 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { 
-    icon: Plus, 
-    label: "New thread", 
-    action: ""
-  },
   {
     icon: FileText,
     label: "Report Agent",

@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { MessageCircle, Search, Paperclip, Star, Send, X, MessageSquare, ThumbsUp, Loader2, Minimize2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 
 interface Props {
@@ -82,146 +81,119 @@ export function GraphInterrupt({
 
   return (
     <div className="fixed bottom-[80px] right-4 flex flex-col items-end z-50">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              y: 0,
-              height: isMinimized ? "auto" : "auto"
-            }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="w-full max-w-md mb-4"
-          >
-            <Card className="overflow-hidden rounded-3xl shadow-xl">
-              {/* Header */}
-              <div className="bg-[#0052FF] text-white p-4">
-                <div className="flex items-center justify-between mb-6">
-                  <Button variant="ghost" className="text-white hover:text-white/90">
-                    <MessageCircle className="mr-2 h-5 w-5" />
-                    {promptText.title}
-                  </Button>
-                  <div className="flex gap-2">
+      {isOpen && (
+        <div className="w-full max-w-md mb-4">
+          <Card className="overflow-hidden rounded-3xl shadow-xl">
+            {/* Header */}
+            <div className="bg-[#0052FF] text-white p-4">
+              <div className="flex items-center justify-between mb-6">
+                <Button variant="ghost" className="text-white hover:text-white/90">
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  {promptText.title}
+                </Button>
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-white hover:text-white/90"
+                          onClick={() => setIsMinimized(!isMinimized)}
+                        >
+                          <Minimize2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isMinimized ? "Expand" : "Minimize"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-white hover:text-white/90"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Close
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+
+              {!isMinimized && (
+                <div className="flex flex-col items-center">
+                  <div className="flex -space-x-2 mb-3">
+                    <Avatar className="border-2 border-[#0052FF]">
+                      <AvatarImage src="/ai-avatar.png" alt="AI Assistant" />
+                      <AvatarFallback>AI</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <h1 className="text-xl font-semibold mb-1">{promptText.description}</h1>
+                </div>
+              )}
+            </div>
+
+            {/* Feedback Area */}
+            {!isMinimized && (
+              <div className="bg-gray-50 max-h-[400px] overflow-y-auto p-4">
+                <div className="space-y-4">
+                  <Textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    placeholder="Enter your feedback here..."
+                    className="min-h-[120px] w-full resize-none rounded-xl border-gray-200 focus:border-[#0052FF] focus:ring-1 focus:ring-[#0052FF] transition-colors"
+                  />
+                  <div className="flex justify-end">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:text-white/90"
-                            onClick={() => setIsMinimized(!isMinimized)}
+                          <Button
+                            onClick={handleApprove}
+                            disabled={isSubmitting}
+                            className={cn(
+                              "min-w-[120px]",
+                              feedback.length === 0 ? "bg-green-600 hover:bg-green-700" : "bg-[#0052FF] hover:bg-[#0052FF]/90"
+                            )}
                           >
-                            <Minimize2 className="h-4 w-4" />
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Submitting...
+                              </>
+                            ) : feedback ? (
+                              <>
+                                <Send className="mr-2 h-4 w-4" />
+                                Submit
+                              </>
+                            ) : (
+                              <>
+                                <ThumbsUp className="mr-2 h-4 w-4" />
+                                Approve
+                              </>
+                            )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {isMinimized ? "Expand" : "Minimize"}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:text-white/90"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Close
+                          {feedback ? "Submit your feedback for review" : "Approve the current content"}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                 </div>
-
-                <AnimatePresence>
-                  {!isMinimized && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex flex-col items-center"
-                    >
-                      <div className="flex -space-x-2 mb-3">
-                        <Avatar className="border-2 border-[#0052FF]">
-                          <AvatarImage src="/ai-avatar.png" alt="AI Assistant" />
-                          <AvatarFallback>AI</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <h1 className="text-xl font-semibold mb-1">{promptText.description}</h1>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
-
-              {/* Feedback Area */}
-              <AnimatePresence>
-                {!isMinimized && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-gray-50 max-h-[400px] overflow-y-auto p-4"
-                  >
-                    <div className="space-y-4">
-                      <Textarea
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        placeholder="Enter your feedback here..."
-                        className="min-h-[120px] w-full resize-none rounded-xl border-gray-200 focus:border-[#0052FF] focus:ring-1 focus:ring-[#0052FF] transition-colors"
-                      />
-                      <div className="flex justify-end">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={handleApprove}
-                                disabled={isSubmitting}
-                                className={cn(
-                                  "min-w-[120px]",
-                                  feedback.length === 0 ? "bg-green-600 hover:bg-green-700" : "bg-[#0052FF] hover:bg-[#0052FF]/90"
-                                )}
-                              >
-                                {isSubmitting ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Submitting...
-                                  </>
-                                ) : feedback ? (
-                                  <>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    Submit
-                                  </>
-                                ) : (
-                                  <>
-                                    <ThumbsUp className="mr-2 h-4 w-4" />
-                                    Approve
-                                  </>
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {feedback ? "Submit your feedback for review" : "Approve the current content"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            )}
+          </Card>
+        </div>
+      )}
 
       {/* Toggle Button */}
       <Button
