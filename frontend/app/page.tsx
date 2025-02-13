@@ -1,12 +1,70 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { 
+  IconHexagon,
+  IconSend,
+  IconPrompt,
+  IconRocket,
+  IconWorld,
+  IconTarget,
+  IconBrain,
+  IconX,
+  IconCheck,
+  IconVideo
+} from '@tabler/icons-react';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif';
   message: string;
   success?: boolean;
 }
+
+const suggestions = [
+  { title: 'Stock market analysis of Nvidia', onClick: () => {} },
+  { title: 'Go to amazon and search for valentines day gifts', onClick: () => {} },
+  { title: 'Using reddit what is the best way to learn about AI', onClick: () => {} },
+  { title: 'What is the weather in tokyo', onClick: () => {} },
+  { title: 'Search for software jobs in kampala', onClick: () => {} },
+];
+
+const getEventIcon = (type: ProgressEvent['type']) => {
+  switch (type) {
+    case 'start':
+      return <IconRocket size={18} className="inline-block" />;
+    case 'url':
+      return <IconWorld size={18} className="inline-block" />;
+    case 'action':
+      return <IconTarget size={18} className="inline-block" />;
+    case 'thought':
+      return <IconBrain size={18} className="inline-block" />;
+    case 'error':
+      return <IconX size={18} className="inline-block" />;
+    case 'complete':
+      return <IconCheck size={18} className="inline-block" />;
+    case 'gif':
+      return <IconVideo size={18} className="inline-block" />;
+    default:
+      return null;
+  }
+};
+
+const LoadingAnimation = () => (
+  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="w-40 h-40">
+      <DotLottieReact
+        src="/loading-gif.json"
+        loop
+        autoplay
+      />
+    </div>
+  </div>
+);
 
 export default function Home() {
   const [task, setTask] = useState('');
@@ -15,9 +73,25 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const MAX_CHARS = 2000;
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (task.trim() && !loading) {
+        const syntheticEvent = {
+          preventDefault: () => {},
+          target: e.target,
+        } as React.FormEvent<HTMLFormElement>;
+        handleSubmit(syntheticEvent);
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!task.trim() || loading) return;
+    
     setLoading(true);
     setError(null);
     setResult(null);
@@ -58,6 +132,7 @@ export default function Home() {
             if (event.type === 'complete') {
               setResult(event.message);
               setLoading(false);
+              setTask(''); // Clear input after completion
             } else if (event.type === 'error') {
               setError(event.message);
               setLoading(false);
@@ -76,91 +151,126 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <h1 className="text-4xl font-bold mb-8">Browser Automation</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-          <div>
-            <label htmlFor="task" className="block text-sm font-medium mb-2">
-              Enter your task:
-            </label>
-            <textarea
-              id="task"
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-              className="w-full p-3 border rounded-lg min-h-[100px] text-black"
-              placeholder="Example: go to https://example.com and extract all article titles"
-              required
-            />
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-12">
+      {loading && <LoadingAnimation />}
+      <div className="w-full max-w-2xl space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+            <IconHexagon className="w-8 h-8 text-primary" />
           </div>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-4 py-2 bg-blue-600 text-white rounded-lg ${
-              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-            }`}
-          >
-            {loading ? 'Processing...' : 'Run Task'}
-          </button>
-        </form>
+          <h1 className="text-3xl font-bold tracking-tight">What&apos;s Your Task</h1>
+          <p className="text-muted-foreground">
+            Choose a task below or write your own to start chatting with Seam
+          </p>
+        </div>
 
-        {error && (
-          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-4">
-            {error}
+        {/* Suggestion Buttons */}
+        <div className="space-y-4">
+          <p className="text-sm font-medium text-muted-foreground">Ask about:</p>
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((suggestion, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="text-sm"
+                onClick={() => setTask(suggestion.title)}
+              >
+                {suggestion.title}
+              </Button>
+            ))}
           </div>
-        )}
+        </div>
 
-        {progress.length > 0 && (
-          <div className="mt-8 space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">Progress:</h2>
-            <div className="space-y-2">
-              {progress.map((event, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg ${
-                    event.type === 'error'
-                      ? 'bg-red-100 text-red-700'
-                      : event.type === 'complete'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  <span className="font-medium">
-                    {event.type === 'start' && '🚀 '}
-                    {event.type === 'url' && '🌐 '}
-                    {event.type === 'action' && '🎯 '}
-                    {event.type === 'thought' && '💭 '}
-                    {event.type === 'error' && '❌ '}
-                    {event.type === 'complete' && '✅ '}
-                    {event.type === 'gif' && '🎥 '}
-                  </span>
-                  {event.message}
+        {/* Modified Input Form */}
+        <Card className="p-0 shadow-none bg-muted/50">
+          <form onSubmit={handleSubmit} className="relative">
+            <div className="flex items-end">
+              <div className="flex-1 relative">
+                <div className="absolute left-4 top-4 opacity-50">
+                  <IconPrompt size={18} />
                 </div>
-              ))}
+                <Textarea
+                  placeholder={loading ? "Processing..." : "Ask AI a question or make a request..."}
+                  value={task}
+                  onChange={(e) => setTask(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                  className={`min-h-[120px] resize-none pl-12 pr-20 py-4 bg-transparent border-0 focus-visible:ring-0 text-base ${
+                    loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  maxLength={MAX_CHARS}
+                />
+                <div className="absolute bottom-3 right-4 text-xs text-muted-foreground">
+                  {task.length}/{MAX_CHARS}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+            <Button
+              type="submit"
+              size="icon"
+              disabled={loading || task.length === 0}
+              className={`absolute bottom-3 right-12 h-8 w-8 bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground ${
+                loading ? 'cursor-not-allowed opacity-50' : ''
+              }`}
+            >
+              <IconSend size={18} />
+            </Button>
+          </form>
+        </Card>
 
-        {gifUrl && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Task Recording:</h2>
-            <div className="rounded-lg overflow-hidden border border-gray-200">
-              <img src={gifUrl} alt="Task Recording" className="w-full" />
-            </div>
-          </div>
-        )}
+        {/* Results Area */}
+        <ScrollArea className="h-[500px] rounded-lg border">
+          {error && (
+            <Card className="mb-4 p-4 bg-destructive/10 text-destructive">
+              {error}
+            </Card>
+          )}
 
-        {result && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Final Result:</h2>
-            <div className="p-4 bg-green-100 rounded-lg whitespace-pre-wrap">
-              {result}
+          {progress.length > 0 && (
+            <div className="p-4 space-y-4">
+              <h2 className="text-lg font-semibold">Progress</h2>
+              <div className="space-y-2">
+                {progress.map((event, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg border ${
+                      event.type === 'error'
+                        ? 'bg-destructive/10 text-destructive'
+                        : event.type === 'complete'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <span className="font-medium mr-2">
+                      {getEventIcon(event.type)}
+                    </span>
+                    {event.message}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+
+          {gifUrl && (
+            <div className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Task Recording</h2>
+              <div className="rounded-lg overflow-hidden border">
+                <img src={gifUrl} alt="Task Recording" className="w-full" />
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Final Result</h2>
+              <Card className="p-4 bg-primary/10">
+                <pre className="whitespace-pre-wrap">{result}</pre>
+              </Card>
+            </div>
+          )}
+        </ScrollArea>
+      </div>
     </div>
   );
 }
