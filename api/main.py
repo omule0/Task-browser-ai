@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from browser_use import Agent, Browser, BrowserConfig
@@ -25,6 +26,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files directory
+app.mount("/static", StaticFiles(directory="."), name="static")
 
 # Initialize browser configuration
 ANCHOR_API_KEY = os.getenv("ANCHOR_API_KEY")
@@ -83,6 +87,18 @@ async def stream_agent_progress(agent: Agent):
                     yield json.dumps({"type": "error", "message": safe_serialize(error)}) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming errors: {e}")
+
+        # Send GIF path if available
+        try:
+            # This is the default path where browser-use saves the GIF
+            gif_path = "agent_history.gif"
+            if os.path.exists(gif_path):
+                yield json.dumps({
+                    "type": "gif",
+                    "message": f"/static/{gif_path}"
+                }) + "\n"
+        except Exception as e:
+            logging.warning(f"Error streaming GIF path: {e}")
 
         # Final result
         try:

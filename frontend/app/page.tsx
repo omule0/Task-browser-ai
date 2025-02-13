@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete';
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif';
   message: string;
   success?: boolean;
 }
@@ -14,6 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,7 @@ export default function Home() {
     setError(null);
     setResult(null);
     setProgress([]);
+    setGifUrl(null);
 
     try {
       const response = await fetch('http://localhost:8000/api/browse', {
@@ -59,6 +61,8 @@ export default function Home() {
             } else if (event.type === 'error') {
               setError(event.message);
               setLoading(false);
+            } else if (event.type === 'gif') {
+              setGifUrl(`http://localhost:8000${event.message}`);
             }
           } catch (e) {
             console.error('Failed to parse event:', e);
@@ -130,10 +134,20 @@ export default function Home() {
                     {event.type === 'thought' && '💭 '}
                     {event.type === 'error' && '❌ '}
                     {event.type === 'complete' && '✅ '}
+                    {event.type === 'gif' && '🎥 '}
                   </span>
                   {event.message}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {gifUrl && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">Task Recording:</h2>
+            <div className="rounded-lg overflow-hidden border border-gray-200">
+              <img src={gifUrl} alt="Task Recording" className="w-full" />
             </div>
           </div>
         )}
@@ -144,7 +158,7 @@ export default function Home() {
             <div className="p-4 bg-green-100 rounded-lg whitespace-pre-wrap">
               {result}
             </div>
-        </div>
+          </div>
         )}
       </main>
     </div>
