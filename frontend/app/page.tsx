@@ -16,7 +16,13 @@ import {
   IconBrain,
   IconX,
   IconCheck,
-  IconVideo
+  IconVideo,
+  IconSearch,
+  IconSourceCode,
+  IconWriting,
+  IconEye,
+  IconEyeOff,
+  IconUser
 } from '@tabler/icons-react';
 
 interface ProgressEvent {
@@ -54,9 +60,22 @@ const getEventIcon = (type: ProgressEvent['type']) => {
   }
 };
 
+const getStepIcon = (step: string) => {
+  switch (step) {
+    case 'searching':
+      return <IconSearch size={18} className="inline-block" />;
+    case 'sources':
+      return <IconSourceCode size={18} className="inline-block" />;
+    case 'writing':
+      return <IconWriting size={18} className="inline-block" />;
+    default:
+      return null;
+  }
+};
+
 const LoadingAnimation = () => (
-  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-    <div className="w-40 h-40">
+  <div className="flex items-center justify-center p-8">
+    <div className="w-20 h-20">
       <DotLottieReact
         src="/loading-gif.json"
         loop
@@ -73,6 +92,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [showSteps, setShowSteps] = useState(false);
   const MAX_CHARS = 2000;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -150,39 +170,135 @@ export default function Home() {
     }
   };
 
+  const renderUserQuery = () => (
+    <div className="flex items-start gap-3 mb-6">
+      <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+        <IconUser size={20} className="text-primary" />
+      </div>
+      <div className="flex-1">
+        <p className="text-base">{task}</p>
+      </div>
+    </div>
+  );
+
+  const renderSteps = () => {
+    const uniqueEvents = progress.reduce((acc: ProgressEvent[], event) => {
+      if (!acc.find(e => e.type === event.type)) {
+        acc.push(event);
+      }
+      return acc;
+    }, []);
+
+    return (
+      <div className="space-y-2 mb-4">
+        {uniqueEvents.map((event, index) => (
+          <div 
+            key={index} 
+            className={`flex items-center gap-2 text-sm ${
+              event.type === 'error' 
+                ? 'text-destructive' 
+                : event.type === 'complete'
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            }`}
+          >
+            <span className="w-5 h-5">{getEventIcon(event.type)}</span>
+            <span>{event.message}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center px-4 py-12">
-      {loading && <LoadingAnimation />}
       <div className="w-full max-w-2xl space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-6">
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-            <IconHexagon className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">What&apos;s Your Task</h1>
-          <p className="text-muted-foreground">
-            Choose a task below or write your own to start chatting with Seam
-          </p>
-        </div>
+        {/* Header and Suggestions - Only show when no active conversation */}
+        {!progress.length && !result && !loading && (
+          <>
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+                <IconHexagon className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">What&apos;s Your Task</h1>
+              <p className="text-muted-foreground">
+                Choose a task below or write your own to start chatting with Seam
+              </p>
+            </div>
 
-        {/* Suggestion Buttons */}
-        <div className="space-y-4">
-          <p className="text-sm font-medium text-muted-foreground">Ask about:</p>
-          <div className="flex flex-wrap gap-2">
-            {suggestions.map((suggestion, index) => (
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-muted-foreground">Ask about:</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="text-sm"
+                    onClick={() => setTask(suggestion.title)}
+                  >
+                    {suggestion.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Results Area */}
+        {(progress.length > 0 || result || loading) && (
+          <div className="space-y-6">
+            {task && renderUserQuery()}
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <IconRocket size={18} className="text-primary" />
+                <h2 className="text-lg font-semibold">Results</h2>
+              </div>
               <Button
-                key={index}
-                variant="outline"
-                className="text-sm"
-                onClick={() => setTask(suggestion.title)}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() => setShowSteps(!showSteps)}
               >
-                {suggestion.title}
+                {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                <span className="ml-2 text-sm">
+                  {showSteps ? 'Hide steps' : 'Show steps'}
+                </span>
               </Button>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Modified Input Form */}
+            {showSteps && renderSteps()}
+
+            <ScrollArea className="rounded-lg border bg-muted/50 p-4">
+              {loading && <LoadingAnimation />}
+              
+              {error && (
+                <Card className="mb-4 p-4 bg-destructive/10 text-destructive">
+                  {error}
+                </Card>
+              )}
+
+              {result && (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {result}
+                  </p>
+                </div>
+              )}
+
+              {gifUrl && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium mb-2">Task Recording</h3>
+                  <div className="rounded-lg overflow-hidden border">
+                    <img src={gifUrl} alt="Task Recording" className="w-full" />
+                  </div>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        )}
+
+        {/* Input Form */}
         <Card className="p-0 shadow-none bg-muted/50">
           <form onSubmit={handleSubmit} className="relative">
             <div className="flex items-end">
@@ -218,58 +334,6 @@ export default function Home() {
             </Button>
           </form>
         </Card>
-
-        {/* Results Area */}
-        <ScrollArea className="h-[500px] rounded-lg border">
-          {error && (
-            <Card className="mb-4 p-4 bg-destructive/10 text-destructive">
-              {error}
-            </Card>
-          )}
-
-          {progress.length > 0 && (
-            <div className="p-4 space-y-4">
-              <h2 className="text-lg font-semibold">Progress</h2>
-              <div className="space-y-2">
-                {progress.map((event, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 rounded-lg border ${
-                      event.type === 'error'
-                        ? 'bg-destructive/10 text-destructive'
-                        : event.type === 'complete'
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    <span className="font-medium mr-2">
-                      {getEventIcon(event.type)}
-                    </span>
-                    {event.message}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {gifUrl && (
-            <div className="p-4">
-              <h2 className="text-lg font-semibold mb-4">Task Recording</h2>
-              <div className="rounded-lg overflow-hidden border">
-                <img src={gifUrl} alt="Task Recording" className="w-full" />
-              </div>
-            </div>
-          )}
-
-          {result && (
-            <div className="p-4">
-              <h2 className="text-lg font-semibold mb-4">Final Result</h2>
-              <Card className="p-4 bg-primary/10">
-                <pre className="whitespace-pre-wrap">{result}</pre>
-              </Card>
-            </div>
-          )}
-        </ScrollArea>
       </div>
     </div>
   );
