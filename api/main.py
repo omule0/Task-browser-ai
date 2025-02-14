@@ -1,9 +1,7 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.exceptions import HTTPException
-from pathlib import Path
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from browser_use import Agent, Browser, BrowserConfig
@@ -33,43 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create static directory if it doesn't exist
-STATIC_DIR = Path("static")
-STATIC_DIR.mkdir(exist_ok=True)
-
-# Mount static files with proper configuration
-app.mount(
-    "/static",
-    StaticFiles(
-        directory=str(STATIC_DIR),
-        check_dir=True,  # Verify directory exists
-        html=False,  # Don't serve HTML files for security
-    ),
-    name="static"
-)
-
-# Add a custom exception handler for static files
-@app.exception_handler(404)
-async def custom_404_handler(request: Request, exc: HTTPException):
-    if request.url.path.startswith("/static/"):
-        return JSONResponse(
-            status_code=404,
-            content={"detail": "Static file not found"}
-        )
-    raise exc  # Re-raise for non-static 404s
-
-# Helper function to safely serve static files
-async def serve_static_file(filepath: str):
-    file_path = STATIC_DIR / filepath
-    if not file_path.is_file() or not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(
-        path=file_path,
-        headers={
-            "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-            "Accept-Ranges": "bytes"
-        }
-    )
+# Mount static files directory
+app.mount("/static", StaticFiles(directory="."), name="static")
 
 # Initialize browser configuration
 ANCHOR_API_KEY = os.getenv("ANCHOR_API_KEY")
@@ -250,14 +213,10 @@ async def stream_agent_progress(agent: Agent, task: str):
         # Check for GIF
         gif_path = "agent_history.gif"
         if os.path.exists(gif_path):
-            # Move the GIF to static directory
-            static_gif_path = STATIC_DIR / f"gifs/{str(uuid.uuid4())}.gif"
-            static_gif_path.parent.mkdir(exist_ok=True)
-            os.rename(gif_path, static_gif_path)
-            
+            unique_id = str(uuid.uuid4())
             gif_event = {
                 "type": "gif",
-                "message": f"/static/gifs/{static_gif_path.name}"
+                "message": f"/static/{gif_path}?t={unique_id}"
             }
             progress_events.append(gif_event)
             yield json.dumps(gif_event) + "\n"
@@ -308,7 +267,7 @@ async def browse(browser_task: BrowserTask):
         agent = Agent(
             task=browser_task.task,
             llm=ChatOpenAI(model=browser_task.model),
-            browser=browser,
+            # browser=browser,
             sensitive_data=browser_task.sensitive_data or {}
         )
         
