@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { IconRocket, IconEye, IconEyeOff } from '@tabler/icons-react';
 import { Sidebar } from "@/components/ui/sidebar";
-import {
+import { 
   LoadingAnimation,
   UserQuery,
   AgentSteps,
@@ -47,7 +47,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, sensitiveData?: Record<string, string>) => {
     e.preventDefault();
     if (!task.trim() || loading) return;
     
@@ -63,7 +63,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ task }),
+        body: JSON.stringify({ 
+          task,
+          sensitive_data: sensitiveData 
+        }),
       });
 
       if (!response.ok) {
@@ -119,61 +122,61 @@ export default function Home() {
       )}>
         <div className="container mx-auto max-w-4xl px-4 py-8">
           <div className="w-full space-y-8">
-            {/* Header and Suggestions - Only show when no active conversation */}
-            {!progress.length && !result && !loading && (
+        {/* Header and Suggestions - Only show when no active conversation */}
+        {!progress.length && !result && !loading && (
               <Suggestions onSelectTask={setTask} />
-            )}
+        )}
 
-            {/* Results Area */}
-            {(progress.length > 0 || result || loading) && (
-              <div className="space-y-6">
+        {/* Results Area */}
+        {(progress.length > 0 || result || loading) && (
+          <div className="space-y-6">
                 {task && <UserQuery task={task} />}
-                
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <IconRocket size={18} className="text-primary" />
-                    <h2 className="text-lg font-semibold">Results</h2>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    onClick={() => setShowSteps(!showSteps)}
-                  >
-                    {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                    <span className="ml-2 text-sm">
-                      {showSteps ? 'Hide steps' : 'Show steps'}
-                    </span>
-                  </Button>
-                </div>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <IconRocket size={18} className="text-primary" />
+                <h2 className="text-lg font-semibold">Results</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() => setShowSteps(!showSteps)}
+              >
+                {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                <span className="ml-2 text-sm">
+                  {showSteps ? 'Hide steps' : 'Show steps'}
+                </span>
+              </Button>
+            </div>
 
                 {showSteps && <AgentSteps progress={progress} />}
 
-                {loading && <LoadingAnimation />}
-                  
-                {error && (
+              {loading && <LoadingAnimation />}
+              
+              {error && (
                   <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                    {error}
-                  </div>
-                )}
+                  {error}
+                </div>
+              )}
 
                 {result && <MarkdownResult content={result} />}
 
                 {gifUrl && <TaskRecording gifUrl={gifUrl} />}
-              </div>
-            )}
+          </div>
+        )}
 
-            {/* Input Form */}
+        {/* Input Form */}
             <InputForm
               task={task}
               loading={loading}
               maxChars={MAX_CHARS}
               onSubmit={handleSubmit}
-              onChange={(e) => setTask(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-        </div>
+                  onChange={(e) => setTask(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                </div>
+              </div>
       </main>
     </div>
   );

@@ -11,13 +11,14 @@ import os
 import json
 import logging
 import requests
-import time
+import uuid
+from typing import Dict, Optional, List
+from services.history_service import save_run_history, get_run_history, get_run_details
 
 load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
 
 app = FastAPI()
 
@@ -80,6 +81,15 @@ def get_browser():
 class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
+    sensitive_data: Optional[Dict[str, str]] = None
+
+class HistoryResponse(BaseModel):
+    id: str
+    task: str
+    result: Optional[str]
+    error: Optional[str]
+    created_at: str
+    progress: List[Dict]
 
 def safe_serialize(obj):
     """Safely serialize objects to JSON string."""
@@ -87,11 +97,31 @@ def safe_serialize(obj):
         return str(obj)
     return str(obj)
 
-async def stream_agent_progress(agent: Agent):
-    """Stream the agent's progress as JSON events."""
+@app.get("/api/history")
+async def get_history(limit: int = 10, offset: int = 0):
+    """Get run history with pagination."""
+    return await get_run_history(limit, offset)
+
+@app.get("/api/history/{history_id}")
+async def get_history_detail(history_id: str):
+    """Get detailed run information including GIF."""
+    result = await get_run_details(history_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="History entry not found")
+    return result
+
+async def stream_agent_progress(agent: Agent, task: str):
+    """Stream the agent's progress as JSON events and save history."""
+    progress_events = []
+    final_result = None
+    error_message = None
+    gif_path = None
+
     try:
         # Start event
-        yield json.dumps({"type": "start", "message": f"Starting task: {agent.task}"}) + "\n"
+        start_event = {"type": "start", "message": f"Starting task: {task}"}
+        progress_events.append(start_event)
+        yield json.dumps(start_event) + "\n"
 
         # Run the agent and get history
         history = await agent.run()
@@ -100,11 +130,13 @@ async def stream_agent_progress(agent: Agent):
         try:
             urls = history.urls()
             if urls:
-                yield json.dumps({
+                url_event = {
                     "type": "section",
                     "title": "URLs Visited",
                     "items": [safe_serialize(url) for url in urls]
-                }) + "\n"
+                }
+                progress_events.append(url_event)
+                yield json.dumps(url_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming URLs: {e}")
 
@@ -112,11 +144,13 @@ async def stream_agent_progress(agent: Agent):
         try:
             actions = history.action_names()
             if actions:
-                yield json.dumps({
+                action_event = {
                     "type": "section",
                     "title": "Actions Taken",
                     "items": [safe_serialize(action) for action in actions]
-                }) + "\n"
+                }
+                progress_events.append(action_event)
+                yield json.dumps(action_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming actions: {e}")
 
@@ -124,11 +158,13 @@ async def stream_agent_progress(agent: Agent):
         try:
             thoughts = history.model_thoughts()
             if thoughts:
-                yield json.dumps({
+                thought_event = {
                     "type": "section",
                     "title": "Agent Reasoning",
                     "items": [safe_serialize(thought) for thought in thoughts]
-                }) + "\n"
+                }
+                progress_events.append(thought_event)
+                yield json.dumps(thought_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming thoughts: {e}")
 
@@ -136,11 +172,13 @@ async def stream_agent_progress(agent: Agent):
         try:
             content = history.extracted_content()
             if content:
-                yield json.dumps({
+                content_event = {
                     "type": "section",
                     "title": "Extracted Content",
                     "items": [safe_serialize(item) for item in content]
-                }) + "\n"
+                }
+                progress_events.append(content_event)
+                yield json.dumps(content_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming extracted content: {e}")
 
@@ -148,11 +186,13 @@ async def stream_agent_progress(agent: Agent):
         try:
             results = history.action_results()
             if results:
-                yield json.dumps({
+                result_event = {
                     "type": "section",
                     "title": "Action Results",
                     "items": [safe_serialize(result) for result in results]
-                }) + "\n"
+                }
+                progress_events.append(result_event)
+                yield json.dumps(result_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming action results: {e}")
 
@@ -160,62 +200,79 @@ async def stream_agent_progress(agent: Agent):
         try:
             if history.has_errors():
                 errors = history.errors()
-                yield json.dumps({
+                error_event = {
                     "type": "section",
                     "title": "Errors",
                     "items": [safe_serialize(error) for error in errors]
-                }) + "\n"
+                }
+                progress_events.append(error_event)
+                yield json.dumps(error_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming errors: {e}")
 
-        # Send GIF path if available
-        try:
-            # This is the default path where browser-use saves the GIF
-            gif_path = "agent_history.gif"
-            if os.path.exists(gif_path):
-                # Add timestamp to prevent caching
-                timestamp = int(time.time())
-                yield json.dumps({
-                    "type": "gif",
-                    "message": f"/static/{gif_path}?t={timestamp}"
-                }) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming GIF path: {e}")
+        # Check for GIF
+        gif_path = "agent_history.gif"
+        if os.path.exists(gif_path):
+            unique_id = str(uuid.uuid4())
+            gif_event = {
+                "type": "gif",
+                "message": f"/static/{gif_path}?t={unique_id}"
+            }
+            progress_events.append(gif_event)
+            yield json.dumps(gif_event) + "\n"
 
         # Final result
         try:
             final_result = history.final_result()
             is_done = history.is_done()
 
-            yield json.dumps({
+            complete_event = {
                 "type": "complete",
                 "message": safe_serialize(final_result),
                 "success": bool(is_done)
-            }) + "\n"
+            }
+            progress_events.append(complete_event)
+            yield json.dumps(complete_event) + "\n"
+
         except Exception as e:
-            logging.warning(f"Error streaming final result: {e}")
-            yield json.dumps({
+            error_message = f"Error getting final result: {str(e)}"
+            error_event = {
                 "type": "error",
-                "message": f"Error getting final result: {str(e)}"
-            }) + "\n"
+                "message": error_message
+            }
+            progress_events.append(error_event)
+            yield json.dumps(error_event) + "\n"
 
     except Exception as e:
-        logging.error(f"Stream error: {e}")
-        yield json.dumps({"type": "error", "message": str(e)}) + "\n"
+        error_message = str(e)
+        error_event = {"type": "error", "message": error_message}
+        progress_events.append(error_event)
+        yield json.dumps(error_event) + "\n"
+    
+    finally:
+        # Save run history
+        await save_run_history(
+            task=task,
+            result=final_result,
+            progress=progress_events,
+            gif_path=gif_path if os.path.exists(gif_path or "") else None,
+            error=error_message
+        )
 
 @app.post("/api/browse")
 async def browse(browser_task: BrowserTask):
     try:
-        # Get a new browser instance for each request
         browser = get_browser()
         
         agent = Agent(
             task=browser_task.task,
             llm=ChatOpenAI(model=browser_task.model),
             browser=browser,
+            sensitive_data=browser_task.sensitive_data or {}
         )
+        
         return StreamingResponse(
-            stream_agent_progress(agent),
+            stream_agent_progress(agent, browser_task.task),
             media_type="text/event-stream"
         )
     except Exception as e:
