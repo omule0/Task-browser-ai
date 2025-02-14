@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { IconRocket, IconEye, IconEyeOff } from '@tabler/icons-react';
-import { Sidebar } from "@/components/ui/sidebar";
 import { 
   LoadingAnimation,
   UserQuery,
@@ -31,7 +30,6 @@ export default function Home() {
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [showSteps, setShowSteps] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const MAX_CHARS = 2000;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -113,24 +111,17 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={setIsSidebarCollapsed} />
-      <main className={cn(
-        "flex-1 w-full transition-all duration-300",
-        "md:ml-0", // Remove margin on desktop as sidebar is sticky
-        isSidebarCollapsed ? "ml-[60px]" : "ml-[200px]" // Add margin on mobile to prevent overlap
-      )}>
-        <div className="container mx-auto max-w-4xl px-4 py-8">
-          <div className="w-full space-y-8">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="w-full space-y-8">
         {/* Header and Suggestions - Only show when no active conversation */}
         {!progress.length && !result && !loading && (
-              <Suggestions onSelectTask={setTask} />
+          <Suggestions onSelectTask={setTask} />
         )}
 
         {/* Results Area */}
         {(progress.length > 0 || result || loading) && (
           <div className="space-y-6">
-                {task && <UserQuery task={task} />}
+            {task && <UserQuery task={task} />}
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -150,34 +141,32 @@ export default function Home() {
               </Button>
             </div>
 
-                {showSteps && <AgentSteps progress={progress} />}
+            {showSteps && <AgentSteps progress={progress} />}
 
-              {loading && <LoadingAnimation />}
-              
-              {error && (
-                  <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                  {error}
-                </div>
-              )}
+            {loading && <LoadingAnimation />}
+            
+            {error && (
+              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {error}
+              </div>
+            )}
 
-                {result && <MarkdownResult content={result} />}
+            {result && <MarkdownResult content={result} />}
 
-                {gifUrl && <TaskRecording gifUrl={gifUrl} />}
+            {gifUrl && <TaskRecording gifUrl={gifUrl} />}
           </div>
         )}
 
         {/* Input Form */}
-            <InputForm
-              task={task}
-              loading={loading}
-              maxChars={MAX_CHARS}
-              onSubmit={handleSubmit}
-                  onChange={(e) => setTask(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                />
-                </div>
-              </div>
-      </main>
+        <InputForm
+          task={task}
+          loading={loading}
+          maxChars={MAX_CHARS}
+          onSubmit={handleSubmit}
+          onChange={(e) => setTask(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
     </div>
   );
 }

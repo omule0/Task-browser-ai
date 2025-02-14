@@ -68,8 +68,9 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
   const progress = JSON.parse(data.progress);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-[calc(100vh-2rem)]">
+      {/* Fixed Header */}
+      <div className="flex items-center justify-between py-3 px-1">
         <h2 className="text-lg font-semibold">Run Details</h2>
         <Button
           variant="ghost"
@@ -80,42 +81,45 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
         </Button>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-sm font-medium mb-2">Task</h3>
-          <p className="text-sm text-muted-foreground">{data.task}</p>
-        </div>
-
-        {data.error && (
-          <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-            {data.error}
-          </div>
-        )}
-
-        <div>
-          <h3 className="text-sm font-medium mb-2">Progress</h3>
-          <AgentSteps progress={progress} />
-        </div>
-
-        {data.result && (
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto pr-1">
+        <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium mb-2">Result</h3>
-            <MarkdownResult content={data.result} />
+            <h3 className="text-sm font-medium mb-2">Task</h3>
+            <p className="text-sm text-muted-foreground">{data.task}</p>
           </div>
-        )}
 
-        {data.gif && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Recording</h3>
-            <div className="rounded-lg overflow-hidden border">
-              <img
-                src={`data:image/gif;base64,${data.gif}`}
-                alt="Task Recording"
-                className="w-full"
-              />
+          {data.error && (
+            <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
+              {data.error}
             </div>
+          )}
+
+          <div>
+            <h3 className="text-sm font-medium mb-2">Progress</h3>
+            <AgentSteps progress={progress} />
           </div>
-        )}
+
+          {data.result && (
+            <div>
+              <h3 className="text-sm font-medium mb-2">Result</h3>
+              <MarkdownResult content={data.result} />
+            </div>
+          )}
+
+          {data.gif && (
+            <div>
+              <h3 className="text-sm font-medium mb-2">Recording</h3>
+              <div className="rounded-lg overflow-hidden border">
+                <img
+                  src={`data:image/gif;base64,${data.gif}`}
+                  alt="Task Recording"
+                  className="w-full"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
