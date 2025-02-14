@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import ReactMarkdown from 'react-markdown'; 
+import remarkGfm from 'remark-gfm';
 import { 
   IconHexagon,
   IconSend,
@@ -17,18 +18,17 @@ import {
   IconX,
   IconCheck,
   IconVideo,
-  IconSearch,
-  IconSourceCode,
-  IconWriting,
   IconEye,
   IconEyeOff,
   IconUser
 } from '@tabler/icons-react';
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif';
-  message: string;
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
+  message?: string;
   success?: boolean;
+  title?: string;
+  items?: string[];
 }
 
 const suggestions = [
@@ -60,22 +60,9 @@ const getEventIcon = (type: ProgressEvent['type']) => {
   }
 };
 
-const getStepIcon = (step: string) => {
-  switch (step) {
-    case 'searching':
-      return <IconSearch size={18} className="inline-block" />;
-    case 'sources':
-      return <IconSourceCode size={18} className="inline-block" />;
-    case 'writing':
-      return <IconWriting size={18} className="inline-block" />;
-    default:
-      return null;
-  }
-};
-
 const LoadingAnimation = () => (
   <div className="flex items-center justify-center p-8">
-    <div className="w-20 h-20">
+    <div className="w-40 h-40">
       <DotLottieReact
         src="/loading-gif.json"
         loop
@@ -182,28 +169,28 @@ export default function Home() {
   );
 
   const renderSteps = () => {
-    const uniqueEvents = progress.reduce((acc: ProgressEvent[], event) => {
-      if (!acc.find(e => e.type === event.type)) {
-        acc.push(event);
+    const sections = progress.reduce((acc: { [key: string]: string[] }, event) => {
+      if (event.type === 'section' && event.title && event.items) {
+        acc[event.title] = event.items;
       }
       return acc;
-    }, []);
+    }, {});
 
     return (
-      <div className="space-y-2 mb-4">
-        {uniqueEvents.map((event, index) => (
-          <div 
-            key={index} 
-            className={`flex items-center gap-2 text-sm ${
-              event.type === 'error' 
-                ? 'text-destructive' 
-                : event.type === 'complete'
-                ? 'text-primary'
-                : 'text-muted-foreground'
-            }`}
-          >
-            <span className="w-5 h-5">{getEventIcon(event.type)}</span>
-            <span>{event.message}</span>
+      <div className="space-y-6">
+        {Object.entries(sections).map(([title, items]) => (
+          <div key={title} className="space-y-2">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              {getEventIcon('action')}
+              {title}
+            </h3>
+            <ul className="space-y-2 ml-6">
+              {items.map((item, index) => (
+                <li key={index} className="text-sm text-muted-foreground">
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
@@ -269,32 +256,57 @@ export default function Home() {
 
             {showSteps && renderSteps()}
 
-            <ScrollArea className="rounded-lg border bg-muted/50 p-4">
-              {loading && <LoadingAnimation />}
+            {loading && <LoadingAnimation />}
               
-              {error && (
-                <Card className="mb-4 p-4 bg-destructive/10 text-destructive">
-                  {error}
-                </Card>
-              )}
+            {error && (
+              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {error}
+              </div>
+            )}
 
-              {result && (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
+            {/* Final Results Section */}
+            {result && (
+              <div className="space-y-4">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    className="text-sm text-muted-foreground"
+                    components={{
+                      // Override default elements with custom styling
+                      p: ({children}) => <p className="text-sm text-muted-foreground mb-4">{children}</p>,
+                      a: ({href, children}) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                      ul: ({children}) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
+                      ol: ({children}) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
+                      li: ({children}) => <li className="mb-1">{children}</li>,
+                      h1: ({children}) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
+                      h2: ({children}) => <h2 className="text-lg font-semibold mb-3">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-base font-medium mb-2">{children}</h3>,
+                      code: ({children}) => <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>,
+                      pre: ({children}) => <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">{children}</pre>,
+                      blockquote: ({children}) => <blockquote className="border-l-4 border-primary/10 pl-4 italic mb-4">{children}</blockquote>,
+                    }}
+                  >
                     {result}
-                  </p>
+                  </ReactMarkdown>
                 </div>
-              )}
+              </div>
+            )}
 
-              {gifUrl && (
-                <div className="mt-4">
-                  <h3 className="text-sm font-medium mb-2">Task Recording</h3>
-                  <div className="rounded-lg overflow-hidden border">
-                    <img src={gifUrl} alt="Task Recording" className="w-full" />
-                  </div>
+            {/* Task Recording Section */}
+            {gifUrl && (
+              <div className="mt-6">
+                <h3 className="text-sm font-medium mb-3">Task Recording</h3>
+                <div className="rounded-lg overflow-hidden border">
+                  <img 
+                    src={gifUrl} 
+                    alt="Task Recording" 
+                    className="w-full"
+                    key={gifUrl}
+                  />
                 </div>
-              )}
-            </ScrollArea>
+              </div>
+            )}
+
           </div>
         )}
 

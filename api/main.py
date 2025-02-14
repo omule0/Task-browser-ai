@@ -10,11 +10,14 @@ from dotenv import load_dotenv
 import os
 import json
 import logging
+import requests
+import time
 
 load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
 
 app = FastAPI()
 
@@ -33,24 +36,56 @@ app.mount("/static", StaticFiles(directory="."), name="static")
 # Initialize browser configuration
 ANCHOR_API_KEY = os.getenv("ANCHOR_API_KEY")
 
-hosted_browser = Browser(
-    config=BrowserConfig(
-        cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}"
-    )
-)
 
+# Browser configuration settings
+browser_configuration = {
+    "adblock_config": {"active": True},
+    "captcha_config": {"active": True},
+    "proxy_config": {"active": True},
+}
+
+def create_browser_session():
+    """Create a new browser session with Anchor Browser."""
+    try:
+        response = requests.post(
+            "https://api.anchorbrowser.io/api/sessions",
+            headers={
+                "anchor-api-key": ANCHOR_API_KEY,
+                "Content-Type": "application/json",
+            },
+            json=browser_configuration,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logging.error(f"Failed to create browser session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create browser session")
+
+# Initialize the browser with session management
+def get_browser():
+    """Get a configured browser instance with session management."""
+    try:
+        session_data = create_browser_session()
+        session_id = session_data["id"]
+        
+        return Browser(
+            config=BrowserConfig(
+                cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}&sessionId={session_id}"
+            )
+        )
+    except Exception as e:
+        logging.error(f"Failed to initialize browser: {e}")
+        raise HTTPException(status_code=500, detail="Failed to initialize browser")
 
 class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
-
 
 def safe_serialize(obj):
     """Safely serialize objects to JSON string."""
     if hasattr(obj, '__dict__'):
         return str(obj)
     return str(obj)
-
 
 async def stream_agent_progress(agent: Agent):
     """Stream the agent's progress as JSON events."""
@@ -61,30 +96,75 @@ async def stream_agent_progress(agent: Agent):
         # Run the agent and get history
         history = await agent.run()
 
-        # Stream agent progress events
+        # Stream URLs visited
         try:
-            for url in history.urls():
-                yield json.dumps({"type": "url", "message": safe_serialize(url)}) + "\n"
+            urls = history.urls()
+            if urls:
+                yield json.dumps({
+                    "type": "section",
+                    "title": "URLs Visited",
+                    "items": [safe_serialize(url) for url in urls]
+                }) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming URLs: {e}")
 
+        # Stream actions taken
         try:
-            for action in history.action_names():
-                yield json.dumps({"type": "action", "message": safe_serialize(action)}) + "\n"
+            actions = history.action_names()
+            if actions:
+                yield json.dumps({
+                    "type": "section",
+                    "title": "Actions Taken",
+                    "items": [safe_serialize(action) for action in actions]
+                }) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming actions: {e}")
 
+        # Stream model thoughts
         try:
-            for thought in history.model_thoughts():
-                yield json.dumps({"type": "thought", "message": safe_serialize(thought)}) + "\n"
+            thoughts = history.model_thoughts()
+            if thoughts:
+                yield json.dumps({
+                    "type": "section",
+                    "title": "Agent Reasoning",
+                    "items": [safe_serialize(thought) for thought in thoughts]
+                }) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming thoughts: {e}")
+
+        # Stream extracted content
+        try:
+            content = history.extracted_content()
+            if content:
+                yield json.dumps({
+                    "type": "section",
+                    "title": "Extracted Content",
+                    "items": [safe_serialize(item) for item in content]
+                }) + "\n"
+        except Exception as e:
+            logging.warning(f"Error streaming extracted content: {e}")
+
+        # Stream action results
+        try:
+            results = history.action_results()
+            if results:
+                yield json.dumps({
+                    "type": "section",
+                    "title": "Action Results",
+                    "items": [safe_serialize(result) for result in results]
+                }) + "\n"
+        except Exception as e:
+            logging.warning(f"Error streaming action results: {e}")
 
         # Check for any errors
         try:
             if history.has_errors():
-                for error in history.errors():
-                    yield json.dumps({"type": "error", "message": safe_serialize(error)}) + "\n"
+                errors = history.errors()
+                yield json.dumps({
+                    "type": "section",
+                    "title": "Errors",
+                    "items": [safe_serialize(error) for error in errors]
+                }) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming errors: {e}")
 
@@ -93,9 +173,11 @@ async def stream_agent_progress(agent: Agent):
             # This is the default path where browser-use saves the GIF
             gif_path = "agent_history.gif"
             if os.path.exists(gif_path):
+                # Add timestamp to prevent caching
+                timestamp = int(time.time())
                 yield json.dumps({
                     "type": "gif",
-                    "message": f"/static/{gif_path}"
+                    "message": f"/static/{gif_path}?t={timestamp}"
                 }) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming GIF path: {e}")
@@ -121,14 +203,16 @@ async def stream_agent_progress(agent: Agent):
         logging.error(f"Stream error: {e}")
         yield json.dumps({"type": "error", "message": str(e)}) + "\n"
 
-
 @app.post("/api/browse")
 async def browse(browser_task: BrowserTask):
     try:
+        # Get a new browser instance for each request
+        browser = get_browser()
+        
         agent = Agent(
             task=browser_task.task,
             llm=ChatOpenAI(model=browser_task.model),
-            browser=hosted_browser,
+            browser=browser,
         )
         return StreamingResponse(
             stream_agent_progress(agent),
