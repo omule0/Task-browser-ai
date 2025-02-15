@@ -126,6 +126,21 @@ async def stream_agent_progress(agent: Agent, task: str):
         # Run the agent and get history
         history = await agent.run()
 
+        # Create GIF from history
+        try:
+            agent.create_history_gif()
+            gif_path = "agent_history.gif"
+            if os.path.exists(gif_path):
+                unique_id = str(uuid.uuid4())
+                gif_event = {
+                    "type": "gif",
+                    "message": f"/static/{gif_path}?t={unique_id}"
+                }
+                progress_events.append(gif_event)
+                yield json.dumps(gif_event) + "\n"
+        except Exception as e:
+            logging.warning(f"Error creating GIF: {e}")
+
         # Stream URLs visited
         try:
             urls = history.urls()
@@ -209,17 +224,6 @@ async def stream_agent_progress(agent: Agent, task: str):
                 yield json.dumps(error_event) + "\n"
         except Exception as e:
             logging.warning(f"Error streaming errors: {e}")
-
-        # Check for GIF
-        gif_path = "agent_history.gif"
-        if os.path.exists(gif_path):
-            unique_id = str(uuid.uuid4())
-            gif_event = {
-                "type": "gif",
-                "message": f"/static/{gif_path}?t={unique_id}"
-            }
-            progress_events.append(gif_event)
-            yield json.dumps(gif_event) + "\n"
 
         # Final result
         try:
