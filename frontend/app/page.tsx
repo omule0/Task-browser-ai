@@ -112,8 +112,14 @@ export default function Home() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
-      <LoginButton />
-      <UserGreetText />
+      {/* Header Section */}
+      <header className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <UserGreetText />
+          <LoginButton />
+        </div>
+      </header>
+
       <div className="w-full space-y-8">
         {/* Header and Suggestions - Only show when no active conversation */}
         {!progress.length && !result && !loading && (
