@@ -17,7 +17,6 @@ import {
 
 const sidebarItems = [
   { icon: <IconHome size={20} />, label: 'Home', href: '/' },
-  { icon: <IconPlus size={20} />, label: 'New Chat', href: '/new' },
   { icon: <IconRefresh size={20} />, label: 'History', href: '/history' },
 ];
 

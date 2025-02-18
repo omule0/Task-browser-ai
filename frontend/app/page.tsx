@@ -14,6 +14,8 @@ import {
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
+import { UseCasesCarousel } from '@/components/ui/use-cases-carousel';
+
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
   message?: string;
@@ -87,16 +89,20 @@ export default function Home() {
         for (const eventText of events) {
           try {
             const event: ProgressEvent = JSON.parse(eventText);
+            console.log('Stream Event:', event);
             setProgress(prev => [...prev, event]);
 
             if (event.type === 'complete') {
+              console.log('Complete Event:', event.message);
               setResult(event.message || null);
               setLoading(false);
               setTask(''); // Clear input after completion
             } else if (event.type === 'error') {
+              console.log('Error Event:', event.message);
               setError(event.message || null);
               setLoading(false);
             } else if (event.type === 'gif') {
+              console.log('GIF Event:', event.message);
               setGifUrl(event.message ? `http://localhost:8000${event.message}` : null);
             }
           } catch (e) {
@@ -119,6 +125,12 @@ export default function Home() {
           <LoginButton />
         </div>
       </header>
+
+      {/* Use Cases Carousel */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-center mb-6">What Can You Do?</h2>
+        <UseCasesCarousel />
+      </div>
 
       <div className="w-full space-y-8">
         {/* Header and Suggestions - Only show when no active conversation */}
