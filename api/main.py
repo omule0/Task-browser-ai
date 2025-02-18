@@ -307,12 +307,11 @@ async def browse(request: Request, browser_task: BrowserTask):
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            max_steps=20,
             # browser=browser, #only uncomment when in production
             llm=ChatOpenAI(
                 model=browser_task.model,
             ),
-            sensitive_data=browser_task.sensitive_data or {}
+            sensitive_data=browser_task.sensitive_data or {},
         )
 
         return StreamingResponse(

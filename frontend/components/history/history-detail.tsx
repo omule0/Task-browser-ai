@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { LoadingAnimation, AgentSteps, MarkdownResult } from "@/components/agent-ui";
-import { IconX } from '@tabler/icons-react';
+import { IconX, IconAlertTriangle } from '@tabler/icons-react';
 import { createClient } from '@/utils/supabase/client';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 interface HistoryDetailProps {
   historyId: string | null;
@@ -14,6 +16,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!historyId) {
@@ -42,22 +45,37 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
           }
         );
         
+        if (response.status === 404) {
+          throw new Error('Run history not found');
+        }
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch history details');
+          const errorData = await response.json().catch(() => null);
+          throw new Error(errorData?.detail || 'Failed to fetch history details');
         }
         
         const data = await response.json();
+        if (!data) {
+          throw new Error('No data received');
+        }
+        
         setData(data);
       } catch (error) {
         console.error('Error fetching history details:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load history details');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load history details';
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchDetails();
-  }, [historyId]);
+  }, [historyId, toast]);
 
   if (!historyId) {
     return (
@@ -77,15 +95,25 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive">
-        <p>{error}</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Alert variant="destructive" className="max-w-md">
+          <IconAlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error Loading Details</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   if (!data) return null;
 
-  const progress = JSON.parse(data.progress);
+  let progress;
+  try {
+    progress = typeof data.progress === 'string' ? JSON.parse(data.progress) : data.progress;
+  } catch (e) {
+    console.error('Error parsing progress:', e);
+    progress = [];
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)]">
@@ -110,15 +138,21 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
           </div>
 
           {data.error && (
-            <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-              {data.error}
-            </div>
+            <Alert variant="destructive">
+              <IconAlertTriangle className="h-4 w-4" />
+              <AlertTitle>Task Failed</AlertTitle>
+              <AlertDescription className="mt-2">
+                {data.error}
+              </AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <h3 className="text-sm font-medium mb-2">Progress</h3>
-            <AgentSteps progress={progress} />
-          </div>
+          {progress && progress.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium mb-2">Progress</h3>
+              <AgentSteps progress={progress} />
+            </div>
+          )}
 
           {data.result && (
             <div>
@@ -127,7 +161,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
             </div>
           )}
 
-          {data.gif_content && (
+          {data.gif_content ? (
             <div>
               <h3 className="text-sm font-medium mb-2">Recording</h3>
               <div className="rounded-lg overflow-hidden border">
@@ -138,7 +172,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
                 />
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

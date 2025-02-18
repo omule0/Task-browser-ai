@@ -126,32 +126,47 @@ async def get_run_details(
                 raise
 
         # Get the run history
-        history_response = supabase.table(HISTORY_TABLE)\
-            .select('*')\
-            .eq('id', history_id)\
-            .eq('user_id', user_id)\
-            .single()\
-            .execute()
+        try:
+            history_response = supabase.table(HISTORY_TABLE)\
+                .select('*')\
+                .eq('id', history_id)\
+                .eq('user_id', user_id)\
+                .single()\
+                .execute()
+                
+            if not history_response.data:
+                return None
+                
+            history = history_response.data
             
-        if not history_response.data:
-            return None
+            # Get the associated GIF if it exists
+            try:
+                gif_response = supabase.table(GIF_TABLE)\
+                    .select('gif_content')\
+                    .eq('history_id', history_id)\
+                    .execute()
+                    
+                if gif_response.data and len(gif_response.data) > 0:
+                    history['gif_content'] = gif_response.data[0]['gif_content']
+                else:
+                    history['gif_content'] = None
+            except Exception as e:
+                logging.error(f"Error fetching GIF content: {str(e)}")
+                history['gif_content'] = None  # Ensure gif_content is set to None on error
+                # Don't fail the whole request if GIF fetch fails
+                pass
+                    
+            return history
             
-        history = history_response.data
-        
-        # Get the associated GIF if it exists
-        gif_response = supabase.table(GIF_TABLE)\
-            .select('gif_content')\
-            .eq('history_id', history_id)\
-            .single()\
-            .execute()
-            
-        if gif_response.data:
-            history['gif_content'] = gif_response.data['gif_content']
-            
-        return history
+        except Exception as e:
+            if 'no rows' in str(e).lower():
+                return None
+            raise
         
     except Exception as e:
         logging.error(f"Error getting run details: {str(e)}")
+        if hasattr(e, 'response'):
+            logging.error(f"Response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
         raise Exception(f"Failed to get run details: {str(e)}")
 
 async def delete_run_history(

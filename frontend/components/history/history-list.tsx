@@ -1,7 +1,7 @@
 import { LoadingAnimation } from "@/components/agent-ui";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import { IconCheck, IconX, IconAlertTriangle } from '@tabler/icons-react';
 
 interface HistoryItem {
   id: string;
@@ -45,22 +45,31 @@ export function HistoryList({ history, selectedId, onSelect, loading }: HistoryL
             variant="ghost"
             className={`w-full justify-start h-auto py-3 ${
               selectedId === item.id ? 'bg-primary/10' : ''
-            }`}
+            } ${item.error ? 'hover:bg-destructive/5' : 'hover:bg-primary/5'}`}
             onClick={() => onSelect(item.id)}
           >
             <div className="flex items-start gap-3 w-full">
               <div className="mt-1">
                 {item.error ? (
-                  <IconX size={16} className="text-destructive" />
-                ) : (
+                  <IconAlertTriangle size={16} className="text-destructive" />
+                ) : item.result ? (
                   <IconCheck size={16} className="text-primary" />
+                ) : (
+                  <IconX size={16} className="text-muted-foreground" />
                 )}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium truncate">{item.task}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium truncate">{item.task}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                  </p>
+                  {item.error && (
+                    <span className="text-xs text-destructive">Failed</span>
+                  )}
+                </div>
               </div>
             </div>
           </Button>

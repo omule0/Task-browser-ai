@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 import './globals.css';
+import { Toaster } from "@/components/ui/toaster"
+
 
 export default function RootLayout({
   children,
@@ -14,7 +16,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      <body >
         <div className="flex min-h-screen bg-background">
           <Sidebar isCollapsed={isSidebarCollapsed} onToggle={setIsSidebarCollapsed} />
           <main className={cn(
@@ -25,6 +27,7 @@ export default function RootLayout({
             {children}
           </main>
         </div>
+        <Toaster />
       </body>
     </html>
   );

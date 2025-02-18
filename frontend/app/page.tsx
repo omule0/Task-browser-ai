@@ -15,6 +15,7 @@ import {
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
 import { createClient } from '@/utils/supabase/client';
+import { useToast } from "@/hooks/use-toast";
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
@@ -34,11 +35,23 @@ export default function Home() {
   const [showSteps, setShowSteps] = useState(false);
   const MAX_CHARS = 2000;
   const supabase = createClient();
+  const { toast } = useToast();
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (task.trim() && !loading) {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Required",
+            description: "Please sign in to send messages.",
+          });
+          return;
+        }
+        
         const syntheticEvent = {
           preventDefault: () => {},
           target: e.target,
@@ -52,6 +65,17 @@ export default function Home() {
     e.preventDefault();
     if (!task.trim() || loading) return;
     
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please sign in to send messages.",
+      });
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
@@ -59,12 +83,6 @@ export default function Home() {
     setGifUrl(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('You must be logged in to perform this action');
-      }
-
       const response = await fetch('http://localhost:8000/api/browse', {
         method: 'POST',
         headers: {
