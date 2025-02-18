@@ -5,4 +5,3 @@ browser-use
 pydantic
 requests
 supabase
-python-jose

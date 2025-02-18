@@ -12,8 +12,8 @@ import {
   Suggestions,
   InputForm
 } from '@/components/agent-ui';
-import { cn } from '@/lib/utils';
-
+import LoginButton from '@/components/LoginLogoutButton';
+import UserGreetText from '@/components/UserGreetText';
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
   message?: string;
@@ -112,6 +112,8 @@ export default function Home() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
+      <LoginButton />
+      <UserGreetText />
       <div className="w-full space-y-8">
         {/* Header and Suggestions - Only show when no active conversation */}
         {!progress.length && !result && !loading && (
