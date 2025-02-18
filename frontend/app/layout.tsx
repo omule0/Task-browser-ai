@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sidebar } from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 import './globals.css';
 

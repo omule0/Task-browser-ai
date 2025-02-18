@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -13,7 +13,9 @@ import logging
 import requests
 import uuid
 from typing import Dict, Optional, List
-from services.history_service import save_run_history, get_run_history, get_run_details
+from services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
+from utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
+import base64
 
 load_dotenv()
 
@@ -98,24 +100,36 @@ def safe_serialize(obj):
     return str(obj)
 
 @app.get("/api/history")
-async def get_history(limit: int = 10, offset: int = 0):
+async def get_history(request: Request, limit: int = 10, offset: int = 0):
     """Get run history with pagination."""
-    return await get_run_history(limit, offset)
+    user_id, tokens = await get_user_id_and_tokens(request)
+    return await get_run_history(user_id, limit, offset, auth_tokens=tokens)
 
 @app.get("/api/history/{history_id}")
-async def get_history_detail(history_id: str):
+async def get_history_detail(request: Request, history_id: str):
     """Get detailed run information including GIF."""
-    result = await get_run_details(history_id)
+    user_id, tokens = await get_user_id_and_tokens(request)
+    result = await get_run_details(user_id, history_id, auth_tokens=tokens)
     if not result:
         raise HTTPException(status_code=404, detail="History entry not found")
     return result
 
-async def stream_agent_progress(agent: Agent, task: str):
+@app.delete("/api/history/{history_id}")
+async def delete_history(request: Request, history_id: str):
+    """Delete a run history entry."""
+    user_id, tokens = await get_user_id_and_tokens(request)
+    success = await delete_run_history(user_id, history_id, auth_tokens=tokens)
+    if not success:
+        raise HTTPException(status_code=404, detail="History entry not found")
+    return {"status": "success"}
+
+async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens):
     """Stream the agent's progress as JSON events and save history."""
     progress_events = []
     final_result = None
     error_message = None
-    gif_path = None
+    gif_content = None
+    history_saved = False
 
     try:
         # Start event
@@ -126,11 +140,15 @@ async def stream_agent_progress(agent: Agent, task: str):
         # Run the agent and get history
         history = await agent.run()
 
-        # Create GIF from history
+        # Process all events and collect information
         try:
+            # Create GIF from history
             agent.create_history_gif()
             gif_path = "agent_history.gif"
             if os.path.exists(gif_path):
+                with open(gif_path, 'rb') as gif_file:
+                    gif_content = base64.b64encode(gif_file.read()).decode('utf-8')
+                
                 unique_id = str(uuid.uuid4())
                 gif_event = {
                     "type": "gif",
@@ -225,7 +243,7 @@ async def stream_agent_progress(agent: Agent, task: str):
         except Exception as e:
             logging.warning(f"Error streaming errors: {e}")
 
-        # Final result
+        # Get final result
         try:
             final_result = history.final_result()
             is_done = history.is_done()
@@ -238,6 +256,19 @@ async def stream_agent_progress(agent: Agent, task: str):
             progress_events.append(complete_event)
             yield json.dumps(complete_event) + "\n"
 
+            # Save the complete run history
+            if not history_saved:
+                await save_run_history(
+                    user_id=user_id,
+                    task=task,
+                    progress_events=progress_events,
+                    result=final_result,
+                    error=error_message,
+                    gif_content=gif_content,
+                    auth_tokens=auth_tokens
+                )
+                history_saved = True
+
         except Exception as e:
             error_message = f"Error getting final result: {str(e)}"
             error_event = {
@@ -248,38 +279,56 @@ async def stream_agent_progress(agent: Agent, task: str):
             yield json.dumps(error_event) + "\n"
 
     except Exception as e:
-        error_message = str(e)
-        error_event = {"type": "error", "message": error_message}
+        error_message = f"Error: {str(e)}"
+        error_event = {
+            "type": "error",
+            "message": error_message
+        }
         progress_events.append(error_event)
         yield json.dumps(error_event) + "\n"
-    
-    finally:
-        # Save run history
-        await save_run_history(
-            task=task,
-            result=final_result,
-            progress=progress_events,
-            gif_path=gif_path if os.path.exists(gif_path or "") else None,
-            error=error_message
-        )
+        
+        # Save failed run if not already saved
+        if not history_saved:
+            await save_run_history(
+                user_id=user_id,
+                task=task,
+                progress_events=progress_events,
+                error=error_message,
+                auth_tokens=auth_tokens
+            )
+            history_saved = True
 
 @app.post("/api/browse")
-async def browse(browser_task: BrowserTask):
+async def browse(request: Request, browser_task: BrowserTask):
+    """Handle browser automation task with authentication."""
+    user_id, tokens = await get_user_id_and_tokens(request)
+    
     try:
         browser = get_browser()
-        
         agent = Agent(
             task=browser_task.task,
-            llm=ChatOpenAI(model=browser_task.model),
-            # browser=browser,
+            max_steps=20,
+            # browser=browser, #only uncomment when in production
+            llm=ChatOpenAI(
+                model=browser_task.model,
+            ),
             sensitive_data=browser_task.sensitive_data or {}
         )
-        
+
         return StreamingResponse(
-            stream_agent_progress(agent, browser_task.task),
+            stream_agent_progress(agent, browser_task.task, user_id, tokens),
             media_type="text/event-stream"
         )
+
     except Exception as e:
+        # Save failed run
+        await save_run_history(
+            user_id=user_id,
+            task=browser_task.task,
+            progress_events=[{"type": "error", "message": str(e)}],
+            error=str(e),
+            auth_tokens=tokens
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

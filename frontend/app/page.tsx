@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRocket, IconEye, IconEyeOff } from '@tabler/icons-react';
+import { IconRocket, IconEye, IconEyeOff, IconRefresh } from '@tabler/icons-react';
 import { 
   LoadingAnimation,
   UserQuery,
@@ -14,7 +14,7 @@ import {
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
-import { UseCasesCarousel } from '@/components/ui/use-cases-carousel';
+import { createClient } from '@/utils/supabase/client';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
@@ -33,6 +33,7 @@ export default function Home() {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [showSteps, setShowSteps] = useState(false);
   const MAX_CHARS = 2000;
+  const supabase = createClient();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -58,10 +59,17 @@ export default function Home() {
     setGifUrl(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('You must be logged in to perform this action');
+      }
+
       const response = await fetch('http://localhost:8000/api/browse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ 
           task,
@@ -126,12 +134,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Use Cases Carousel */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-center mb-6">What Can You Do?</h2>
-        <UseCasesCarousel />
-      </div>
-
       <div className="w-full space-y-8">
         {/* Header and Suggestions - Only show when no active conversation */}
         {!progress.length && !result && !loading && (
@@ -148,17 +150,34 @@ export default function Home() {
                 <IconRocket size={18} className="text-primary" />
                 <h2 className="text-lg font-semibold">Results</h2>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={() => setShowSteps(!showSteps)}
-              >
-                {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                <span className="ml-2 text-sm">
-                  {showSteps ? 'Hide steps' : 'Show steps'}
-                </span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => {
+                    setProgress([]);
+                    setResult(null);
+                    setError(null);
+                    setGifUrl(null);
+                    setTask('');
+                  }}
+                >
+                  <IconRefresh size={16} />
+                  <span className="ml-2 text-sm">Refresh chat</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => setShowSteps(!showSteps)}
+                >
+                  {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                  <span className="ml-2 text-sm">
+                    {showSteps ? 'Hide steps' : 'Show steps'}
+                  </span>
+                </Button>
+              </div>
             </div>
 
             {showSteps && <AgentSteps progress={progress} />}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { LoadingAnimation, AgentSteps, MarkdownResult } from "@/components/agent-ui";
 import { IconX } from '@tabler/icons-react';
+import { createClient } from '@/utils/supabase/client';
 
 interface HistoryDetailProps {
   historyId: string | null;
@@ -12,6 +13,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     if (!historyId) {
@@ -24,13 +26,31 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:8000/api/history/${historyId}`);
-        if (!response.ok) throw new Error('Failed to fetch history details');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error('You must be logged in to view history details');
+        }
+
+        const response = await fetch(
+          `http://localhost:8000/api/history/${historyId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch history details');
+        }
+        
         const data = await response.json();
         setData(data);
       } catch (error) {
         console.error('Error fetching history details:', error);
-        setError('Failed to load history details');
+        setError(error instanceof Error ? error.message : 'Failed to load history details');
       } finally {
         setLoading(false);
       }
@@ -107,12 +127,12 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
             </div>
           )}
 
-          {data.gif && (
+          {data.gif_content && (
             <div>
               <h3 className="text-sm font-medium mb-2">Recording</h3>
               <div className="rounded-lg overflow-hidden border">
                 <img
-                  src={`data:image/gif;base64,${data.gif}`}
+                  src={`data:image/gif;base64,${data.gif_content}`}
                   alt="Task Recording"
                   className="w-full"
                 />

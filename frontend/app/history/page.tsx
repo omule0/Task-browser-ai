@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { HistoryList } from '@/components/history/history-list';
 import { HistoryDetail } from '@/components/history/history-detail';
+import { createClient } from '@/utils/supabase/client';
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<any[]>([]);
@@ -13,18 +14,40 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const LIMIT = 10;
+  const supabase = createClient();
 
   const fetchHistory = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`http://localhost:8000/api/history?limit=${LIMIT}&offset=${page * LIMIT}`);
-      if (!response.ok) throw new Error('Failed to fetch history');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('You must be logged in to view history');
+      }
+
+      const response = await fetch(
+        `http://localhost:8000/api/history?limit=${LIMIT}&offset=${page * LIMIT}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch history');
+      }
+      
       const data = await response.json();
       setHistory(data);
       setHasMore(data.length === LIMIT);
     } catch (error) {
       console.error('Error fetching history:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -59,6 +82,12 @@ export default function HistoryPage() {
             </Button>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-md">
+            {error}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="p-4">

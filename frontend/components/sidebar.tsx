@@ -91,7 +91,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           )}
           asChild
         >
-          <Link href="/settings">
+          {/* <Link href="/settings">
             <div className={cn(
               "flex items-center gap-4",
               isCollapsed && "justify-center"
@@ -99,7 +99,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               <IconSettings size={20} />
               {!isCollapsed && <span>Settings</span>}
             </div>
-          </Link>
+          </Link> */}
         </Button>
         <Button
           variant="ghost"
