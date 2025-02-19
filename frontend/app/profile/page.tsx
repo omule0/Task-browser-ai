@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createClient } from '@/utils/supabase/client';
 import { LoadingAnimation } from '@/components/agent-ui';
 import { IconEdit, IconCheck, IconX } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
 
 interface Profile {
   id: string;
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState<Partial<Profile>>({});
   const supabase = createClient();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     fetchProfile();
@@ -34,11 +36,7 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Required",
-          description: "Please sign in to view your profile.",
-        });
+        router.push('/login');
         return;
       }
 
@@ -69,11 +67,7 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Required",
-          description: "Please sign in to update your profile.",
-        });
+        router.push('/login');
         return;
       }
 
@@ -81,7 +75,6 @@ export default function ProfilePage() {
         .from('profiles')
         .update({
           full_name: editForm.full_name,
-          avatar_url: editForm.avatar_url,
         })
         .eq('id', session.user.id);
 
@@ -112,6 +105,20 @@ export default function ProfilePage() {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <Card className="p-6 text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-sm text-gray-500 mb-4">Please log in to view your profile</p>
+          <Button onClick={() => router.push('/login')}>
+            Go to Login
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="flex flex-col space-y-6">
@@ -133,7 +140,7 @@ export default function ProfilePage() {
                 size="sm"
                 onClick={() => {
                   setEditing(false);
-                  setEditForm(profile || {});
+                  setEditForm(profile);
                 }}
               >
                 <IconX className="h-4 w-4 mr-2" />
@@ -164,20 +171,11 @@ export default function ProfilePage() {
                     placeholder="Enter your full name"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="avatarUrl">Avatar URL</Label>
-                  <Input
-                    id="avatarUrl"
-                    value={editForm.avatar_url || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, avatar_url: e.target.value }))}
-                    placeholder="Enter avatar URL"
-                  />
-                </div>
               </>
             ) : (
               <>
                 <div className="flex items-center space-x-4">
-                  {profile?.avatar_url && (
+                  {profile.avatar_url && (
                     <img
                       src={profile.avatar_url}
                       alt="Profile"
@@ -185,8 +183,8 @@ export default function ProfilePage() {
                     />
                   )}
                   <div>
-                    <h2 className="text-xl font-semibold">{profile?.full_name || 'You must be logged in to view Profile '}</h2>
-                    <p className="text-sm text-muted-foreground">{profile?.email}</p>
+                    <h2 className="text-xl font-semibold">{profile.full_name || 'No name set'}</h2>
+                    <p className="text-sm text-muted-foreground">{profile.email}</p>
                   </div>
                 </div>
               </>

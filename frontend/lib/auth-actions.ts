@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 
 export async function login(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
@@ -26,7 +26,7 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
@@ -54,7 +54,7 @@ export async function signup(formData: FormData) {
 }
 
 export async function signout() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.auth.signOut();
   if (error) {
     console.log(error);
@@ -65,15 +65,21 @@ export async function signout() {
 }
 
 export async function signInWithGoogle() {
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOAuth({
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
     },
   });
 
   if (error) {
+    console.log(error);
     redirect("/error");
   }
+
+  redirect(data.url);
 }
