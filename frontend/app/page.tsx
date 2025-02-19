@@ -83,7 +83,7 @@ export default function Home() {
     setGifUrl(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/browse', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export default function Home() {
               setLoading(false);
             } else if (event.type === 'gif') {
               console.log('GIF Event:', event.message);
-              setGifUrl(event.message ? `http://localhost:8000${event.message}` : null);
+              setGifUrl(event.message ? `${process.env.NEXT_PUBLIC_API_URL}${event.message}` : null);
             }
           } catch (e) {
             console.error('Failed to parse event:', e);

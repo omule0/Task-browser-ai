@@ -36,7 +36,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
         }
 
         const response = await fetch(
-          `http://localhost:8000/api/history/${historyId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/history/${historyId}`,
           {
             headers: {
               'Authorization': `Bearer ${session.access_token}`,

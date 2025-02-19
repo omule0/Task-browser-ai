@@ -29,7 +29,7 @@ export default function HistoryPage() {
       }
 
       const response = await fetch(
-        `http://localhost:8000/api/history?limit=${LIMIT}&offset=${page * LIMIT}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/history?limit=${LIMIT}&offset=${page * LIMIT}`,
         {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
