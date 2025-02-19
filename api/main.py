@@ -47,8 +47,9 @@ app.mount("/static", StaticFiles(directory="."), name="static")
 ANCHOR_API_KEY = os.getenv("ANCHOR_API_KEY")
 
 # Add this after the app initialization
-TEMP_DIR = Path(tempfile.gettempdir()) / "digest_ai_gifs"
-TEMP_DIR.mkdir(exist_ok=True)
+TEMP_DIR = Path("/tmp/digest_ai_gifs")  # Use absolute path in container
+TEMP_DIR.mkdir(parents=True, exist_ok=True)
+os.chmod(TEMP_DIR, 0o777)  # Ensure directory is writable
 
 # Browser configuration settings
 browser_configuration = {
@@ -133,6 +134,35 @@ async def delete_history(request: Request, history_id: str):
         raise HTTPException(status_code=404, detail="History entry not found")
     return {"status": "success"}
 
+async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
+    """Create GIF from agent history with proper error handling."""
+    temp_gif_path = TEMP_DIR / f"agent_history_{run_id}.gif"
+    try:
+        # Ensure the directory exists and is writable
+        TEMP_DIR.mkdir(parents=True, exist_ok=True)
+        
+        logging.info(f"Creating GIF at path: {temp_gif_path}")
+        agent.create_history_gif(output_path=str(temp_gif_path))
+        
+        if temp_gif_path.exists():
+            with open(temp_gif_path, 'rb') as gif_file:
+                gif_content = base64.b64encode(gif_file.read()).decode('utf-8')
+                logging.info(f"Successfully created GIF with size: {len(gif_content)}")
+                return gif_content
+        else:
+            logging.warning(f"GIF file was not created at {temp_gif_path}")
+            return None
+    except Exception as e:
+        logging.error(f"Error creating GIF: {str(e)}")
+        return None
+    finally:
+        try:
+            if temp_gif_path.exists():
+                temp_gif_path.unlink()
+                logging.info(f"Cleaned up temporary GIF file: {temp_gif_path}")
+        except Exception as e:
+            logging.warning(f"Error cleaning up GIF file: {str(e)}")
+
 async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens):
     """Stream the agent's progress as JSON events and save history."""
     progress_events = []
@@ -140,7 +170,6 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
     error_message = None
     gif_content = None
     history_saved = False
-    temp_gif_path = None
     run_id = str(uuid.uuid4())  # Generate run ID at the start
 
     try:
@@ -157,25 +186,12 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         # Run the agent and get history
         history = await agent.run()
 
-        # Process all events and collect information
-        try:
-            # Create unique filename for this run
-            temp_gif_path = TEMP_DIR / f"agent_history_{uuid.uuid4()}.gif"
-            
-            # Create GIF from history with the temp path
-            agent.create_history_gif(output_path=str(temp_gif_path))
-            
-            if temp_gif_path.exists():
-                with open(temp_gif_path, 'rb') as gif_file:
-                    gif_content = base64.b64encode(gif_file.read()).decode('utf-8')
-                
-                # Don't stream the GIF, just save it to the database later
-                progress_events.append({"type": "gif", "message": "GIF recording saved"})
-                yield json.dumps({"type": "gif", "message": "GIF recording saved"}) + "\n"
-        except Exception as e:
-            logging.warning(f"Error creating GIF: {e}")
-            # Don't let GIF creation failure stop the process
-
+        # Create GIF after agent run completes
+        gif_content = await create_gif_from_history(agent, run_id)
+        if gif_content:
+            progress_events.append({"type": "gif", "message": "GIF recording saved"})
+            yield json.dumps({"type": "gif", "message": "GIF recording saved"}) + "\n"
+        
         # Stream URLs visited
         try:
             urls = history.urls()
@@ -316,14 +332,6 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                 run_id=run_id
             )
             history_saved = True
-
-    finally:
-        # Cleanup temporary GIF file
-        if temp_gif_path and temp_gif_path.exists():
-            try:
-                temp_gif_path.unlink()
-            except Exception as e:
-                logging.warning(f"Error cleaning up temporary GIF file: {e}")
 
 @app.post("/api/browse")
 async def browse(request: Request, browser_task: BrowserTask):

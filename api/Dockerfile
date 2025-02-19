@@ -4,6 +4,15 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
+# Install system dependencies required for browser screenshots and GIF creation
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /tmp/digest_ai_gifs && \
+    chmod 777 /tmp/digest_ai_gifs
+
 # Copy the requirements file to the working directory
 COPY requirements.txt .
 
