@@ -24,10 +24,14 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+]
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_origins=origins,  # In production, replace with your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
