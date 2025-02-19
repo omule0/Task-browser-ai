@@ -5,6 +5,7 @@ from typing import Optional, List, Dict
 import json
 import logging
 from utils.auth import AuthTokens
+import uuid
 
 async def save_run_history(
     user_id: str,
@@ -13,26 +14,11 @@ async def save_run_history(
     result: Optional[str] = None,
     error: Optional[str] = None,
     gif_content: Optional[str] = None,
-    auth_tokens: Optional[AuthTokens] = None
+    auth_tokens: Optional[AuthTokens] = None,
+    run_id: Optional[str] = None
 ) -> str:
     """Save run history and associated GIF content."""
     try:
-        # Ensure progress is properly serialized
-        progress_json = json.dumps(progress_events)
-        
-        # Create the history entry
-        history_data = {
-            'user_id': user_id,
-            'task': task,
-            'progress': progress_json,
-            'result': result if result else None,
-            'error': error if error else None,
-            'created_at': datetime.utcnow().isoformat()
-        }
-        
-        logging.info(f"Saving run history for user {user_id}")
-        logging.debug(f"History data: {history_data}")
-
         # Set auth context if tokens are provided
         if auth_tokens:
             try:
@@ -43,7 +29,22 @@ async def save_run_history(
             except Exception as e:
                 logging.error(f"Error setting session: {str(e)}")
                 raise
+
+        # Prepare history data
+        history_id = run_id or str(uuid.uuid4())  # Use provided run_id or generate new one
+        history_data = {
+            'id': history_id,
+            'user_id': user_id,
+            'task': task,
+            'progress': json.dumps(progress_events),
+            'result': result,
+            'error': error,
+            'created_at': datetime.utcnow().isoformat()
+        }
         
+        logging.info(f"Saving run history for user {user_id}")
+        logging.debug(f"History data: {history_data}")
+
         # Insert history
         history_response = supabase.table(HISTORY_TABLE).insert(history_data).execute()
         
@@ -54,6 +55,7 @@ async def save_run_history(
         
         # If there's a GIF, save it
         if gif_content:
+            logging.info(f"GIF content length: {len(gif_content)}")
             gif_data = {
                 'history_id': history_id,
                 'gif_content': gif_content,
@@ -65,6 +67,10 @@ async def save_run_history(
             
             if not gif_response.data:
                 logging.error("Failed to save GIF content")
+            else:
+                logging.info("Successfully saved GIF content")
+        else:
+            logging.warning("No GIF content provided to save")
             
         return history_id
         
@@ -127,6 +133,7 @@ async def get_run_details(
 
         # Get the run history
         try:
+            logging.info(f"Fetching history for ID: {history_id}")
             history_response = supabase.table(HISTORY_TABLE)\
                 .select('*')\
                 .eq('id', history_id)\
@@ -135,25 +142,28 @@ async def get_run_details(
                 .execute()
                 
             if not history_response.data:
+                logging.warning(f"No history found for ID: {history_id}")
                 return None
                 
             history = history_response.data
             
             # Get the associated GIF if it exists
             try:
+                logging.info(f"Fetching GIF for history ID: {history_id}")
                 gif_response = supabase.table(GIF_TABLE)\
                     .select('gif_content')\
                     .eq('history_id', history_id)\
                     .execute()
                     
                 if gif_response.data and len(gif_response.data) > 0:
+                    logging.info(f"Found GIF content of length: {len(gif_response.data[0]['gif_content'])}")
                     history['gif_content'] = gif_response.data[0]['gif_content']
                 else:
+                    logging.warning(f"No GIF content found for history ID: {history_id}")
                     history['gif_content'] = None
             except Exception as e:
                 logging.error(f"Error fetching GIF content: {str(e)}")
-                history['gif_content'] = None  # Ensure gif_content is set to None on error
-                # Don't fail the whole request if GIF fetch fails
+                history['gif_content'] = None
                 pass
                     
             return history

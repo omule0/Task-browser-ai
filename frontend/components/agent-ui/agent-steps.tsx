@@ -9,7 +9,7 @@ import {
 } from '@tabler/icons-react';
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
   message?: string;
   success?: boolean;
   title?: string;
@@ -32,6 +32,8 @@ const getEventIcon = (type: ProgressEvent['type']) => {
       return <IconCheck size={18} className="inline-block" />;
     case 'gif':
       return <IconVideo size={18} className="inline-block" />;
+    case 'run_id':
+      return null;
     default:
       return null;
   }

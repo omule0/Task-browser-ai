@@ -16,6 +16,9 @@ from typing import Dict, Optional, List
 from services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
 from utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
 import base64
+import tempfile
+import shutil
+from pathlib import Path
 
 load_dotenv()
 
@@ -43,6 +46,9 @@ app.mount("/static", StaticFiles(directory="."), name="static")
 # Initialize browser configuration
 ANCHOR_API_KEY = os.getenv("ANCHOR_API_KEY")
 
+# Add this after the app initialization
+TEMP_DIR = Path(tempfile.gettempdir()) / "digest_ai_gifs"
+TEMP_DIR.mkdir(exist_ok=True)
 
 # Browser configuration settings
 browser_configuration = {
@@ -134,6 +140,8 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
     error_message = None
     gif_content = None
     history_saved = False
+    temp_gif_path = None
+    run_id = str(uuid.uuid4())  # Generate run ID at the start
 
     try:
         # Start event
@@ -141,27 +149,32 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         progress_events.append(start_event)
         yield json.dumps(start_event) + "\n"
 
+        # Send run ID event
+        run_id_event = {"type": "run_id", "message": run_id}
+        progress_events.append(run_id_event)
+        yield json.dumps(run_id_event) + "\n"
+
         # Run the agent and get history
         history = await agent.run()
 
         # Process all events and collect information
         try:
-            # Create GIF from history
-            agent.create_history_gif()
-            gif_path = "agent_history.gif"
-            if os.path.exists(gif_path):
-                with open(gif_path, 'rb') as gif_file:
+            # Create unique filename for this run
+            temp_gif_path = TEMP_DIR / f"agent_history_{uuid.uuid4()}.gif"
+            
+            # Create GIF from history with the temp path
+            agent.create_history_gif(output_path=str(temp_gif_path))
+            
+            if temp_gif_path.exists():
+                with open(temp_gif_path, 'rb') as gif_file:
                     gif_content = base64.b64encode(gif_file.read()).decode('utf-8')
                 
-                unique_id = str(uuid.uuid4())
-                gif_event = {
-                    "type": "gif",
-                    "message": f"/static/{gif_path}?t={unique_id}"
-                }
-                progress_events.append(gif_event)
-                yield json.dumps(gif_event) + "\n"
+                # Don't stream the GIF, just save it to the database later
+                progress_events.append({"type": "gif", "message": "GIF recording saved"})
+                yield json.dumps({"type": "gif", "message": "GIF recording saved"}) + "\n"
         except Exception as e:
             logging.warning(f"Error creating GIF: {e}")
+            # Don't let GIF creation failure stop the process
 
         # Stream URLs visited
         try:
@@ -262,14 +275,15 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 
             # Save the complete run history
             if not history_saved:
-                await save_run_history(
+                history_id = await save_run_history(
                     user_id=user_id,
                     task=task,
                     progress_events=progress_events,
                     result=final_result,
                     error=error_message,
                     gif_content=gif_content,
-                    auth_tokens=auth_tokens
+                    auth_tokens=auth_tokens,
+                    run_id=run_id
                 )
                 history_saved = True
 
@@ -298,9 +312,18 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                 task=task,
                 progress_events=progress_events,
                 error=error_message,
-                auth_tokens=auth_tokens
+                auth_tokens=auth_tokens,
+                run_id=run_id
             )
             history_saved = True
+
+    finally:
+        # Cleanup temporary GIF file
+        if temp_gif_path and temp_gif_path.exists():
+            try:
+                temp_gif_path.unlink()
+            except Exception as e:
+                logging.warning(f"Error cleaning up temporary GIF file: {e}")
 
 @app.post("/api/browse")
 async def browse(request: Request, browser_task: BrowserTask):
@@ -311,7 +334,7 @@ async def browse(request: Request, browser_task: BrowserTask):
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            browser=browser, #only uncomment when in production
+            #browser=browser, #only uncomment when in production
             llm=ChatOpenAI(
                 model=browser_task.model,
             ),

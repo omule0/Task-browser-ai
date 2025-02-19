@@ -18,8 +18,9 @@ import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section';
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
   message?: string;
+  content?: string;
   success?: boolean;
   title?: string;
   items?: string[];
@@ -31,11 +32,48 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
-  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [gifContent, setGifContent] = useState<string | null>(null);
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
   const [showSteps, setShowSteps] = useState(false);
   const MAX_CHARS = 2000;
   const supabase = createClient();
   const { toast } = useToast();
+
+  const fetchGifContent = async (runId: string) => {
+    try {
+      console.log('Fetching GIF content for run ID:', runId);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn('No session available for GIF fetch');
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history/${runId}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch GIF content');
+      }
+
+      const data = await response.json();
+      console.log('Received history data:', { 
+        hasGifContent: !!data.gif_content,
+        gifContentLength: data.gif_content ? data.gif_content.length : 0 
+      });
+      
+      if (data.gif_content) {
+        setGifContent(data.gif_content);
+        console.log('Set GIF content successfully');
+      } else {
+        console.warn('No GIF content in response');
+      }
+    } catch (error) {
+      console.error('Error fetching GIF:', error);
+    }
+  };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -80,7 +118,8 @@ export default function Home() {
     setError(null);
     setResult(null);
     setProgress([]);
-    setGifUrl(null);
+    setGifContent(null);
+    setCurrentRunId(null);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
@@ -105,6 +144,8 @@ export default function Home() {
       }
 
       const decoder = new TextDecoder();
+      let currentRunIdTemp: string | null = null;  // Temporary variable to track run ID
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -118,18 +159,30 @@ export default function Home() {
             console.log('Stream Event:', event);
             setProgress(prev => [...prev, event]);
 
-            if (event.type === 'complete') {
+            // Handle run_id event first
+            if (event.type === 'run_id') {
+              console.log('Received run ID:', event.message);
+              currentRunIdTemp = event.message || null;  // Store in temp variable
+              setCurrentRunId(event.message || null);
+            }
+            // Handle other events
+            else if (event.type === 'complete') {
               console.log('Complete Event:', event.message);
               setResult(event.message || null);
               setLoading(false);
               setTask(''); // Clear input after completion
+              
+              // Use the temp variable instead of the state
+              if (currentRunIdTemp) {
+                console.log('Initiating GIF fetch for run ID:', currentRunIdTemp);
+                await fetchGifContent(currentRunIdTemp);
+              } else {
+                console.warn('No run ID available after completion');
+              }
             } else if (event.type === 'error') {
               console.log('Error Event:', event.message);
               setError(event.message || null);
               setLoading(false);
-            } else if (event.type === 'gif') {
-              console.log('GIF Event:', event.message);
-              setGifUrl(event.message ? `${process.env.NEXT_PUBLIC_API_URL}${event.message}` : null);
             }
           } catch (e) {
             console.error('Failed to parse event:', e);
@@ -140,6 +193,15 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
+  };
+
+  const handleReset = () => {
+    setProgress([]);
+    setResult(null);
+    setError(null);
+    setGifContent(null);
+    setCurrentRunId(null);
+    setTask('');
   };
 
   return (
@@ -173,13 +235,7 @@ export default function Home() {
                   variant="ghost"
                   size="sm"
                   className="text-muted-foreground"
-                  onClick={() => {
-                    setProgress([]);
-                    setResult(null);
-                    setError(null);
-                    setGifUrl(null);
-                    setTask('');
-                  }}
+                  onClick={handleReset}
                 >
                   <IconRefresh size={16} />
                   <span className="ml-2 text-sm">Refresh chat</span>
@@ -210,7 +266,7 @@ export default function Home() {
 
             {result && <MarkdownResult content={result} />}
 
-            {gifUrl && <TaskRecording gifUrl={gifUrl} />}
+            {gifContent && <TaskRecording gifContent={gifContent} />}
           </div>
         )}
 
