@@ -307,7 +307,7 @@ async def browse(request: Request, browser_task: BrowserTask):
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            # browser=browser, #only uncomment when in production
+            browser=browser, #only uncomment when in production
             llm=ChatOpenAI(
                 model=browser_task.model,
             ),
