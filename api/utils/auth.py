@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Request
 from supabase.client import Client
-import jwt
+import jwt as pyjwt  # Rename to avoid confusion
+from jwt.exceptions import InvalidTokenError, DecodeError  # Import specific exceptions
 from typing import Optional, Tuple, Dict
 from config.supabase import supabase
 
@@ -25,7 +26,7 @@ async def get_user_id_and_tokens(request: Request) -> Tuple[str, AuthTokens]:
     
     try:
         # Verify the JWT token using Supabase's JWT secret
-        decoded = jwt.decode(
+        decoded = pyjwt.decode(
             access_token,
             options={"verify_signature": False}  # We trust Supabase's token
         )
@@ -37,8 +38,8 @@ async def get_user_id_and_tokens(request: Request) -> Tuple[str, AuthTokens]:
         
         return user_id, AuthTokens(access_token, refresh_token)
         
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except (InvalidTokenError, DecodeError) as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Authentication error: {str(e)}")
 
