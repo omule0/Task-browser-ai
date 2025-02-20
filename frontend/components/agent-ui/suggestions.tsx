@@ -6,10 +6,10 @@ interface SuggestionsProps {
 }
 
 const suggestions = [
-  { title: 'Stock market analysis of Nvidia', onClick: () => {} },
-  { title: 'Go to amazon and search for valentines day gifts', onClick: () => {} },
+  { title: 'Do a stock market analysis of Nvidia', onClick: () => {} },
+  { title: 'Go to amazon and search for shoes and return the first 10 results', onClick: () => {} },
   { title: 'Using reddit what is the best way to learn about AI', onClick: () => {} },
-  { title: 'What is the weather in tokyo', onClick: () => {} },
+  { title: 'What is the weather in tokyo like today', onClick: () => {} },
   { title: 'Search for software jobs in kampala', onClick: () => {} },
 ];
 

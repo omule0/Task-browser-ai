@@ -4,13 +4,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { IconPrompt, IconSend } from '@tabler/icons-react';
 import { SensitiveDataForm } from './sensitive-data-form';
-
+import { EmailNotification } from './email-notification';
 
 interface InputFormProps {
   task: string;
   loading: boolean;
   maxChars: number;
-  onSubmit: (e: React.FormEvent, sensitiveData?: Record<string, string>) => void;
+  onSubmit: (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
@@ -24,9 +24,10 @@ export const InputForm = ({
   onKeyDown 
 }: InputFormProps) => {
   const [sensitiveData, setSensitiveData] = useState<Record<string, string>>({});
+  const [email, setEmail] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
-    onSubmit(e, sensitiveData);
+    onSubmit(e, sensitiveData, email);
   };
 
   return (
@@ -62,12 +63,13 @@ export const InputForm = ({
           </Button>
         </div>
 
-        <div className="flex justify-start">
-        <div className="w-full">
+        <div className="flex flex-col space-y-4">
+          <div className="w-full">
             <SensitiveDataForm onSensitiveDataChange={setSensitiveData} />
           </div>
-
-          
+          <div className="w-full">
+            <EmailNotification onEmailChange={setEmail} />
+          </div>
         </div>
       </form>
     </Card>

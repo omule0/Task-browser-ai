@@ -99,7 +99,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent, sensitiveData?: Record<string, string>) => {
+  const handleSubmit = async (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
     e.preventDefault();
     if (!task.trim() || loading) return;
     
@@ -130,12 +130,21 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           task,
-          sensitive_data: sensitiveData 
+          sensitive_data: sensitiveData,
+          email: email || undefined // Only include email if it's provided
         }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to fetch results');
+      }
+
+      // Show toast if email notifications are enabled
+      if (email) {
+        toast({
+          title: "Email Notifications Enabled",
+          description: "You will receive an email when the task is complete.",
+        });
       }
 
       const reader = response.body?.getReader();

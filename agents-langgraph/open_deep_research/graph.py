@@ -1,6 +1,5 @@
 from typing import Literal
-
-from langchain_anthropic import ChatAnthropic 
+ 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
@@ -10,13 +9,13 @@ from langgraph.constants import Send
 from langgraph.graph import START, END, StateGraph
 from langgraph.types import interrupt, Command
 
-from src.open_deep_research.state import ReportStateInput, ReportStateOutput, Sections, ReportState, SectionState, SectionOutputState, Queries, Feedback
-from src.open_deep_research.prompts import report_planner_query_writer_instructions, report_planner_instructions, query_writer_instructions, section_writer_instructions, final_section_writer_instructions, section_grader_instructions
-from src.open_deep_research.configuration import Configuration
-from src.open_deep_research.utils import tavily_search_async, deduplicate_and_format_sources, format_sections, perplexity_search
+from open_deep_research.state import ReportStateInput, ReportStateOutput, Sections, ReportState, SectionState, SectionOutputState, Queries, Feedback
+from open_deep_research.prompts import report_planner_query_writer_instructions, report_planner_instructions, query_writer_instructions, section_writer_instructions, final_section_writer_instructions, section_grader_instructions
+from open_deep_research.configuration import Configuration
+from open_deep_research.utils import tavily_search_async, bing_search_async, deduplicate_and_format_sources, format_sections
 
 # Set writer model
-writer_model = ChatAnthropic(model=Configuration.writer_model, temperature=0) 
+writer_model = ChatOpenAI(model=Configuration.writer_model, temperature=0) 
 
 # Nodes
 async def generate_report_plan(state: ReportState, config: RunnableConfig):
@@ -59,8 +58,8 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
     if search_api == "tavily":
         search_results = await tavily_search_async(query_list)
         source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
-    elif search_api == "perplexity":
-        search_results = perplexity_search(query_list)
+    elif search_api == "bing":
+        search_results = await bing_search_async(query_list)
         source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
     else:
         raise ValueError(f"Unsupported search API: {configurable.search_api}")
@@ -170,9 +169,9 @@ async def search_web(state: SectionState, config: RunnableConfig):
     if search_api == "tavily":
         search_results = await tavily_search_async(query_list)
         source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=True)
-    elif search_api == "perplexity":
-        search_results = perplexity_search(query_list)
-        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=False)
+    elif search_api == "bing":
+        search_results = await bing_search_async(query_list)
+        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=True)
     else:
         raise ValueError(f"Unsupported search API: {configurable.search_api}")
 

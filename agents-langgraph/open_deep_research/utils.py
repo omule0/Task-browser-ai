@@ -1,10 +1,10 @@
-
 import os
 import asyncio
 import requests
+import aiohttp
 
 from tavily import TavilyClient, AsyncTavilyClient
-from src.open_deep_research.state import Section
+from open_deep_research.state import Section
 from langsmith import traceable
 
 tavily_client = TavilyClient()
@@ -122,96 +122,46 @@ async def tavily_search_async(search_queries):
     return search_docs
 
 @traceable
-def perplexity_search(search_queries):
-    """Search the web using the Perplexity API.
-    
+async def bing_search_async(search_queries):
+    """
+    Performs concurrent web searches using the Bing API.
+
     Args:
         search_queries (List[SearchQuery]): List of search queries to process
-  
+
     Returns:
-        List[dict]: List of search responses from Perplexity API, one per query. Each response has format:
-            {
-                'query': str,                    # The original search query
-                'follow_up_questions': None,      
-                'answer': None,
-                'images': list,
-                'results': [                     # List of search results
-                    {
-                        'title': str,            # Title of the search result
-                        'url': str,              # URL of the result
-                        'content': str,          # Summary/snippet of content
-                        'score': float,          # Relevance score
-                        'raw_content': str|None  # Full content or None for secondary citations
-                    },
-                    ...
-                ]
-            }
+        List[dict]: List of search responses formatted to match Tavily API format
     """
+    subscription_key = os.getenv('BING_API_KEY')
+    endpoint = "https://api.bing.microsoft.com/v7.0/search"
+    headers = {"Ocp-Apim-Subscription-Key": subscription_key}
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "Authorization": f"Bearer {os.getenv('PERPLEXITY_API_KEY')}"
-    }
-    
-    search_docs = []
-    for query in search_queries:
-
-        payload = {
-            "model": "sonar-pro",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "Search the web and provide factual information with sources."
-                },
-                {
-                    "role": "user",
-                    "content": query
+    async def search_bing(query):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint, headers=headers, params={"q": query, "count": 5}) as response:
+                search_results = await response.json()
+                
+                # Format results to match Tavily structure
+                results = []
+                for item in search_results.get("webPages", {}).get("value", []):
+                    results.append({
+                        "title": item["name"],
+                        "url": item["url"],
+                        "content": item["snippet"],
+                        "score": 1.0,
+                        "raw_content": item["snippet"]  # Bing doesn't provide full content
+                    })
+                
+                return {
+                    "query": query,
+                    "follow_up_questions": None,
+                    "answer": None,
+                    "images": [],
+                    "results": results
                 }
-            ]
-        }
-        
-        response = requests.post(
-            "https://api.perplexity.ai/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        response.raise_for_status()  # Raise exception for bad status codes
-        
-        # Parse the response
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-        citations = data.get("citations", ["https://perplexity.ai"])
-        
-        # Create results list for this query
-        results = []
-        
-        # First citation gets the full content
-        results.append({
-            "title": f"Perplexity Search, Source 1",
-            "url": citations[0],
-            "content": content,
-            "raw_content": content,
-            "score": 1.0  # Adding score to match Tavily format
-        })
-        
-        # Add additional citations without duplicating content
-        for i, citation in enumerate(citations[1:], start=2):
-            results.append({
-                "title": f"Perplexity Search, Source {i}",
-                "url": citation,
-                "content": "See primary source for full content",
-                "raw_content": None,
-                "score": 0.5  # Lower score for secondary sources
-            })
-        
-        # Format response to match Tavily structure
-        search_docs.append({
-            "query": query,
-            "follow_up_questions": None,
-            "answer": None,
-            "images": [],
-            "results": results
-        })
-    
+
+    # Execute all searches concurrently
+    search_tasks = [search_bing(query.search_query) for query in search_queries]
+    search_docs = await asyncio.gather(*search_tasks)
+
     return search_docs

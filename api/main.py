@@ -19,6 +19,7 @@ import base64
 import tempfile
 import shutil
 from pathlib import Path
+from services.email_service import send_task_completion_email
 
 load_dotenv()
 
@@ -95,6 +96,7 @@ class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
+    email: Optional[str] = None  # Add email field
 
 class HistoryResponse(BaseModel):
     id: str
@@ -163,7 +165,7 @@ async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
         except Exception as e:
             logging.warning(f"Error cleaning up GIF file: {str(e)}")
 
-async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens):
+async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens, browser_task: BrowserTask):
     """Stream the agent's progress as JSON events and save history."""
     progress_events = []
     final_result = None
@@ -184,7 +186,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         yield json.dumps(run_id_event) + "\n"
 
         # Run the agent and get history
-        history = await agent.run()
+        history = await agent.run(max_steps=20)
 
         # Create GIF after agent run completes
         gif_content = await create_gif_from_history(agent, run_id)
@@ -289,7 +291,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
             progress_events.append(complete_event)
             yield json.dumps(complete_event) + "\n"
 
-            # Save the complete run history
+            # Save the complete run history and send email notification
             if not history_saved:
                 history_id = await save_run_history(
                     user_id=user_id,
@@ -302,6 +304,15 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     run_id=run_id
                 )
                 history_saved = True
+
+                # Send email notification if email is provided
+                if browser_task.email:
+                    await send_task_completion_email(
+                        recipient_email=browser_task.email,
+                        task=task,
+                        result=final_result,
+                        error=error_message
+                    )
 
         except Exception as e:
             error_message = f"Error getting final result: {str(e)}"
@@ -342,7 +353,7 @@ async def browse(request: Request, browser_task: BrowserTask):
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            browser=browser, #only uncomment when in production
+            #browser=browser,
             llm=ChatOpenAI(
                 model=browser_task.model,
             ),
@@ -350,12 +361,12 @@ async def browse(request: Request, browser_task: BrowserTask):
         )
 
         return StreamingResponse(
-            stream_agent_progress(agent, browser_task.task, user_id, tokens),
+            stream_agent_progress(agent, browser_task.task, user_id, tokens, browser_task),
             media_type="text/event-stream"
         )
 
     except Exception as e:
-        # Save failed run
+        # Save failed run and send email notification
         await save_run_history(
             user_id=user_id,
             task=browser_task.task,
@@ -363,6 +374,14 @@ async def browse(request: Request, browser_task: BrowserTask):
             error=str(e),
             auth_tokens=tokens
         )
+        
+        if browser_task.email:
+            await send_task_completion_email(
+                recipient_email=browser_task.email,
+                task=browser_task.task,
+                error=str(e)
+            )
+            
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -7,3 +7,4 @@ wikipedia
 duckduckgo-search
 langgraph-checkpoint-sqlite
 langgraph-cli
+langchain-groq
