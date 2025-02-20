@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ interface InputFormProps {
   onSubmit: (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  defaultEmail?: string | null;
 }
 
 export const InputForm = ({ 
@@ -21,10 +22,17 @@ export const InputForm = ({
   maxChars, 
   onSubmit, 
   onChange, 
-  onKeyDown 
+  onKeyDown,
+  defaultEmail
 }: InputFormProps) => {
   const [sensitiveData, setSensitiveData] = useState<Record<string, string>>({});
-  const [email, setEmail] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(defaultEmail || null);
+
+  useEffect(() => {
+    if (defaultEmail) {
+      setEmail(defaultEmail);
+    }
+  }, [defaultEmail]);
 
   const handleSubmit = (e: React.FormEvent) => {
     onSubmit(e, sensitiveData, email);
@@ -68,7 +76,7 @@ export const InputForm = ({
             <SensitiveDataForm onSensitiveDataChange={setSensitiveData} />
           </div>
           <div className="w-full">
-            <EmailNotification onEmailChange={setEmail} />
+            <EmailNotification onEmailChange={setEmail} defaultEmail={defaultEmail} />
           </div>
         </div>
       </form>

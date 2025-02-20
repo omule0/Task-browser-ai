@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { IconRocket, IconEye, IconEyeOff, IconRefresh } from '@tabler/icons-react';
 import { 
@@ -35,9 +35,21 @@ export default function Home() {
   const [gifContent, setGifContent] = useState<string | null>(null);
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
   const [showSteps, setShowSteps] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const MAX_CHARS = 2000;
   const supabase = createClient();
   const { toast } = useToast();
+
+  // Fetch user's email on component mount
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    fetchUserEmail();
+  }, []);
 
   const fetchGifContent = async (runId: string) => {
     try {
@@ -287,6 +299,7 @@ export default function Home() {
           onSubmit={handleSubmit}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={handleKeyDown}
+          defaultEmail={userEmail}
         />
       </div>
     </div>

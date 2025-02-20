@@ -1,21 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
 interface EmailNotificationProps {
   onEmailChange: (email: string | null) => void;
+  defaultEmail?: string | null;
 }
 
-export const EmailNotification = ({ onEmailChange }: EmailNotificationProps) => {
-  const [enableEmail, setEnableEmail] = useState(false);
-  const [email, setEmail] = useState('');
+export const EmailNotification = ({ onEmailChange, defaultEmail }: EmailNotificationProps) => {
+  const [enableEmail, setEnableEmail] = useState(!!defaultEmail);
+  const [email, setEmail] = useState(defaultEmail || '');
+
+  useEffect(() => {
+    if (defaultEmail && defaultEmail !== email) {
+      setEmail(defaultEmail);
+      if (enableEmail) {
+        onEmailChange(defaultEmail);
+      }
+    }
+  }, [defaultEmail]);
 
   const handleToggle = (checked: boolean) => {
     setEnableEmail(checked);
     if (!checked) {
-      setEmail('');
       onEmailChange(null);
+    } else {
+      onEmailChange(email || defaultEmail || null);
     }
   };
 
@@ -43,7 +54,7 @@ export const EmailNotification = ({ onEmailChange }: EmailNotificationProps) => 
         <div className="mt-2">
           <Input
             type="email"
-            placeholder="Enter your email"
+            placeholder={defaultEmail || "Enter your email"}
             value={email}
             onChange={handleEmailChange}
             className="w-full"
