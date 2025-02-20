@@ -1,7 +1,7 @@
 import { LoadingAnimation } from "@/components/agent-ui";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
-import { IconCheck, IconX, IconAlertTriangle } from '@tabler/icons-react';
+import { IconCheck, IconX, IconAlertTriangle, IconTrash } from '@tabler/icons-react';
 
 interface HistoryItem {
   id: string;
@@ -15,10 +15,11 @@ interface HistoryListProps {
   history: HistoryItem[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
   loading: boolean;
 }
 
-export function HistoryList({ history, selectedId, onSelect, loading }: HistoryListProps) {
+export function HistoryList({ history, selectedId, onSelect, onDelete, loading }: HistoryListProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -35,6 +36,11 @@ export function HistoryList({ history, selectedId, onSelect, loading }: HistoryL
     );
   }
 
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    onDelete(id);
+  };
+
   return (
     <div className="space-y-2">
       <h2 className="text-lg font-semibold mb-4">Recent Runs</h2>
@@ -43,7 +49,7 @@ export function HistoryList({ history, selectedId, onSelect, loading }: HistoryL
           <Button
             key={item.id}
             variant="ghost"
-            className={`w-full justify-start h-auto py-3 ${
+            className={`w-full justify-start h-auto py-3 group ${
               selectedId === item.id ? 'bg-primary/10' : ''
             } ${item.error ? 'hover:bg-destructive/5' : 'hover:bg-primary/5'}`}
             onClick={() => onSelect(item.id)}
@@ -71,6 +77,15 @@ export function HistoryList({ history, selectedId, onSelect, loading }: HistoryL
                   )}
                 </div>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onClick={(e) => handleDelete(e, item.id)}
+                aria-label="Delete history item"
+              >
+                <IconTrash size={16} className="text-muted-foreground hover:text-destructive" />
+              </Button>
             </div>
           </Button>
         ))}

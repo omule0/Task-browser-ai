@@ -7,6 +7,7 @@ import logging
 from utils.auth import AuthTokens
 import uuid
 
+
 async def save_run_history(
     user_id: str,
     task: str,
@@ -31,7 +32,7 @@ async def save_run_history(
                 raise
 
         # Prepare history data
-        history_id = run_id or str(uuid.uuid4())  # Use provided run_id or generate new one
+        history_id = run_id or str(uuid.uuid4())
         history_data = {
             'id': history_id,
             'user_id': user_id,
@@ -41,18 +42,19 @@ async def save_run_history(
             'error': error,
             'created_at': datetime.utcnow().isoformat()
         }
-        
+
         logging.info(f"Saving run history for user {user_id}")
         logging.debug(f"History data: {history_data}")
 
         # Insert history
-        history_response = supabase.table(HISTORY_TABLE).insert(history_data).execute()
-        
+        history_response = supabase.table(
+            HISTORY_TABLE).insert(history_data).execute()
+
         if not history_response.data:
             raise Exception("No data returned from history insert")
-            
+
         history_id = history_response.data[0]['id']
-        
+
         # If there's a GIF, save it
         if gif_content:
             logging.info(f"GIF content length: {len(gif_content)}")
@@ -61,24 +63,26 @@ async def save_run_history(
                 'gif_content': gif_content,
                 'created_at': datetime.utcnow().isoformat()
             }
-            
+
             logging.info(f"Saving GIF for history {history_id}")
             gif_response = supabase.table(GIF_TABLE).insert(gif_data).execute()
-            
+
             if not gif_response.data:
                 logging.error("Failed to save GIF content")
             else:
                 logging.info("Successfully saved GIF content")
         else:
             logging.warning("No GIF content provided to save")
-            
+
         return history_id
-        
+
     except Exception as e:
         logging.error(f"Error saving run history: {str(e)}")
         if hasattr(e, 'response'):
-            logging.error(f"Response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
+            logging.error(
+                f"Response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
         raise Exception(f"Failed to save run history: {str(e)}")
+
 
 async def get_run_history(
     user_id: str,
@@ -106,12 +110,13 @@ async def get_run_history(
             .limit(limit)\
             .offset(offset)\
             .execute()
-            
+
         return response.data
-        
+
     except Exception as e:
         logging.error(f"Error getting run history: {str(e)}")
         raise Exception(f"Failed to get run history: {str(e)}")
+
 
 async def get_run_details(
     user_id: str,
@@ -140,44 +145,48 @@ async def get_run_details(
                 .eq('user_id', user_id)\
                 .single()\
                 .execute()
-                
+
             if not history_response.data:
                 logging.warning(f"No history found for ID: {history_id}")
                 return None
-                
+
             history = history_response.data
-            
+
             # Get the associated GIF if it exists
             try:
                 logging.info(f"Fetching GIF for history ID: {history_id}")
                 gif_response = supabase.table(GIF_TABLE)\
                     .select('gif_content')\
                     .eq('history_id', history_id)\
+                    .single()\
                     .execute()
-                    
-                if gif_response.data and len(gif_response.data) > 0:
-                    logging.info(f"Found GIF content of length: {len(gif_response.data[0]['gif_content'])}")
-                    history['gif_content'] = gif_response.data[0]['gif_content']
+
+                if gif_response.data:
+                    logging.info(
+                        f"Found GIF content of length: {len(gif_response.data['gif_content'])}")
+                    history['gif_content'] = gif_response.data['gif_content']
                 else:
-                    logging.warning(f"No GIF content found for history ID: {history_id}")
+                    logging.warning(
+                        f"No GIF content found for history ID: {history_id}")
                     history['gif_content'] = None
             except Exception as e:
                 logging.error(f"Error fetching GIF content: {str(e)}")
                 history['gif_content'] = None
-                pass
-                    
+
             return history
-            
+
         except Exception as e:
             if 'no rows' in str(e).lower():
                 return None
             raise
-        
+
     except Exception as e:
         logging.error(f"Error getting run details: {str(e)}")
         if hasattr(e, 'response'):
-            logging.error(f"Response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
+            logging.error(
+                f"Response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
         raise Exception(f"Failed to get run details: {str(e)}")
+
 
 async def delete_run_history(
     user_id: str,
@@ -203,9 +212,9 @@ async def delete_run_history(
             .eq('id', history_id)\
             .eq('user_id', user_id)\
             .execute()
-            
+
         return bool(response.data)
-        
+
     except Exception as e:
         logging.error(f"Error deleting run history: {str(e)}")
-        raise Exception(f"Failed to delete run history: {str(e)}") 
+        raise Exception(f"Failed to delete run history: {str(e)}")

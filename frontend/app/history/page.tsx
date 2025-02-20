@@ -7,6 +7,7 @@ import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { HistoryList } from '@/components/history/history-list';
 import { HistoryDetail } from '@/components/history/history-detail';
 import { createClient } from '@/utils/supabase/client';
+import { useToast } from "@/hooks/use-toast";
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const LIMIT = 10;
   const supabase = createClient();
+  const { toast } = useToast();
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -50,6 +52,51 @@ export default function HistoryPage() {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('You must be logged in to delete history');
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/history/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete history item');
+      }
+
+      // Remove the deleted item from the state
+      setHistory(prev => prev.filter(item => item.id !== id));
+      
+      // If the deleted item was selected, clear the selection
+      if (selectedId === id) {
+        setSelectedId(null);
+      }
+
+      toast({
+        title: "Success",
+        description: "History item deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting history:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to delete history item',
+      });
     }
   };
 
@@ -95,6 +142,7 @@ export default function HistoryPage() {
               history={history}
               selectedId={selectedId}
               onSelect={setSelectedId}
+              onDelete={handleDelete}
               loading={loading}
             />
           </Card>

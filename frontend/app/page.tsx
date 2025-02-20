@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRocket, IconEye, IconEyeOff, IconRefresh } from '@tabler/icons-react';
+import { IconRocket, IconEye, IconEyeOff, IconRefresh, IconArrowDown } from '@tabler/icons-react';
 import { 
   LoadingAnimation,
   UserQuery,
@@ -10,7 +10,8 @@ import {
   TaskRecording,
   MarkdownResult,
   Suggestions,
-  InputForm
+  InputForm,
+  TaskComplexityCard
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
@@ -28,17 +29,34 @@ interface ProgressEvent {
 
 export default function Home() {
   const [task, setTask] = useState('');
-  const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [gifContent, setGifContent] = useState<string | null>(null);
-  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
-  const [showSteps, setShowSteps] = useState(false);
+  const [isGifLoading, setIsGifLoading] = useState(false);
+  const [showSteps, setShowSteps] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const MAX_CHARS = 2000;
   const supabase = createClient();
   const { toast } = useToast();
+
+  // Auto-scroll during streaming
+  useEffect(() => {
+    if (isStreaming && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [progress, isStreaming]);
+
+  // Auto-hide steps when result is displayed
+  useEffect(() => {
+    if (result) {
+      setShowSteps(false);
+    }
+  }, [result]);
 
   // Fetch user's email on component mount
   useEffect(() => {
@@ -51,12 +69,34 @@ export default function Home() {
     fetchUserEmail();
   }, []);
 
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!resultsRef.current) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      const bottomThreshold = 200; // Show button when user is more than 200px from bottom
+      setShowScrollButton(scrollHeight - scrollTop - clientHeight > bottomThreshold);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToBottom = () => {
+    if (resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  };
+
   const fetchGifContent = async (runId: string) => {
     try {
+      setIsGifLoading(true);
       console.log('Fetching GIF content for run ID:', runId);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.warn('No session available for GIF fetch');
+        setIsGifLoading(false);
         return;
       }
 
@@ -79,11 +119,11 @@ export default function Home() {
       if (data.gif_content) {
         setGifContent(data.gif_content);
         console.log('Set GIF content successfully');
-      } else {
-        console.warn('No GIF content in response');
       }
     } catch (error) {
       console.error('Error fetching GIF:', error);
+    } finally {
+      setIsGifLoading(false);
     }
   };
 
@@ -111,118 +151,110 @@ export default function Home() {
     }
   };
 
+  const handleReset = () => {
+    setTask('');
+    setProgress([]);
+    setResult(null);
+    setError(null);
+    setGifContent(null);
+    setIsGifLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
     e.preventDefault();
-    if (!task.trim() || loading) return;
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "Please sign in to send messages.",
-      });
-      return;
-    }
+    if (!task.trim()) return;
 
     setLoading(true);
-    setError(null);
-    setResult(null);
+    setIsStreaming(true);
     setProgress([]);
+    setResult(null);
+    setError(null);
     setGifContent(null);
-    setCurrentRunId(null);
+    setIsGifLoading(false);
+
+    let currentRunId: string | null = null;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please sign in to send messages.",
+        });
+        return;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           task,
           sensitive_data: sensitiveData,
-          email: email || undefined // Only include email if it's provided
+          email,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch results');
-      }
-
-      // Show toast if email notifications are enabled
-      if (email) {
-        toast({
-          title: "Email Notifications Enabled",
-          description: "You will receive an email when the task is complete.",
-        });
+        throw new Error('Failed to start task');
       }
 
       const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error('No response body');
+        throw new Error('No response stream available');
       }
 
-      const decoder = new TextDecoder();
-      let currentRunIdTemp: string | null = null;  // Temporary variable to track run ID
-
+      let currentProgress: ProgressEvent[] = [];
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const events = chunk.split('\n').filter(Boolean);
+        // Convert the stream chunk to text
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n').filter(line => line.trim());
 
-        for (const eventText of events) {
+        for (const line of lines) {
           try {
-            const event: ProgressEvent = JSON.parse(eventText);
-            console.log('Stream Event:', event);
-            setProgress(prev => [...prev, event]);
-
-            // Handle run_id event first
+            const event = JSON.parse(line) as ProgressEvent;
+            
             if (event.type === 'run_id') {
-              console.log('Received run ID:', event.message);
-              currentRunIdTemp = event.message || null;  // Store in temp variable
-              setCurrentRunId(event.message || null);
-            }
-            // Handle other events
-            else if (event.type === 'complete') {
-              console.log('Complete Event:', event.message);
-              setResult(event.message || null);
-              setLoading(false);
-              setTask(''); // Clear input after completion
-              
-              // Use the temp variable instead of the state
-              if (currentRunIdTemp) {
-                console.log('Initiating GIF fetch for run ID:', currentRunIdTemp);
-                await fetchGifContent(currentRunIdTemp);
-              } else {
-                console.warn('No run ID available after completion');
-              }
+              currentRunId = event.message || null;
             } else if (event.type === 'error') {
-              console.log('Error Event:', event.message);
-              setError(event.message || null);
-              setLoading(false);
+              setError(event.message || 'An error occurred');
+            } else if (event.type === 'complete') {
+              setResult(event.message || null);
+              // Start fetching GIF after completion
+              if (currentRunId) {
+                await fetchGifContent(currentRunId);
+              }
+            } else if (event.type === 'gif') {
+              setIsGifLoading(true);
             }
+
+            currentProgress = [...currentProgress, event];
+            setProgress(currentProgress);
           } catch (e) {
-            console.error('Failed to parse event:', e);
+            console.error('Error parsing event:', e);
           }
         }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (e) {
+      console.error('Error:', e);
+      setError(e instanceof Error ? e.message : 'An error occurred');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: e instanceof Error ? e.message : 'An error occurred',
+      });
+    } finally {
       setLoading(false);
+      setIsStreaming(false);
     }
-  };
-
-  const handleReset = () => {
-    setProgress([]);
-    setResult(null);
-    setError(null);
-    setGifContent(null);
-    setCurrentRunId(null);
-    setTask('');
   };
 
   return (
@@ -243,8 +275,11 @@ export default function Home() {
 
         {/* Results Area */}
         {(progress.length > 0 || result || loading) && (
-          <div className="space-y-6">
+          <div className="space-y-6" ref={resultsRef}>
             {task && <UserQuery task={task} />}
+            
+            {/* Task Complexity Info */}
+            <TaskComplexityCard />
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -275,7 +310,7 @@ export default function Home() {
               </div>
             </div>
 
-            {showSteps && <AgentSteps progress={progress} />}
+            {showSteps && <AgentSteps progress={progress} isStreaming={isStreaming} />}
 
             {loading && <LoadingAnimation />}
             
@@ -285,7 +320,17 @@ export default function Home() {
               </div>
             )}
 
-            {result && <MarkdownResult content={result} />}
+            {result && (
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <MarkdownResult content={result} />
+              </div>
+            )}
+
+            {isGifLoading && (
+              <div className="flex items-center justify-center py-4">
+                <span className="ml-2 text-sm text-muted-foreground">Loading recording...</span>
+              </div>
+            )}
 
             {gifContent && <TaskRecording gifContent={gifContent} />}
           </div>
@@ -301,6 +346,18 @@ export default function Home() {
           onKeyDown={handleKeyDown}
           defaultEmail={userEmail}
         />
+
+        {/* Scroll to Bottom Button */}
+        {showScrollButton && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={scrollToBottom}
+          >
+            <IconArrowDown size={20} />
+          </Button>
+        )}
       </div>
     </div>
   );

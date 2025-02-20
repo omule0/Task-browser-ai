@@ -11,6 +11,7 @@ const suggestions = [
   { title: 'Using reddit what is the best way to learn about AI', onClick: () => {} },
   { title: 'What is the weather in tokyo like today', onClick: () => {} },
   { title: 'Search for software jobs in kampala', onClick: () => {} },
+  { title: 'search for openai and get the link', onClick: () => {} },
 ];
 
 export const Suggestions = ({ onSelectTask }: SuggestionsProps) => (

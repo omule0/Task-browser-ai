@@ -59,6 +59,7 @@ browser_configuration = {
     "proxy_config": {"active": True},
 }
 
+
 def create_browser_session():
     """Create a new browser session with Anchor Browser."""
     try:
@@ -74,15 +75,18 @@ def create_browser_session():
         return response.json()
     except Exception as e:
         logging.error(f"Failed to create browser session: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create browser session")
+        raise HTTPException(
+            status_code=500, detail="Failed to create browser session")
 
 # Initialize the browser with session management
+
+
 def get_browser():
     """Get a configured browser instance with session management."""
     try:
         session_data = create_browser_session()
         session_id = session_data["id"]
-        
+
         return Browser(
             config=BrowserConfig(
                 cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}&sessionId={session_id}"
@@ -90,13 +94,16 @@ def get_browser():
         )
     except Exception as e:
         logging.error(f"Failed to initialize browser: {e}")
-        raise HTTPException(status_code=500, detail="Failed to initialize browser")
+        raise HTTPException(
+            status_code=500, detail="Failed to initialize browser")
+
 
 class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
     email: Optional[str] = None  # Add email field
+
 
 class HistoryResponse(BaseModel):
     id: str
@@ -106,11 +113,13 @@ class HistoryResponse(BaseModel):
     created_at: str
     progress: List[Dict]
 
+
 def safe_serialize(obj):
     """Safely serialize objects to JSON string."""
     if hasattr(obj, '__dict__'):
         return str(obj)
     return str(obj)
+
 
 @app.get("/api/history")
 async def get_history(request: Request, limit: int = 10, offset: int = 0):
@@ -118,14 +127,31 @@ async def get_history(request: Request, limit: int = 10, offset: int = 0):
     user_id, tokens = await get_user_id_and_tokens(request)
     return await get_run_history(user_id, limit, offset, auth_tokens=tokens)
 
+
 @app.get("/api/history/{history_id}")
 async def get_history_detail(request: Request, history_id: str):
     """Get detailed run information including GIF."""
-    user_id, tokens = await get_user_id_and_tokens(request)
-    result = await get_run_details(user_id, history_id, auth_tokens=tokens)
-    if not result:
-        raise HTTPException(status_code=404, detail="History entry not found")
-    return result
+    try:
+        user_id, tokens = await get_user_id_and_tokens(request)
+        result = await get_run_details(user_id, history_id, auth_tokens=tokens)
+
+        if not result:
+            raise HTTPException(
+                status_code=404, detail="History entry not found")
+
+        # Log GIF content details for debugging
+        if result.get('gif_content'):
+            logging.info(
+                f"GIF content found for history ID {history_id}, length: {len(result['gif_content'])}")
+        else:
+            logging.warning(
+                f"No GIF content found for history ID {history_id}")
+
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching history detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.delete("/api/history/{history_id}")
 async def delete_history(request: Request, history_id: str):
@@ -136,20 +162,22 @@ async def delete_history(request: Request, history_id: str):
         raise HTTPException(status_code=404, detail="History entry not found")
     return {"status": "success"}
 
+
 async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
     """Create GIF from agent history with proper error handling."""
     temp_gif_path = TEMP_DIR / f"agent_history_{run_id}.gif"
     try:
         # Ensure the directory exists and is writable
         TEMP_DIR.mkdir(parents=True, exist_ok=True)
-        
+
         logging.info(f"Creating GIF at path: {temp_gif_path}")
         agent.create_history_gif(output_path=str(temp_gif_path))
-        
+
         if temp_gif_path.exists():
             with open(temp_gif_path, 'rb') as gif_file:
                 gif_content = base64.b64encode(gif_file.read()).decode('utf-8')
-                logging.info(f"Successfully created GIF with size: {len(gif_content)}")
+                logging.info(
+                    f"Successfully created GIF with size: {len(gif_content)}")
                 return gif_content
         else:
             logging.warning(f"GIF file was not created at {temp_gif_path}")
@@ -165,6 +193,7 @@ async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
         except Exception as e:
             logging.warning(f"Error cleaning up GIF file: {str(e)}")
 
+
 async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens, browser_task: BrowserTask):
     """Stream the agent's progress as JSON events and save history."""
     progress_events = []
@@ -172,7 +201,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
     error_message = None
     gif_content = None
     history_saved = False
-    run_id = str(uuid.uuid4())  # Generate run ID at the start
+    run_id = str(uuid.uuid4())
 
     try:
         # Start event
@@ -185,101 +214,154 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         progress_events.append(run_id_event)
         yield json.dumps(run_id_event) + "\n"
 
-        # Run the agent and get history
-        history = await agent.run(max_steps=20)
+        # Run the agent in a separate task
+        agent_task = asyncio.create_task(agent.run(max_steps=20))
 
-        # Create GIF after agent run completes
-        gif_content = await create_gif_from_history(agent, run_id)
-        if gif_content:
-            progress_events.append({"type": "gif", "message": "GIF recording saved"})
-            yield json.dumps({"type": "gif", "message": "GIF recording saved"}) + "\n"
-        
-        # Stream URLs visited
-        try:
-            urls = history.urls()
-            if urls:
+        # Track previous state to detect changes
+        prev_urls = []
+        prev_actions = []
+        prev_thoughts = []
+        prev_errors = []
+        prev_results = []
+        prev_content = []
+
+        # Poll for updates while the agent is running
+        while not agent_task.done():
+            # Check for new URLs
+            current_urls = agent.history.urls()
+            for url in current_urls[len(prev_urls):]:
                 url_event = {
-                    "type": "section",
-                    "title": "URLs Visited",
-                    "items": [safe_serialize(url) for url in urls]
+                    "type": "url",
+                    "message": f"Visiting: {safe_serialize(url)}"
                 }
                 progress_events.append(url_event)
                 yield json.dumps(url_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming URLs: {e}")
+            prev_urls = current_urls
 
-        # Stream actions taken
-        try:
-            actions = history.action_names()
-            if actions:
+            # Check for new actions
+            current_actions = agent.history.action_names()
+            for action in current_actions[len(prev_actions):]:
                 action_event = {
-                    "type": "section",
-                    "title": "Actions Taken",
-                    "items": [safe_serialize(action) for action in actions]
+                    "type": "action",
+                    "message": f"Executing: {safe_serialize(action)}"
                 }
                 progress_events.append(action_event)
                 yield json.dumps(action_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming actions: {e}")
+            prev_actions = current_actions
 
-        # Stream model thoughts
-        try:
-            thoughts = history.model_thoughts()
-            if thoughts:
+            # Check for new thoughts
+            current_thoughts = agent.history.model_thoughts()
+            for thought in current_thoughts[len(prev_thoughts):]:
                 thought_event = {
-                    "type": "section",
-                    "title": "Agent Reasoning",
-                    "items": [safe_serialize(thought) for thought in thoughts]
+                    "type": "thought",
+                    "message": safe_serialize(thought)
                 }
                 progress_events.append(thought_event)
                 yield json.dumps(thought_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming thoughts: {e}")
+            prev_thoughts = current_thoughts
 
-        # Stream extracted content
-        try:
-            content = history.extracted_content()
-            if content:
-                content_event = {
-                    "type": "section",
-                    "title": "Extracted Content",
-                    "items": [safe_serialize(item) for item in content]
-                }
-                progress_events.append(content_event)
-                yield json.dumps(content_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming extracted content: {e}")
-
-        # Stream action results
-        try:
-            results = history.action_results()
-            if results:
-                result_event = {
-                    "type": "section",
-                    "title": "Action Results",
-                    "items": [safe_serialize(result) for result in results]
-                }
-                progress_events.append(result_event)
-                yield json.dumps(result_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming action results: {e}")
-
-        # Check for any errors
-        try:
-            if history.has_errors():
-                errors = history.errors()
+            # Check for new errors
+            current_errors = agent.history.errors()
+            for error in current_errors[len(prev_errors):]:
                 error_event = {
-                    "type": "section",
-                    "title": "Errors",
-                    "items": [safe_serialize(error) for error in errors]
+                    "type": "error",
+                    "message": safe_serialize(error)
                 }
                 progress_events.append(error_event)
                 yield json.dumps(error_event) + "\n"
-        except Exception as e:
-            logging.warning(f"Error streaming errors: {e}")
+            prev_errors = current_errors
 
-        # Get final result
+            # Check for new results
+            current_results = agent.history.action_results()
+            for result in current_results[len(prev_results):]:
+                result_event = {
+                    "type": "action",
+                    "message": f"Result: {safe_serialize(result)}"
+                }
+                progress_events.append(result_event)
+                yield json.dumps(result_event) + "\n"
+            prev_results = current_results
+
+            # Check for new content
+            current_content = agent.history.extracted_content()
+            for content in current_content[len(prev_content):]:
+                content_event = {
+                    "type": "content",
+                    "message": safe_serialize(content)
+                }
+                progress_events.append(content_event)
+                yield json.dumps(content_event) + "\n"
+            prev_content = current_content
+
+            # Short sleep to prevent excessive CPU usage
+            await asyncio.sleep(0.1)
+
+        # Get the agent's history after completion
+        history = await agent_task
+
+        # Create summary sections
         try:
+            # URLs section
+            if history.urls():
+                url_section = {
+                    "type": "section",
+                    "title": "URLs Visited",
+                    "items": [safe_serialize(url) for url in history.urls()]
+                }
+                progress_events.append(url_section)
+                yield json.dumps(url_section) + "\n"
+
+            # Actions section
+            if history.action_names():
+                action_section = {
+                    "type": "section",
+                    "title": "Actions Taken",
+                    "items": [safe_serialize(action) for action in history.action_names()]
+                }
+                progress_events.append(action_section)
+                yield json.dumps(action_section) + "\n"
+
+            # Thoughts section
+            if history.model_thoughts():
+                thought_section = {
+                    "type": "section",
+                    "title": "Agent Reasoning",
+                    "items": [safe_serialize(thought) for thought in history.model_thoughts()]
+                }
+                progress_events.append(thought_section)
+                yield json.dumps(thought_section) + "\n"
+
+            # Extracted content section
+            if history.extracted_content():
+                content_section = {
+                    "type": "section",
+                    "title": "Extracted Content",
+                    "items": [safe_serialize(item) for item in history.extracted_content()]
+                }
+                progress_events.append(content_section)
+                yield json.dumps(content_section) + "\n"
+
+            # Results section
+            if history.action_results():
+                result_section = {
+                    "type": "section",
+                    "title": "Action Results",
+                    "items": [safe_serialize(result) for result in history.action_results()]
+                }
+                progress_events.append(result_section)
+                yield json.dumps(result_section) + "\n"
+
+            # Create GIF from history
+            gif_content = await create_gif_from_history(agent, run_id)
+            if gif_content:
+                gif_event = {
+                    "type": "gif",
+                    "message": "Task recording created"
+                }
+                progress_events.append(gif_event)
+                yield json.dumps(gif_event) + "\n"
+
+            # Get final result
             final_result = history.final_result()
             is_done = history.is_done()
 
@@ -315,7 +397,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     )
 
         except Exception as e:
-            error_message = f"Error getting final result: {str(e)}"
+            error_message = f"Error processing results: {str(e)}"
             error_event = {
                 "type": "error",
                 "message": error_message
@@ -331,7 +413,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         }
         progress_events.append(error_event)
         yield json.dumps(error_event) + "\n"
-        
+
         # Save failed run if not already saved
         if not history_saved:
             await save_run_history(
@@ -344,16 +426,17 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
             )
             history_saved = True
 
+
 @app.post("/api/browse")
 async def browse(request: Request, browser_task: BrowserTask):
     """Handle browser automation task with authentication."""
     user_id, tokens = await get_user_id_and_tokens(request)
-    
+
     try:
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            #browser=browser,
+            browser=browser,
             llm=ChatOpenAI(
                 model=browser_task.model,
             ),
@@ -361,7 +444,8 @@ async def browse(request: Request, browser_task: BrowserTask):
         )
 
         return StreamingResponse(
-            stream_agent_progress(agent, browser_task.task, user_id, tokens, browser_task),
+            stream_agent_progress(agent, browser_task.task,
+                                  user_id, tokens, browser_task),
             media_type="text/event-stream"
         )
 
@@ -374,14 +458,14 @@ async def browse(request: Request, browser_task: BrowserTask):
             error=str(e),
             auth_tokens=tokens
         )
-        
+
         if browser_task.email:
             await send_task_completion_email(
                 recipient_email=browser_task.email,
                 task=browser_task.task,
                 error=str(e)
             )
-            
+
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
