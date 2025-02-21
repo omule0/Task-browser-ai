@@ -30,6 +30,9 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    "https://ai.digestafrica.com",
+    "https://ai-dashboard-zikm5.ondigitalocean.app"
+    
 ]
 
 # Add CORS middleware

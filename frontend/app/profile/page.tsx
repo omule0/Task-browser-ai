@@ -10,6 +10,7 @@ import { createClient } from '@/utils/supabase/client';
 import { LoadingAnimation } from '@/components/agent-ui';
 import { IconEdit, IconCheck, IconX } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Profile {
   id: string;
@@ -176,10 +177,12 @@ export default function ProfilePage() {
               <>
                 <div className="flex items-center space-x-4">
                   {profile.avatar_url && (
-                    <img
+                    <Image
                       src={profile.avatar_url}
                       alt="Profile"
-                      className="h-16 w-16 rounded-full object-cover"
+                      width={64}
+                      height={64}
+                      className="rounded-full object-cover"
                     />
                   )}
                   <div>

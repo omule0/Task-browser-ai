@@ -11,9 +11,26 @@ interface HistoryDetailProps {
   onClose: () => void;
 }
 
+interface HistoryDetailData {
+  id: string;
+  created_at: string;
+  task_name: string;
+  task_description: string;
+  status: string;
+  result: string;
+  steps: Array<{
+    id: string;
+    step_number: number;
+    description: string;
+    status: string;
+    result?: string;
+  }>;
+  error?: string;
+}
+
 export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<HistoryDetailData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
   const { toast } = useToast();
@@ -30,7 +47,6 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
       setError(null);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (!session) {
           throw new Error('You must be logged in to view history details');
         }
@@ -44,30 +60,19 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
             },
           }
         );
-        
-        if (response.status === 404) {
-          throw new Error('Run history not found');
-        }
-        
+
         if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(errorData?.detail || 'Failed to fetch history details');
+          throw new Error('Failed to fetch history details');
         }
-        
-        const data = await response.json();
-        if (!data) {
-          throw new Error('No data received');
-        }
-        
-        setData(data);
-      } catch (error) {
-        console.error('Error fetching history details:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load history details';
-        setError(errorMessage);
+
+        const historyData = await response.json();
+        setData(historyData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
         toast({
           variant: "destructive",
           title: "Error",
-          description: errorMessage,
+          description: err instanceof Error ? err.message : 'Failed to fetch history details',
         });
       } finally {
         setLoading(false);
@@ -75,7 +80,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
     };
 
     fetchDetails();
-  }, [historyId, toast]);
+  }, [historyId, supabase.auth, toast]);
 
   if (!historyId) {
     return (

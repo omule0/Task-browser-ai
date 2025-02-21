@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface TaskRecordingProps {
   gifContent?: string;
 }
@@ -14,10 +16,12 @@ export const TaskRecording = ({ gifContent }: TaskRecordingProps) => {
     <div className="mt-6">
       <h3 className="text-sm font-medium mb-3">Task Recording</h3>
       <div className="rounded-lg overflow-hidden border">
-        <img 
+        <Image 
           src={`data:image/gif;base64,${gifContent}`}
           alt="Task Recording"
-          className="w-full"
+          width={800}
+          height={600}
+          className="w-full h-auto"
           key={gifContent}
           onError={(e) => {
             console.error('Error loading GIF:', e);

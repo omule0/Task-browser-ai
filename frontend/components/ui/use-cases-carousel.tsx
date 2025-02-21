@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UseCase, useCases } from '@/types/carousel';
+import { useCases } from '@/types/carousel';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const UseCasesCarousel = () => {

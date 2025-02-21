@@ -9,8 +9,18 @@ import { HistoryDetail } from '@/components/history/history-detail';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
+interface HistoryItem {
+  id: string;
+  created_at: string;
+  task_name: string;
+  task_description: string;
+  status: string;
+  result: string;
+  user_id: string;
+}
+
 export default function HistoryPage() {
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -102,7 +112,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     fetchHistory();
-  }, [page]);
+  }, [page, fetchHistory]);
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
