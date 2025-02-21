@@ -67,7 +67,7 @@ export default function Home() {
       }
     };
     fetchUserEmail();
-  }, []);
+  }, [supabase.auth]);
 
   // Add scroll event listener
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [resultsRef]);
 
   const scrollToBottom = () => {
     if (resultsRef.current) {

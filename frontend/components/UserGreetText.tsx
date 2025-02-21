@@ -41,7 +41,7 @@ export default function UserGreetText() {
     };
 
     fetchProfile();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return (

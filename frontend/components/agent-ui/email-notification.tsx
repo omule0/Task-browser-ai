@@ -19,7 +19,7 @@ export const EmailNotification = ({ onEmailChange, defaultEmail }: EmailNotifica
         onEmailChange(defaultEmail);
       }
     }
-  }, [defaultEmail]);
+  }, [defaultEmail, email, enableEmail, onEmailChange]);
 
   const handleToggle = (checked: boolean) => {
     setEnableEmail(checked);

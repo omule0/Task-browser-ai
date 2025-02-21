@@ -5,6 +5,7 @@ import { IconX, IconAlertTriangle } from '@tabler/icons-react';
 import { createClient } from '@/utils/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import Image from 'next/image';
 
 interface HistoryDetailProps {
   historyId: string | null;
@@ -170,10 +171,12 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
             <div>
               <h3 className="text-sm font-medium mb-2">Recording</h3>
               <div className="rounded-lg overflow-hidden border">
-                <img
+                <Image
                   src={`data:image/gif;base64,${data.gif_content}`}
                   alt="Task Recording"
-                  className="w-full"
+                  width={800}
+                  height={600}
+                  className="w-full h-auto"
                 />
               </div>
             </div>

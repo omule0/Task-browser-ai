@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
@@ -17,6 +17,8 @@ interface HistoryItem {
   status: string;
   result: string;
   user_id: string;
+  task: string;
+  error?: string;
 }
 
 export default function HistoryPage() {
@@ -30,7 +32,7 @@ export default function HistoryPage() {
   const supabase = createClient();
   const { toast } = useToast();
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -63,7 +65,7 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, supabase.auth, LIMIT, toast]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -112,7 +114,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     fetchHistory();
-  }, [page, fetchHistory]);
+  }, [fetchHistory]);
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
