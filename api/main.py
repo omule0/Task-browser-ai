@@ -63,6 +63,7 @@ browser_configuration = {
 def create_browser_session():
     """Create a new browser session with Anchor Browser."""
     try:
+
         response = requests.post(
             "https://api.anchorbrowser.io/api/sessions",
             headers={
@@ -70,8 +71,10 @@ def create_browser_session():
                 "Content-Type": "application/json",
             },
             json=browser_configuration,
+
         )
         response.raise_for_status()
+        logging.info(f"Browser session created: {response.json()}")
         return response.json()
     except Exception as e:
         logging.error(f"Failed to create browser session: {e}")
@@ -89,7 +92,7 @@ def get_browser():
 
         return Browser(
             config=BrowserConfig(
-                cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}&sessionId={session_id}"
+                cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}&sessionId={session_id}",
             )
         )
     except Exception as e:
@@ -214,87 +217,47 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         progress_events.append(run_id_event)
         yield json.dumps(run_id_event) + "\n"
 
-        # Run the agent in a separate task
-        agent_task = asyncio.create_task(agent.run(max_steps=20))
+        # Run the agent in a separate task with optimized max_steps
+        agent_task = asyncio.create_task(
+            agent.run(max_steps=15))  # Reduced from 20
 
         # Track previous state to detect changes
-        prev_urls = []
-        prev_actions = []
-        prev_thoughts = []
-        prev_errors = []
-        prev_results = []
-        prev_content = []
+        prev_state = {
+            "urls": [],
+            "actions": [],
+            "thoughts": [],
+            "errors": [],
+            "results": [],
+            "content": []
+        }
 
-        # Poll for updates while the agent is running
+        # Poll for updates while the agent is running with reduced frequency
         while not agent_task.done():
-            # Check for new URLs
-            current_urls = agent.history.urls()
-            for url in current_urls[len(prev_urls):]:
-                url_event = {
-                    "type": "url",
-                    "message": f"Visiting: {safe_serialize(url)}"
-                }
-                progress_events.append(url_event)
-                yield json.dumps(url_event) + "\n"
-            prev_urls = current_urls
+            # Batch process all updates
+            updates = {
+                "urls": agent.history.urls(),
+                "actions": agent.history.action_names(),
+                "thoughts": agent.history.model_thoughts(),
+                "errors": agent.history.errors(),
+                "results": agent.history.action_results(),
+                "content": agent.history.extracted_content()
+            }
 
-            # Check for new actions
-            current_actions = agent.history.action_names()
-            for action in current_actions[len(prev_actions):]:
-                action_event = {
-                    "type": "action",
-                    "message": f"Executing: {safe_serialize(action)}"
-                }
-                progress_events.append(action_event)
-                yield json.dumps(action_event) + "\n"
-            prev_actions = current_actions
+            # Process all updates in a single pass
+            for key, current_items in updates.items():
+                new_items = current_items[len(prev_state[key]):]
+                if new_items:
+                    for item in new_items:
+                        event = {
+                            "type": key[:-1],  # Remove 's' from plural
+                            "message": f"{key.title()}: {safe_serialize(item)}"
+                        }
+                        progress_events.append(event)
+                        yield json.dumps(event) + "\n"
+                    prev_state[key] = current_items
 
-            # Check for new thoughts
-            current_thoughts = agent.history.model_thoughts()
-            for thought in current_thoughts[len(prev_thoughts):]:
-                thought_event = {
-                    "type": "thought",
-                    "message": safe_serialize(thought)
-                }
-                progress_events.append(thought_event)
-                yield json.dumps(thought_event) + "\n"
-            prev_thoughts = current_thoughts
-
-            # Check for new errors
-            current_errors = agent.history.errors()
-            for error in current_errors[len(prev_errors):]:
-                error_event = {
-                    "type": "error",
-                    "message": safe_serialize(error)
-                }
-                progress_events.append(error_event)
-                yield json.dumps(error_event) + "\n"
-            prev_errors = current_errors
-
-            # Check for new results
-            current_results = agent.history.action_results()
-            for result in current_results[len(prev_results):]:
-                result_event = {
-                    "type": "action",
-                    "message": f"Result: {safe_serialize(result)}"
-                }
-                progress_events.append(result_event)
-                yield json.dumps(result_event) + "\n"
-            prev_results = current_results
-
-            # Check for new content
-            current_content = agent.history.extracted_content()
-            for content in current_content[len(prev_content):]:
-                content_event = {
-                    "type": "content",
-                    "message": safe_serialize(content)
-                }
-                progress_events.append(content_event)
-                yield json.dumps(content_event) + "\n"
-            prev_content = current_content
-
-            # Short sleep to prevent excessive CPU usage
-            await asyncio.sleep(0.1)
+            # Increased sleep interval to reduce CPU usage while maintaining responsiveness
+            await asyncio.sleep(0.25)  # Increased from 0.1
 
         # Get the agent's history after completion
         history = await agent_task
@@ -439,8 +402,11 @@ async def browse(request: Request, browser_task: BrowserTask):
             browser=browser,
             llm=ChatOpenAI(
                 model=browser_task.model,
+                temperature=0.7
             ),
             sensitive_data=browser_task.sensitive_data or {},
+            max_failures=2,
+            max_actions_per_step=2
         )
 
         return StreamingResponse(
