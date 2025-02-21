@@ -11,14 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface HistoryItem {
   id: string;
-  created_at: string;
-  task_name: string;
-  task_description: string;
-  status: string;
-  result: string;
-  user_id: string;
   task: string;
-  error?: string;
+  created_at: string;
+  error: string | null;
+  result: string | null;
 }
 
 export default function HistoryPage() {
@@ -65,7 +61,7 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, supabase.auth, LIMIT, toast]);
+  }, [page, supabase.auth, LIMIT]);
 
   const handleDelete = async (id: string) => {
     try {
