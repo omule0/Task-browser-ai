@@ -12,6 +12,15 @@ interface HistoryDetailProps {
   onClose: () => void;
 }
 
+interface ProgressEvent {
+  type: string;
+  message?: string;
+  content?: string;
+  success?: boolean;
+  title?: string;
+  items?: string[];
+}
+
 interface HistoryDetailData {
   id: string;
   created_at: string;
@@ -19,6 +28,9 @@ interface HistoryDetailData {
   task_description: string;
   status: string;
   result: string;
+  task: string;
+  progress: string | ProgressEvent[];
+  gif_content?: string;
   steps: Array<{
     id: string;
     step_number: number;
