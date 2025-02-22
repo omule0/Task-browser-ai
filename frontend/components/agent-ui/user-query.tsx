@@ -1,4 +1,3 @@
-import { IconUser } from '@tabler/icons-react';
 
 interface UserQueryProps {
   task: string;
