@@ -9,17 +9,15 @@ interface EmailNotificationProps {
 }
 
 export const EmailNotification = ({ onEmailChange, defaultEmail }: EmailNotificationProps) => {
-  const [enableEmail, setEnableEmail] = useState(!!defaultEmail);
+  const [enableEmail, setEnableEmail] = useState(false);
   const [email, setEmail] = useState(defaultEmail || '');
 
   useEffect(() => {
     if (defaultEmail && defaultEmail !== email) {
       setEmail(defaultEmail);
-      if (enableEmail) {
-        onEmailChange(defaultEmail);
-      }
+      onEmailChange(null);
     }
-  }, [defaultEmail, email, enableEmail, onEmailChange]);
+  }, [defaultEmail, email, onEmailChange]);
 
   const handleToggle = (checked: boolean) => {
     setEnableEmail(checked);

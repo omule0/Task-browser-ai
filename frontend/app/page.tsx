@@ -381,6 +381,7 @@ export default function Home() {
         </ResizablePanelGroup>
       ) : (
         <div className="space-y-8">
+          {task && <UserQuery task={task} />}
           <Suggestions onSelectTask={setTask} />
           <InputForm
             task={task}
@@ -393,6 +394,7 @@ export default function Home() {
           />
           <TemplateSection 
             onSubmit={(templateTask) => {
+              setTask(templateTask);
               const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
               handleSubmit(event, undefined, userEmail);
             }} 

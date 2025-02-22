@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { IconPrompt, IconSend, IconLock, IconMail } from '@tabler/icons-react';
+import { IconPrompt, IconSend } from '@tabler/icons-react';
 import { SensitiveDataForm } from './sensitive-data-form';
 import { EmailNotification } from './email-notification';
 import { cn } from "@/lib/utils";
+import { SettingsDrawer } from './settings-drawer';
 
 interface InputFormProps {
   task: string;
@@ -28,13 +29,10 @@ export const InputForm = ({
 }: InputFormProps) => {
   const [sensitiveData, setSensitiveData] = useState<Record<string, string>>({});
   const [email, setEmail] = useState<string | null>(defaultEmail || null);
-  const [showSensitiveForm, setShowSensitiveForm] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
 
   useEffect(() => {
     if (defaultEmail) {
       setEmail(defaultEmail);
-      setShowEmailForm(true);
     }
   }, [defaultEmail]);
 
@@ -64,32 +62,11 @@ export const InputForm = ({
             {task.length}/{maxChars}
           </div>
           <div className="absolute bottom-3 right-16 flex items-center gap-2">
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={() => setShowSensitiveForm(!showSensitiveForm)}
-              className={cn(
-                "h-12 w-12 bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-colors",
-                showSensitiveForm && "text-primary hover:text-primary"
-              )}
-              aria-label="Toggle sensitive data form"
-            >
-              <IconLock size={18} />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={() => setShowEmailForm(!showEmailForm)}
-              className={cn(
-                "h-12 w-12 bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-colors",
-                showEmailForm && "text-primary hover:text-primary"
-              )}
-              aria-label="Toggle email notification form"
-            >
-              <IconMail size={18} />
-            </Button>
+            <SettingsDrawer
+              onSensitiveDataChange={setSensitiveData}
+              onEmailChange={setEmail}
+              defaultEmail={defaultEmail}
+            />
             <Button
               type="submit"
               size="icon"
@@ -101,19 +78,6 @@ export const InputForm = ({
               <IconSend size={18} />
             </Button>
           </div>
-        </div>
-
-        <div className="flex flex-col space-y-4">
-          {showSensitiveForm && (
-            <div className="w-full">
-              <SensitiveDataForm onSensitiveDataChange={setSensitiveData} />
-            </div>
-          )}
-          {showEmailForm && (
-            <div className="w-full">
-              <EmailNotification onEmailChange={setEmail} defaultEmail={defaultEmail} />
-            </div>
-          )}
         </div>
       </form>
     </Card>
