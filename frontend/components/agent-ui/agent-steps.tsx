@@ -19,7 +19,7 @@ interface AgentStepsProps {
 
 export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) => {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
     setEvents(progress);
@@ -106,7 +106,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
               {isStreaming && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 pl-8">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                  running agent...
+                  Agent is running...
                 </div>
               )}
             </div>
