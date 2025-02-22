@@ -42,7 +42,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
   };
 
   return (
-    <div className="max-w-[90%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
+    <div className="max-w-[100%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
       {/* Completion Status Header */}
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center">

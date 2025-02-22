@@ -250,7 +250,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-4">
+    <div className={`container mx-auto px-4 py-4 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
       {/* Header Section */}
       <header className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -321,11 +321,11 @@ export default function Home() {
           {/* Right Panel - Task Recording */}
           <ResizablePanel 
             defaultSize={30}
-            minSize={20}
+            minSize={10}
             maxSize={50}
             className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
           >
-            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
               <div className="flex items-center gap-2 mb-4">
                 <button
                   onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
@@ -342,9 +342,9 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
                 {isGifLoading ? (
-                  <div className="flex items-center justify-center py-20 bg-gray-50">
+                  <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-sm text-gray-600">Loading view...</span>

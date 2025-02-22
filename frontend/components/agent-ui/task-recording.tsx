@@ -28,16 +28,18 @@ export const TaskRecording = ({ gifContent, isAgentRunning }: TaskRecordingProps
   }
   
   return (
-    <div className="relative">
-      <div className="relative w-full aspect-video">
-        <Image 
-          src={`data:image/gif;base64,${gifContent}`}
-          alt="Task Recording"
-          fill
-          className="object-contain"
-          priority
-          sizes="(max-width: 800px) 100vw, (max-width: 1500px) 55vw"
-        />
+    <div className="relative w-full h-full">
+      <div className="relative w-full h-full flex items-center justify-center">
+        <div className="w-full h-full relative">
+          <Image 
+            src={`data:image/gif;base64,${gifContent}`}
+            alt="Task Recording"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-contain"
+            priority
+          />
+        </div>
       </div>
     </div>
   );
