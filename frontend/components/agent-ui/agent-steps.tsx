@@ -4,6 +4,7 @@ import {
   IconChevronDown,
 } from '@tabler/icons-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SyncLoader } from 'react-spinners';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
@@ -35,7 +36,11 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
 
   const getStatusText = () => {
     if (isStreaming) {
-      return "Agent is running...";
+      return (
+        <div className="flex items-center gap-2">
+          Agent is running <SyncLoader size={8} color="#2563eb" />
+        </div>
+      );
     }
     const count = meaningfulEvents.length;
     return `Agent has completed: ${count} ${count === 1 ? 'step' : 'steps'}`;
@@ -106,7 +111,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
               {/* Show streaming indicator */}
               {isStreaming && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 pl-8">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <SyncLoader size={8} color="#2563eb" />
                   Agent is running...
                 </div>
               )}
