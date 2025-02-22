@@ -20,7 +20,7 @@ export const TaskRecording = ({ gifContent }: TaskRecordingProps) => {
           src={`data:image/gif;base64,${gifContent}`}
           alt="Task Recording"
           width={800}
-          height={600}
+          height={800}
           className="w-full h-auto"
           key={gifContent}
           onError={(e) => {
