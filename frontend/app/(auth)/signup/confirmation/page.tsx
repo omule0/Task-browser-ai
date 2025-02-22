@@ -11,11 +11,11 @@ export default function SignUpConfirmationPage() {
           </div>
           <CardTitle className="text-center text-2xl">Check your email</CardTitle>
           <CardDescription className="text-center">
-            We've sent you a confirmation email. Please check your inbox and follow the instructions to verify your account.
+            We&apos;ve sent you a confirmation email. Please check your inbox and follow the instructions to verify your account.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center text-sm text-muted-foreground">
-          <p>If you don't see the email, please check your spam folder.</p>
+          <p>If you don&apos;t see the email, please check your spam folder.</p>
         </CardContent>
       </Card>
     </div>
