@@ -5,12 +5,11 @@ interface UserQueryProps {
 }
 
 export const UserQuery = ({ task }: UserQueryProps) => (
-  <div className="flex items-start gap-3 mb-6">
-    <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
-      <IconUser size={20} className="text-primary" />
-    </div>
-    <div className="flex-1">
-      <p className="text-base">{task}</p>
+  <div className="flex justify-end mb-6">
+    <div className="max-w-[80%]">
+      <div className="bg-blue-600 text-white px-6 py-3 rounded-[24px] shadow-sm">
+        <p className="text-base break-words">{task}</p>
+      </div>
     </div>
   </div>
 ); 

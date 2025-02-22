@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { 
-  IconRocket,
-  IconWorld,
-  IconTarget,
-  IconBrain,
-  IconX,
-  IconCheck,
-  IconVideo,
+  IconChevronUp,
+  IconChevronDown,
 } from '@tabler/icons-react';
 
 interface ProgressEvent {
@@ -17,90 +12,107 @@ interface ProgressEvent {
   items?: string[];
 }
 
-const getEventIcon = (type: ProgressEvent['type']) => {
-  switch (type) {
-    case 'start':
-      return <IconRocket size={18} className="inline-block" />;
-    case 'url':
-      return <IconWorld size={18} className="inline-block" />;
-    case 'action':
-      return <IconTarget size={18} className="inline-block" />;
-    case 'thought':
-      return <IconBrain size={18} className="inline-block" />;
-    case 'error':
-      return <IconX size={18} className="inline-block text-destructive" />;
-    case 'complete':
-      return <IconCheck size={18} className="inline-block text-success" />;
-    case 'gif':
-      return <IconVideo size={18} className="inline-block" />;
-    case 'run_id':
-      return null;
-    default:
-      return null;
-  }
-};
-
 interface AgentStepsProps {
   progress: ProgressEvent[];
   isStreaming?: boolean;
 }
 
 export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) => {
-  const [sections, setSections] = useState<Record<string, string[]>>({});
   const [events, setEvents] = useState<ProgressEvent[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    // Update sections and events when progress changes
-    const newSections = progress.reduce((acc: Record<string, string[]>, event) => {
-      if (event.type === 'section' && event.title && event.items) {
-        acc[event.title] = event.items;
-      }
-      return acc;
-    }, {});
-    setSections(newSections);
     setEvents(progress);
   }, [progress]);
 
+  // Count meaningful events (excluding section and run_id types)
+  const meaningfulEvents = events.filter(event => 
+    event.type !== 'section' && 
+    event.type !== 'run_id' && 
+    event.message
+  );
+
+  const getStatusText = () => {
+    if (isStreaming) {
+      return "Agent is running...";
+    }
+    const count = meaningfulEvents.length;
+    return `Agent has completed: ${count} ${count === 1 ? 'step' : 'steps'}`;
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Stream individual events */}
-      {events.map((event, index) => (
-        event.type !== 'section' && event.message && (
-          <div key={`${event.type}-${index}`} className="flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2">
-            <div className="mt-1">
-              {getEventIcon(event.type)}
-            </div>
-            <p className={`text-sm ${event.type === 'error' ? 'text-destructive' : event.type === 'complete' ? 'text-success' : 'text-muted-foreground'}`}>
-              {event.message}
-            </p>
+    <div className="max-w-[80%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
+      {/* Completion Status Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center">
+          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+            <div className={`w-2 h-2 rounded-full bg-white ${isStreaming ? 'animate-pulse' : ''}`} />
           </div>
-        )
-      ))}
-
-      {/* Display sections */}
-      {Object.entries(sections).map(([title, items]) => (
-        <div key={title} className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
-          <h3 className="text-sm font-medium flex items-center gap-2">
-            {getEventIcon('action')}
-            {title}
-          </h3>
-          <ul className="space-y-2 ml-6">
-            {items.map((item, index) => (
-              <li key={index} className="text-sm text-muted-foreground">
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
-      ))}
+        <h2 className="text-lg font-medium text-blue-500">
+          {getStatusText()}
+        </h2>
+      </div>
 
-      {/* Show streaming indicator */}
-      {isStreaming && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-          <div className="w-2 h-2 bg-primary rounded-full" />
-          Streaming agent logs...
+      <div className="bg-[#F4F9F9] rounded-xl">
+        <div className="flex items-center justify-between px-6 py-4">
+          <h3 className="text-blue-500 text-lg font-medium">Steps</h3>
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-2"
+            aria-label={isCollapsed ? "Show all steps" : "Hide steps"}
+          >
+            {isCollapsed ? (
+              <>
+                Show all
+                <IconChevronDown size={20} />
+              </>
+            ) : (
+              <>
+                Hide all
+                <IconChevronUp size={20} />
+              </>
+            )}
+          </button>
         </div>
-      )}
+
+        {!isCollapsed && (
+          <div className="px-6 pb-4">
+            <div className="space-y-4 relative">
+              {/* Stream individual events */}
+              {events.map((event, index) => (
+                event.type !== 'section' && event.message && (
+                  <div key={`${event.type}-${index}`} className="flex items-start gap-3 relative">
+                    <div className="absolute left-[9px] top-5 bottom-0 w-[2px] bg-blue-100" 
+                         style={{ display: index === events.length - 1 ? 'none' : 'block' }} />
+                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center z-10">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-blue-500 font-medium mb-1">
+                        {event.type === 'complete' ? 'Task Completion' : 
+                         event.type === 'start' ? 'Starting' : 
+                         event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {event.message}
+                      </p>
+                    </div>
+                  </div>
+                )
+              ))}
+
+              {/* Show streaming indicator */}
+              {isStreaming && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 pl-8">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  running agent...
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }; 

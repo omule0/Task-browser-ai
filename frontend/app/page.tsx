@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRocket, IconEye, IconEyeOff, IconRefresh, IconArrowDown } from '@tabler/icons-react';
+import { IconRefresh, IconArrowDown } from '@tabler/icons-react';
 import { 
   LoadingAnimation,
   UserQuery,
@@ -11,7 +11,6 @@ import {
   MarkdownResult,
   Suggestions,
   InputForm,
-  TaskComplexityCard
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
@@ -36,7 +35,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [gifContent, setGifContent] = useState<string | null>(null);
   const [isGifLoading, setIsGifLoading] = useState(false);
-  const [showSteps, setShowSteps] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -47,16 +45,22 @@ export default function Home() {
   // Auto-scroll during streaming
   useEffect(() => {
     if (isStreaming && resultsRef.current) {
-      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      const scrollToBottom = () => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'end',
+        });
+      };
+      
+      // Initial scroll
+      scrollToBottom();
+      
+      // Set up interval for continuous scrolling during streaming
+      const scrollInterval = setInterval(scrollToBottom, 1000);
+      
+      return () => clearInterval(scrollInterval);
     }
   }, [progress, isStreaming]);
-
-  // Auto-hide steps when result is displayed
-  useEffect(() => {
-    if (result) {
-      setShowSteps(false);
-    }
-  }, [result]);
 
   // Fetch user's email on component mount
   useEffect(() => {
@@ -76,7 +80,8 @@ export default function Home() {
       
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
       const bottomThreshold = 200; // Show button when user is more than 200px from bottom
-      setShowScrollButton(scrollHeight - scrollTop - clientHeight > bottomThreshold);
+      const isNearBottom = scrollHeight - scrollTop - clientHeight <= bottomThreshold;
+      setShowScrollButton(!isNearBottom);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -84,9 +89,10 @@ export default function Home() {
   }, [resultsRef]);
 
   const scrollToBottom = () => {
-    if (resultsRef.current) {
-      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
+    resultsRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'end',
+    });
   };
 
   const fetchGifContent = async (runId: string) => {
@@ -278,14 +284,9 @@ export default function Home() {
           <div className="space-y-6" ref={resultsRef}>
             {task && <UserQuery task={task} />}
             
-            {/* Task Complexity Info */}
-            <TaskComplexityCard />
             
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <IconRocket size={18} className="text-primary" />
-                <h2 className="text-lg font-semibold">Results</h2>
-              </div>
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -296,21 +297,10 @@ export default function Home() {
                   <IconRefresh size={16} />
                   <span className="ml-2 text-sm">Refresh chat</span>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground"
-                  onClick={() => setShowSteps(!showSteps)}
-                >
-                  {showSteps ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                  <span className="ml-2 text-sm">
-                    {showSteps ? 'Hide steps' : 'Show steps'}
-                  </span>
-                </Button>
               </div>
             </div>
 
-            {showSteps && <AgentSteps progress={progress} isStreaming={isStreaming} />}
+            <AgentSteps progress={progress} isStreaming={isStreaming} />
 
             {loading && <LoadingAnimation />}
             
@@ -352,10 +342,11 @@ export default function Home() {
           <Button
             variant="outline"
             size="icon"
-            className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
             onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
           >
-            <IconArrowDown size={20} />
+            <IconArrowDown size={20} className="text-gray-600" />
           </Button>
         )}
       </div>
