@@ -1,10 +1,10 @@
 from datetime import datetime
 import base64
-from config.supabase import supabase, HISTORY_TABLE, GIF_TABLE
+from app.config.supabase import supabase, HISTORY_TABLE, GIF_TABLE
 from typing import Optional, List, Dict
 import json
 import logging
-from utils.auth import AuthTokens
+from app.utils.auth import AuthTokens
 import uuid
 
 

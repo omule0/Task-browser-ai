@@ -13,13 +13,13 @@ import logging
 import requests
 import uuid
 from typing import Dict, Optional, List
-from services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
-from utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
+from app.services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
+from app.utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
 import base64
 import tempfile
 import shutil
 from pathlib import Path
-from services.email_service import send_task_completion_email
+from app.services.email_service import send_task_completion_email
 
 load_dotenv()
 

@@ -2,7 +2,7 @@ from fastapi import HTTPException, Request
 from supabase.client import Client
 import jwt as PyJWT  # Import as PyJWT to be explicit
 from typing import Optional, Tuple, Dict
-from config.supabase import supabase
+from app.config.supabase import supabase
 
 class AuthTokens:
     def __init__(self, access_token: str, refresh_token: Optional[str] = None):
