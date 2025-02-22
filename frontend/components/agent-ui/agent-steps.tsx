@@ -3,6 +3,7 @@ import {
   IconChevronUp,
   IconChevronDown,
 } from '@tabler/icons-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
@@ -41,7 +42,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
   };
 
   return (
-    <div className="max-w-[80%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
+    <div className="max-w-[90%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
       {/* Completion Status Header */}
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center">
@@ -77,8 +78,8 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
         </div>
 
         {!isCollapsed && (
-          <div className="px-6 pb-4">
-            <div className="space-y-4 relative">
+          <ScrollArea className="h-[400px] px-6 pb-4">
+            <div className="space-y-4 relative pr-4">
               {/* Stream individual events */}
               {events.map((event, index) => (
                 event.type !== 'section' && event.message && (
@@ -110,7 +111,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                 </div>
               )}
             </div>
-          </div>
+          </ScrollArea>
         )}
       </div>
     </div>

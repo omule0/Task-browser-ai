@@ -36,7 +36,7 @@ export const TaskRecording = ({ gifContent, isAgentRunning }: TaskRecordingProps
           fill
           className="object-contain"
           priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 55vw"
+          sizes="(max-width: 800px) 100vw, (max-width: 1500px) 55vw"
         />
       </div>
     </div>
