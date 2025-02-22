@@ -1,5 +1,6 @@
 import Image from 'next/image';
-import { IconPlayerPlay } from '@tabler/icons-react';
+import { IconPlayerPlay, IconDownload } from '@tabler/icons-react';
+import { Button } from "@/components/ui/button";
 
 interface TaskRecordingProps {
   gifContent: string | undefined;
@@ -8,6 +9,29 @@ interface TaskRecordingProps {
 
 export const TaskRecording = ({ gifContent, isAgentRunning }: TaskRecordingProps) => {
   if (!gifContent && !isAgentRunning) return null;
+  
+  const handleDownload = () => {
+    if (!gifContent) return;
+    
+    // Create a Blob from the base64 string
+    const byteCharacters = atob(gifContent);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/gif' });
+    
+    // Create a download link and trigger the download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'task-recording.gif';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   
   if (isAgentRunning && !gifContent) {
     return (
@@ -39,6 +63,17 @@ export const TaskRecording = ({ gifContent, isAgentRunning }: TaskRecordingProps
             className="object-contain"
             priority
           />
+          {gifContent && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute top-4 right-4 rounded-full bg-white/90 hover:bg-white shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={handleDownload}
+              aria-label="Download recording"
+            >
+              <IconDownload size={18} className="text-gray-700" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
