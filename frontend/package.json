@@ -2,7 +2,6 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -34,6 +33,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
+    "react-resizable-panels": "^2.1.7",
     "remark-gfm": "^4.0.1",
     "resend": "^4.1.2",
     "socket.io-client": "^4.8.1",

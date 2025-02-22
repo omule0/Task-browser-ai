@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRefresh, IconArrowDown } from '@tabler/icons-react';
+import { IconRefresh, IconArrowDown, IconLayoutColumns, IconPhoto } from '@tabler/icons-react';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { 
   LoadingAnimation,
   UserQuery,
@@ -33,7 +38,7 @@ export default function Home() {
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [gifContent, setGifContent] = useState<string | null>(null);
+  const [gifContent, setGifContent] = useState<string | undefined>(undefined);
   const [isGifLoading, setIsGifLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -41,26 +46,7 @@ export default function Home() {
   const MAX_CHARS = 2000;
   const supabase = createClient();
   const { toast } = useToast();
-
-  // Auto-scroll during streaming
-  useEffect(() => {
-    if (isStreaming && resultsRef.current) {
-      const scrollToBottom = () => {
-        resultsRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'end',
-        });
-      };
-      
-      // Initial scroll
-      scrollToBottom();
-      
-      // Set up interval for continuous scrolling during streaming
-      const scrollInterval = setInterval(scrollToBottom, 1000);
-      
-      return () => clearInterval(scrollInterval);
-    }
-  }, [progress, isStreaming]);
+  const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
 
   // Fetch user's email on component mount
   useEffect(() => {
@@ -162,7 +148,7 @@ export default function Home() {
     setProgress([]);
     setResult(null);
     setError(null);
-    setGifContent(null);
+    setGifContent(undefined);
     setIsGifLoading(false);
   };
 
@@ -175,7 +161,7 @@ export default function Home() {
     setProgress([]);
     setResult(null);
     setError(null);
-    setGifContent(null);
+    setGifContent(undefined);
     setIsGifLoading(false);
 
     let currentRunId: string | null = null;
@@ -264,7 +250,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-6xl px-4 py-4">
       {/* Header Section */}
       <header className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -273,21 +259,23 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="w-full space-y-8">
-        {/* Header and Suggestions - Only show when no active conversation */}
-        {!progress.length && !result && !loading && (
-          <Suggestions onSelectTask={setTask} />
-        )}
-
-        {/* Results Area */}
-        {(progress.length > 0 || result || loading) && (
-          <div className="space-y-6" ref={resultsRef}>
-            {task && <UserQuery task={task} />}
-            
-            
-            <div className="flex items-center justify-between mb-4">
-
-              <div className="flex items-center gap-2">
+      {/* Resizable Panel Group */}
+      {(progress.length > 0 || result || loading) ? (
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="min-h-[200px]"
+        >
+          {/* Left Panel - Agent Interactions */}
+          <ResizablePanel 
+            defaultSize={70}
+            minSize={50}
+            maxSize={isRightPanelCollapsed ? 100 : 70}
+            className="p-4"
+          >
+            <div className="space-y-6" ref={resultsRef}>
+              {task && <UserQuery task={task} />}
+              
+              <div className="flex items-center justify-end mb-4">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -298,58 +286,119 @@ export default function Home() {
                   <span className="ml-2 text-sm">Refresh chat</span>
                 </Button>
               </div>
+
+              <AgentSteps progress={progress} isStreaming={isStreaming} />
+
+              {loading && <LoadingAnimation />}
+              
+              {error && (
+                <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {result && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <MarkdownResult content={result} />
+                </div>
+              )}
             </div>
 
-            <AgentSteps progress={progress} isStreaming={isStreaming} />
+            {/* Input Form */}
+            <InputForm
+              task={task}
+              loading={loading}
+              maxChars={MAX_CHARS}
+              onSubmit={handleSubmit}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
+              defaultEmail={userEmail}
+            />
+          </ResizablePanel>
 
-            {loading && <LoadingAnimation />}
-            
-            {error && (
-              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {result && (
-              <div className="animate-in fade-in slide-in-from-bottom-2">
-                <MarkdownResult content={result} />
-              </div>
-            )}
-
-            {isGifLoading && (
-              <div className="flex items-center justify-center py-4">
-                <span className="ml-2 text-sm text-muted-foreground">Loading recording...</span>
-              </div>
-            )}
-
-            {gifContent && <TaskRecording gifContent={gifContent} />}
-          </div>
-        )}
-
-        {/* Input Form */}
-        <InputForm
-          task={task}
-          loading={loading}
-          maxChars={MAX_CHARS}
-          onSubmit={handleSubmit}
-          onChange={(e) => setTask(e.target.value)}
-          onKeyDown={handleKeyDown}
-          defaultEmail={userEmail}
-        />
-
-        {/* Scroll to Bottom Button */}
-        {showScrollButton && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
-            onClick={scrollToBottom}
-            aria-label="Scroll to bottom"
+          <ResizableHandle withHandle className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" />
+          
+          {/* Right Panel - Task Recording */}
+          <ResizablePanel 
+            defaultSize={30}
+            minSize={20}
+            maxSize={50}
+            className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
           >
-            <IconArrowDown size={20} className="text-gray-600" />
-          </Button>
-        )}
-      </div>
+            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
+                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
+                >
+                  <IconLayoutColumns size={18} className="text-gray-600" />
+                </button>
+                <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <IconPhoto size={18} className="text-blue-500" />
+                    <span className="text-gray-900 font-medium">Task Recording</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                {isGifLoading ? (
+                  <div className="flex items-center justify-center py-20 bg-gray-50">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-gray-600">Loading view...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <TaskRecording 
+                    gifContent={gifContent} 
+                    isAgentRunning={loading && isStreaming} 
+                  />
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        // Show suggestions when no conversation is active
+        <div className="space-y-8">
+          <Suggestions onSelectTask={setTask} />
+          <InputForm
+            task={task}
+            loading={loading}
+            maxChars={MAX_CHARS}
+            onSubmit={handleSubmit}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={handleKeyDown}
+            defaultEmail={userEmail}
+          />
+        </div>
+      )}
+
+      {/* Floating Toggle Button (visible when panel is collapsed AND there's content) */}
+      {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
+        <button
+          onClick={() => setIsRightPanelCollapsed(false)}
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
+          aria-label="Show recording panel"
+        >
+          <IconPhoto size={20} className="text-blue-500" />
+        </button>
+      )}
+
+      {/* Scroll to Bottom Button */}
+      {showScrollButton && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
+          onClick={scrollToBottom}
+          aria-label="Scroll to bottom"
+        >
+          <IconArrowDown size={20} className="text-gray-600" />
+        </Button>
+      )}
     </div>
   );
 }
