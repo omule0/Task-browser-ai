@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRefresh, IconArrowDown, IconLayoutColumns, IconPhoto } from '@tabler/icons-react';
+import { IconRefresh, IconArrowDown, IconLayoutColumns, IconPhoto, IconHexagon } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -258,6 +258,16 @@ export default function Home() {
           <LoginButton />
         </div>
       </header>
+
+      {/* Status Message */}
+      <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <div className="flex items-center gap-2 text-blue-700">
+          <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+          <IconHexagon className="w-8 h-8 text-blue-500" />
+          </div>
+          <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
+        </div>
+      </div>
 
       {/* Resizable Panel Group */}
       {(progress.length > 0 || result || loading) ? (
