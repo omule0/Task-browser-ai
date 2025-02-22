@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRefresh, IconArrowDown, IconLayoutColumns, IconPhoto, IconHexagon } from '@tabler/icons-react';
+import { IconRefresh, IconArrowDown, IconHexagon, IconPhoto, IconLayoutColumns } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,13 +14,14 @@ import {
   AgentSteps,
   TaskRecording,
   MarkdownResult,
-  Suggestions,
   InputForm,
+  Suggestions,
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
 import UserGreetText from '@/components/UserGreetText';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import TemplateSection from '@/components/TemplateSection';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
@@ -29,6 +30,11 @@ interface ProgressEvent {
   success?: boolean;
   title?: string;
   items?: string[];
+}
+
+// Add new interface for template events
+interface TemplateFormEvent extends React.FormEvent {
+  templateTask?: string;
 }
 
 export default function Home() {
@@ -152,9 +158,10 @@ export default function Home() {
     setIsGifLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
+  const handleSubmit = async (e: TemplateFormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
     e.preventDefault();
-    if (!task.trim()) return;
+    const currentTask = e.templateTask || task;
+    if (!currentTask.trim()) return;
 
     setLoading(true);
     setIsStreaming(true);
@@ -185,7 +192,7 @@ export default function Home() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          task,
+          task: currentTask,
           sensitive_data: sensitiveData,
           email,
         }),
@@ -260,16 +267,18 @@ export default function Home() {
       </header>
 
       {/* Status Message */}
-      <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-        <div className="flex items-center gap-2 text-blue-700">
-          <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-          <IconHexagon className="w-8 h-8 text-blue-500" />
+      {!(progress.length > 0 || result || loading) && (
+        <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-center gap-2 text-blue-700">
+            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+              <IconHexagon className="w-8 h-8 text-blue-500" />
+            </div>
+            <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
-          <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
         </div>
-      </div>
+      )}
 
-      {/* Resizable Panel Group */}
+      {/* Main Content */}
       {(progress.length > 0 || result || loading) ? (
         <ResizablePanelGroup
           direction="horizontal"
@@ -327,7 +336,7 @@ export default function Home() {
           </ResizablePanel>
 
           <ResizableHandle withHandle className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" />
-          
+
           {/* Right Panel - Task Recording */}
           <ResizablePanel 
             defaultSize={30}
@@ -371,7 +380,6 @@ export default function Home() {
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
-        // Show suggestions when no conversation is active
         <div className="space-y-8">
           <Suggestions onSelectTask={setTask} />
           <InputForm
@@ -383,10 +391,16 @@ export default function Home() {
             onKeyDown={handleKeyDown}
             defaultEmail={userEmail}
           />
+          <TemplateSection 
+            onSubmit={(templateTask) => {
+              const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
+              handleSubmit(event, undefined, userEmail);
+            }} 
+          />
         </div>
       )}
 
-      {/* Floating Toggle Button (visible when panel is collapsed AND there's content) */}
+      {/* Floating Toggle Button */}
       {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
         <button
           onClick={() => setIsRightPanelCollapsed(false)}
