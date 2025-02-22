@@ -62,6 +62,10 @@ browser_configuration = {
     "proxy_config": {"active": True},
 }
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Digest AI API"}
+
 
 def create_browser_session():
     """Create a new browser session with Anchor Browser."""
@@ -222,7 +226,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 
         # Run the agent in a separate task with optimized max_steps
         agent_task = asyncio.create_task(
-            agent.run(max_steps=15))  # Reduced from 20
+            agent.run(max_steps=30))
 
         # Track previous state to detect changes
         prev_state = {
@@ -260,7 +264,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     prev_state[key] = current_items
 
             # Increased sleep interval to reduce CPU usage while maintaining responsiveness
-            await asyncio.sleep(0.25)  # Increased from 0.1
+            await asyncio.sleep(0.1)  # Increased from 0.1
 
         # Get the agent's history after completion
         history = await agent_task
@@ -408,8 +412,6 @@ async def browse(request: Request, browser_task: BrowserTask):
                 temperature=0.7
             ),
             sensitive_data=browser_task.sensitive_data or {},
-            max_failures=2,
-            max_actions_per_step=2
         )
 
         return StreamingResponse(
@@ -436,7 +438,3 @@ async def browse(request: Request, browser_task: BrowserTask):
             )
 
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
