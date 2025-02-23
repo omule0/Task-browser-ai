@@ -31,21 +31,7 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end mb-2">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 rounded-full"
-          onClick={handleCopy}
-          aria-label="Copy content"
-        >
-          {copied ? (
-            <IconCheck size={16} className="text-green-500" />
-          ) : (
-            <IconCopy size={16} className="text-gray-500" />
-          )}
-        </Button>
-      </div>
+     
       <div className="prose prose-sm dark:prose-invert max-w-none">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
@@ -66,6 +52,21 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
         >
           {content}
         </ReactMarkdown>
+      </div>
+      <div className="flex justify-end mb-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={handleCopy}
+          aria-label="Copy content"
+        >
+          {copied ? (
+            <IconCheck size={16} className="text-green-500" />
+          ) : (
+            <IconCopy size={16} className="text-gray-500" />
+          )}
+        </Button>
       </div>
     </div>
   );

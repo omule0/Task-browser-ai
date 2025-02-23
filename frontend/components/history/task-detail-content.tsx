@@ -1,109 +1,29 @@
-import { useState, useEffect } from 'react';
 import { LoadingAnimation, AgentSteps, MarkdownResult } from "@/components/agent-ui";
 import { IconAlertTriangle, IconClipboard, IconCheck } from '@tabler/icons-react';
-import { createClient } from '@/utils/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from 'date-fns';
+import { useHistoryDetail } from '@/hooks/useHistory';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 
 interface TaskDetailContentProps {
   historyId: string | null;
 }
 
-interface ProgressEvent {
-  type: string;
-  message?: string;
-  content?: string;
-  success?: boolean;
-  title?: string;
-  items?: string[];
-}
-
-interface HistoryDetailData {
-  id: string;
-  created_at: string;
-  task_name: string;
-  task_description: string;
-  status: string;
-  result: string;
-  task: string;
-  progress: string | ProgressEvent[];
-  steps: Array<{
-    id: string;
-    step_number: number;
-    description: string;
-    status: string;
-    result?: string;
-  }>;
-  error?: string;
-}
-
 export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<HistoryDetailData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const supabase = createClient();
-  const { toast } = useToast();
+  const { 
+    data,
+    isLoading,
+    isError,
+    error
+  } = useHistoryDetail(historyId || '');
+  
+  const { copied, copyToClipboard } = useCopyToClipboard();
 
-  useEffect(() => {
-    if (!historyId) {
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    const fetchDetails = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('You must be logged in to view task details');
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/history/${historyId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch task details');
-        }
-
-        const historyData = await response.json();
-        setData(historyData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: err instanceof Error ? err.message : 'Failed to fetch task details',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [historyId, supabase.auth, toast]);
-
-  const handleCopyTask = async () => {
-    if (!data?.task) return;
-    
-    try {
-      await navigator.clipboard.writeText(data.task);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy task:', err);
+  const handleCopyTask = () => {
+    if (data?.task) {
+      copyToClipboard(data.task);
     }
   };
 
@@ -115,7 +35,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingAnimation />
@@ -123,13 +43,15 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <Alert variant="destructive" className="max-w-md">
           <IconAlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Loading Details</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            {error instanceof Error ? error.message : 'An error occurred'}
+          </AlertDescription>
         </Alert>
       </div>
     );

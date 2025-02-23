@@ -32,7 +32,7 @@ origins = [
     "http://localhost:3000",
     "https://ai.digestafrica.com",
     "https://ai-dashboard-zikm5.ondigitalocean.app"
-    
+
 ]
 
 # Add CORS middleware
@@ -61,6 +61,7 @@ browser_configuration = {
     "captcha_config": {"active": True},
     "proxy_config": {"active": True},
 }
+
 
 @app.get("/")
 def read_root():

@@ -1,28 +1,16 @@
-import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { IconSearch, IconCheck, IconX, IconAlertTriangle, IconArrowRight } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from "@/components/ui/button";
-
-interface TaskHistoryItem {
-  id: string;
-  task: string;
-  created_at: string;
-  error: string | null;
-  result: string | null;
-}
+import { useFilteredTasks } from '@/hooks/useFilteredTasks';
 
 interface TaskHistorySidebarProps {
   isCollapsed: boolean;
 }
-
-const MAX_VISIBLE_TASKS = 4;
 
 // Function to truncate text with ellipsis
 const truncateText = (text: string, maxLength: number) => {
@@ -31,58 +19,20 @@ const truncateText = (text: string, maxLength: number) => {
 };
 
 export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [tasks, setTasks] = useState<TaskHistoryItem[]>([]);
   const pathname = usePathname();
-  const supabase = createClient();
-  const { toast } = useToast();
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredTasks,
+    hasMoreTasks,
+    isLoading,
+    isError,
+    error
+  } = useFilteredTasks();
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('You must be logged in to view task history');
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/history`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch task history');
-        }
-
-        const historyData = await response.json();
-        setTasks(historyData);
-      } catch (err) {
-        console.error('Error fetching tasks:', err);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: err instanceof Error ? err.message : 'Failed to fetch task history',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [supabase.auth, toast]);
-
-  const filteredTasks = tasks
-    .filter(task => task.task.toLowerCase().includes(searchQuery.toLowerCase()))
-    .slice(0, MAX_VISIBLE_TASKS);
-
-  const hasMoreTasks = tasks.length > MAX_VISIBLE_TASKS;
+  if (isError) {
+    console.error('Error fetching tasks:', error);
+  }
 
   return (
     <div className="flex flex-col w-full px-2">
@@ -106,13 +56,13 @@ export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
       {/* Task History List */}
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-1">
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
               Loading...
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
-              No tasks found
+              {isError ? 'Failed to load tasks' : 'No tasks found'}
             </div>
           ) : (
             <>

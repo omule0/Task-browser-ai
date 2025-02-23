@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { LoadingAnimation, AgentSteps, MarkdownResult } from "@/components/agent-ui";
 import { IconX, IconAlertTriangle } from '@tabler/icons-react';
-import { createClient } from '@/utils/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { useHistoryDetail } from '@/hooks/useHistory';
 import Image from 'next/image';
 
 interface HistoryDetailProps {
@@ -12,88 +10,13 @@ interface HistoryDetailProps {
   onClose: () => void;
 }
 
-interface ProgressEvent {
-  type: string;
-  message?: string;
-  content?: string;
-  success?: boolean;
-  title?: string;
-  items?: string[];
-}
-
-interface HistoryDetailData {
-  id: string;
-  created_at: string;
-  task_name: string;
-  task_description: string;
-  status: string;
-  result: string;
-  task: string;
-  progress: string | ProgressEvent[];
-  gif_content?: string;
-  steps: Array<{
-    id: string;
-    step_number: number;
-    description: string;
-    status: string;
-    result?: string;
-  }>;
-  error?: string;
-}
-
 export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<HistoryDetailData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!historyId) {
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    const fetchDetails = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('You must be logged in to view history details');
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/history/${historyId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch history details');
-        }
-
-        const historyData = await response.json();
-        setData(historyData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: err instanceof Error ? err.message : 'Failed to fetch history details',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [historyId, supabase.auth, toast]);
+  const { 
+    data,
+    isLoading,
+    isError,
+    error
+  } = useHistoryDetail(historyId || '');
 
   if (!historyId) {
     return (
@@ -103,7 +26,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingAnimation />
@@ -111,13 +34,15 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <Alert variant="destructive" className="max-w-md">
           <IconAlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Loading Details</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            {error instanceof Error ? error.message : 'An error occurred'}
+          </AlertDescription>
         </Alert>
       </div>
     );

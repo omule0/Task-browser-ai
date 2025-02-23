@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/sidebar";
 import Header from "@/components/Header";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import { Providers } from "@/app/providers";
 import '../app/globals.css';
 
 interface RootLayoutClientProps {
@@ -12,14 +13,29 @@ interface RootLayoutClientProps {
   onReset?: () => void;
 }
 
+// Create a singleton instance for sidebar state
+let sidebarInstance: { isCollapsed: boolean } | null = null;
+
 export function RootLayoutClient({ children, onReset }: RootLayoutClientProps) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (!sidebarInstance) {
+      sidebarInstance = { isCollapsed: true };
+    }
+    return sidebarInstance.isCollapsed;
+  });
+
+  const handleSidebarToggle = (value: boolean) => {
+    setIsSidebarCollapsed(value);
+    if (sidebarInstance) {
+      sidebarInstance.isCollapsed = value;
+    }
+  };
 
   return (
-    <>
+    <Providers>
       <Header 
         isCollapsed={isSidebarCollapsed} 
-        onToggle={setIsSidebarCollapsed}
+        onToggle={handleSidebarToggle}
         onReset={onReset}
       />
       <div className="flex min-h-screen bg-background">
@@ -32,6 +48,6 @@ export function RootLayoutClient({ children, onReset }: RootLayoutClientProps) {
         </main>
       </div>
       <Toaster />
-    </>
+    </Providers>
   );
 } 

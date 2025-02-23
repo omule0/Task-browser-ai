@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { HistoryList } from '@/components/history/history-list';
 import { HistoryDetail } from '@/components/history/history-detail';
-import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { useHistory, useDeleteHistory } from '@/hooks/useHistory';
 
 interface HistoryItem {
   id: string;
@@ -18,76 +18,25 @@ interface HistoryItem {
 }
 
 export default function HistoryPage() {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const LIMIT = 10;
-  const supabase = createClient();
   const { toast } = useToast();
 
-  const fetchHistory = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('You must be logged in to view history');
-      }
+  const { 
+    data: history = [], 
+    isLoading, 
+    isError, 
+    error 
+  } = useHistory();
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/history?limit=${LIMIT}&offset=${page * LIMIT}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch history');
-      }
-      
-      const data = await response.json();
-      setHistory(data);
-      setHasMore(data.length === LIMIT);
-    } catch (error) {
-      console.error('Error fetching history:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, supabase.auth, LIMIT]);
+  const deleteHistoryMutation = useDeleteHistory();
+
+  const hasMore = history.length === LIMIT;
 
   const handleDelete = async (id: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('You must be logged in to delete history');
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/history/${id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete history item');
-      }
-
-      // Remove the deleted item from the state
-      setHistory(prev => prev.filter(item => item.id !== id));
+      await deleteHistoryMutation.mutateAsync(id);
       
       // If the deleted item was selected, clear the selection
       if (selectedId === id) {
@@ -107,10 +56,6 @@ export default function HistoryPage() {
       });
     }
   };
-
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
@@ -137,9 +82,9 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {error && (
+        {isError && (
           <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-md">
-            {error}
+            {error instanceof Error ? error.message : 'An error occurred'}
           </div>
         )}
 
@@ -150,7 +95,7 @@ export default function HistoryPage() {
               selectedId={selectedId}
               onSelect={setSelectedId}
               onDelete={handleDelete}
-              loading={loading}
+              loading={isLoading}
             />
           </Card>
 
