@@ -38,7 +38,7 @@ const Header = ({ className = '', isCollapsed, onToggle, onReset }: HeaderProps)
       }
     };
     fetchUserEmail();
-  }, []);
+  }, [supabase.auth]);
 
   useEffect(() => {
     const handleScroll = () => {

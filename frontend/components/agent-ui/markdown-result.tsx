@@ -21,7 +21,7 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
         description: "Content copied to clipboard",
       });
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       toast({
         variant: "destructive",
         description: "Failed to copy content",

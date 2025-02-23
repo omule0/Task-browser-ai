@@ -72,7 +72,7 @@ export const Suggestions = () => {
                 Sensitive Data Disclaimer
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Our agent doesn&apos;t need to see your sensitive or other highly confidential information (e.g.passwords and access keys), so please don&apos;t send this information.
+                Our agent doesn&apos;t need to see your sensitive or other highly confidential information (e.g.passwords and access keys) unless you want to share it with the agent.
               </p>
             </div>
             <button

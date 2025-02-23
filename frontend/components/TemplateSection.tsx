@@ -1,6 +1,5 @@
 import { IconBriefcase, IconChartBar, IconSearch, IconNews, IconDots, IconBrandTwitter, IconUser, IconX, IconPlayerPlay } from '@tabler/icons-react';
 import { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
 type Category = 'Business' | 'Marketing' | 'Research' | 'News' | 'Other';
@@ -142,7 +141,6 @@ interface TemplateModalProps {
 const TemplateModal = ({ template, onClose, onSubmit }: TemplateModalProps) => {
   const [variables, setVariables] = useState<Record<string, string>>({});
   const { toast } = useToast();
-  const supabase = createClient();
 
   const handleSubmit = async () => {
     // Check if all variables are filled
