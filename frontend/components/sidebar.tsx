@@ -60,7 +60,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
 
         {/* Task History Section */}
         <div className="mt-4">
-          <TaskHistorySidebar isCollapsed={false} />
+          <TaskHistorySidebar isCollapsed={isCollapsed} />
         </div>
       </div>
 
