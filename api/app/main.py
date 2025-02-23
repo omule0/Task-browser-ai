@@ -406,7 +406,7 @@ async def browse(request: Request, browser_task: BrowserTask):
         browser = get_browser()
         agent = Agent(
             task=browser_task.task,
-            browser=browser,
+            #browser=browser,
             llm=ChatOpenAI(
                 model=browser_task.model,
                 temperature=0.7

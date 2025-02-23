@@ -3,9 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { IconPrompt, IconSend } from '@tabler/icons-react';
-import { SensitiveDataForm } from './sensitive-data-form';
-import { EmailNotification } from './email-notification';
-import { cn } from "@/lib/utils";
 import { SettingsDrawer } from './settings-drawer';
 
 interface InputFormProps {
@@ -48,7 +45,7 @@ export const InputForm = ({
             <IconPrompt size={18} />
           </div>
           <Textarea
-            placeholder={loading ? "Processing..." : "Ask AI a question or make a request..."}
+            placeholder={loading ? "Processing..." : "Choose a task below or write your own to start running your task..."}
             value={task}
             onChange={onChange}
             onKeyDown={onKeyDown}

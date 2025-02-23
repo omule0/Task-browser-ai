@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   IconHome,
-  IconRefresh,
   IconUser,
   IconLayoutSidebar,
   IconLayoutSidebarRightCollapse,
 } from '@tabler/icons-react';
+import { TaskHistorySidebar } from './history/task-history-sidebar';
 
 const sidebarItems = [
   { icon: <IconHome size={20} />, label: 'Home', href: '/' },
-  { icon: <IconRefresh size={20} />, label: 'History', href: '/history' },
 ];
 
 interface SidebarProps {
@@ -76,29 +75,15 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             </Button>
           );
         })}
+
+        {/* Task History Section */}
+        <div className="mt-4">
+          <TaskHistorySidebar isCollapsed={isCollapsed} />
+        </div>
       </div>
 
       {/* Bottom Items */}
       <div className="flex flex-col gap-2 w-full px-2">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full flex items-center gap-4 justify-start px-2",
-            isCollapsed ? "w-10 h-10 rounded-xl" : "rounded-lg h-10",
-            pathname === '/settings' && "bg-primary/10 text-primary hover:bg-primary/15"
-          )}
-          asChild
-        >
-          {/* <Link href="/settings">
-            <div className={cn(
-              "flex items-center gap-4",
-              isCollapsed && "justify-center"
-            )}>
-              <IconSettings size={20} />
-              {!isCollapsed && <span>Settings</span>}
-            </div>
-          </Link> */}
-        </Button>
         <Button
           variant="ghost"
           className={cn(

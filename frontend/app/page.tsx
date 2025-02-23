@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconRefresh, IconArrowDown, IconHexagon, IconPhoto, IconLayoutColumns } from '@tabler/icons-react';
+import { IconRefresh, IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -18,7 +18,6 @@ import {
   Suggestions,
 } from '@/components/agent-ui';
 import LoginButton from '@/components/LoginLogoutButton';
-import UserGreetText from '@/components/UserGreetText';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import TemplateSection from '@/components/TemplateSection';
@@ -261,17 +260,16 @@ export default function Home() {
       {/* Header Section */}
       <header className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <UserGreetText />
           <LoginButton />
         </div>
       </header>
 
       {/* Status Message */}
       {!(progress.length > 0 || result || loading) && (
-        <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <div className="flex items-center gap-2 text-blue-700">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-              <IconHexagon className="w-8 h-8 text-blue-500" />
+        <div className="mb-8 p-4 bg-white rounded-lg border border-gray-100">
+          <div className="flex items-center gap-2 text-gray-600">
+            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+            <IconInfoCircle className="h-5 w-5 flex-shrink-0 text-gray-600" />
             </div>
             <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
@@ -382,7 +380,7 @@ export default function Home() {
       ) : (
         <div className="space-y-8">
           {task && <UserQuery task={task} />}
-          <Suggestions onSelectTask={setTask} />
+          <Suggestions />
           <InputForm
             task={task}
             loading={loading}

@@ -115,8 +115,7 @@ export default function HistoryPage() {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Run History</h1>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"

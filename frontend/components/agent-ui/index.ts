@@ -5,4 +5,3 @@ export { TaskRecording } from './task-recording';
 export { MarkdownResult } from './markdown-result';
 export { Suggestions } from './suggestions';
 export { InputForm } from './input-form';
-export { TaskComplexityCard } from './TaskComplexityCard'; 
