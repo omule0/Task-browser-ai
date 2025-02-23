@@ -1,55 +1,40 @@
 'use client';
 
-import { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  IconHome,
   IconUser,
-  IconLayoutSidebar,
-  IconLayoutSidebarRightCollapse,
 } from '@tabler/icons-react';
 import { TaskHistorySidebar } from './history/task-history-sidebar';
 
-const sidebarItems = [
-  { icon: <IconHome size={20} />, label: 'Home', href: '/' },
-];
+interface SidebarItem {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+}
+
+const sidebarItems: SidebarItem[] = [];
 
 interface SidebarProps {
   isCollapsed: boolean;
-  onToggle: Dispatch<SetStateAction<boolean>>;
 }
 
-export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
+export function Sidebar({ isCollapsed }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside 
       className={cn(
-        "fixed md:sticky top-0 left-0 h-screen bg-background border-r flex flex-col items-center py-4 gap-2 transition-all duration-300 z-40",
-        isCollapsed ? "w-[60px]" : "w-[200px]",
-        "md:w-auto md:min-w-[60px]",
-        !isCollapsed && "md:min-w-[200px]"
+        "fixed top-16 left-0 h-[calc(100vh-4rem)] bg-background border-r flex flex-col items-center py-4 gap-2 transition-all duration-300 z-40",
+        isCollapsed ? "-translate-x-full" : "translate-x-0",
+        "w-[200px]"
       )}
     >
-      {/* Collapse Toggle Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="w-10 h-10 rounded-xl hover:bg-muted"
-        onClick={() => onToggle(!isCollapsed)}
-      >
-        {isCollapsed ? (
-          <IconLayoutSidebarRightCollapse size={20} />
-        ) : (
-          <IconLayoutSidebar size={20} />
-        )}
-      </Button>
-
       {/* Navigation Items */}
-      <div className="flex-1 flex flex-col gap-2 w-full px-2 mt-2">
+      <div className="flex-1 flex flex-col gap-2 w-full px-2">
         {sidebarItems.map((item, index) => {
           const isActive = pathname === item.href;
           return (
@@ -58,18 +43,15 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               variant="ghost"
               className={cn(
                 "w-full flex items-center gap-4 justify-start px-2",
-                isCollapsed ? "w-10 h-10 rounded-xl" : "rounded-lg h-10",
+                "h-10 rounded-lg",
                 isActive && "bg-primary/10 text-primary hover:bg-primary/15"
               )}
               asChild
             >
               <Link href={item.href}>
-                <div className={cn(
-                  "flex items-center gap-4",
-                  isCollapsed && "justify-center"
-                )}>
+                <div className="flex items-center gap-4">
                   {item.icon}
-                  {!isCollapsed && <span>{item.label}</span>}
+                  <span>{item.label}</span>
                 </div>
               </Link>
             </Button>
@@ -78,7 +60,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
 
         {/* Task History Section */}
         <div className="mt-4">
-          <TaskHistorySidebar isCollapsed={isCollapsed} />
+          <TaskHistorySidebar isCollapsed={false} />
         </div>
       </div>
 
@@ -88,18 +70,15 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           variant="ghost"
           className={cn(
             "w-full flex items-center gap-4 justify-start px-2",
-            isCollapsed ? "w-10 h-10 rounded-xl" : "rounded-lg h-10",
+            "h-10 rounded-lg",
             pathname === '/profile' && "bg-primary/10 text-primary hover:bg-primary/15"
           )}
           asChild
         >
           <Link href="/profile">
-            <div className={cn(
-              "flex items-center gap-4",
-              isCollapsed && "justify-center"
-            )}>
+            <div className="flex items-center gap-4">
               <IconUser size={20} />
-              {!isCollapsed && <span>Profile</span>}
+              <span>Profile</span>
             </div>
           </Link>
         </Button>

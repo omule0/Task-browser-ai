@@ -2,25 +2,31 @@
 
 import { useState } from 'react';
 import { Sidebar } from "@/components/sidebar";
+import Header from "@/components/Header";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import '../app/globals.css';
 
 interface RootLayoutClientProps {
   children: React.ReactNode;
+  onReset?: () => void;
 }
 
-export function RootLayoutClient({ children }: RootLayoutClientProps) {
+export function RootLayoutClient({ children, onReset }: RootLayoutClientProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   return (
     <>
+      <Header 
+        isCollapsed={isSidebarCollapsed} 
+        onToggle={setIsSidebarCollapsed}
+        onReset={onReset}
+      />
       <div className="flex min-h-screen bg-background">
-        <Sidebar isCollapsed={isSidebarCollapsed} onToggle={setIsSidebarCollapsed} />
+        <Sidebar isCollapsed={isSidebarCollapsed} />
         <main className={cn(
           "flex-1 w-full transition-all duration-300",
-          "md:ml-0", // Remove margin on desktop as sidebar is sticky
-          isSidebarCollapsed ? "ml-[60px]" : "ml-[200px]" // Add margin on mobile to prevent overlap
+          isSidebarCollapsed ? "ml-0" : "ml-[200px]"
         )}>
           {children}
         </main>

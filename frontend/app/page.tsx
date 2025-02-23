@@ -17,10 +17,10 @@ import {
   InputForm,
   Suggestions,
 } from '@/components/agent-ui';
-import LoginButton from '@/components/LoginLogoutButton';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import TemplateSection from '@/components/TemplateSection';
+import { RootLayoutClient } from '@/components/RootLayoutClient';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
@@ -256,72 +256,113 @@ export default function Home() {
   };
 
   return (
-    <div className={`container mx-auto px-4 py-4 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
-      {/* Header Section */}
-      <header className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <LoginButton />
-        </div>
-      </header>
-
-      {/* Status Message */}
-      {!(progress.length > 0 || result || loading) && (
-        <div className="mb-8 p-4 bg-white rounded-lg border border-gray-100">
-          <div className="flex items-center gap-2 text-gray-600">
-            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
-            <IconInfoCircle className="h-5 w-5 flex-shrink-0 text-gray-600" />
+    <RootLayoutClient onReset={handleReset}>
+      <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
+        {/* Status Message */}
+        {!(progress.length > 0 || result || loading) && (
+          <div className="mb-8 p-4 bg-white rounded-lg border border-gray-100">
+            <div className="flex items-center gap-2 text-gray-600">
+              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                <IconInfoCircle className="h-5 w-5 flex-shrink-0 text-gray-600" />
+              </div>
+              <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
             </div>
-            <p>Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Main Content */}
-      {(progress.length > 0 || result || loading) ? (
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="min-h-[200px]"
-        >
-          {/* Left Panel - Agent Interactions */}
-          <ResizablePanel 
-            defaultSize={70}
-            minSize={50}
-            maxSize={isRightPanelCollapsed ? 100 : 70}
-            className="p-4"
+        {/* Main Content */}
+        {(progress.length > 0 || result || loading) ? (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="min-h-[200px]"
           >
-            <div className="space-y-6" ref={resultsRef}>
-              {task && <UserQuery task={task} />}
-              
-              <div className="flex items-center justify-end mb-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground"
-                  onClick={handleReset}
-                >
-                  <IconRefresh size={16} />
-                  <span className="ml-2 text-sm">Refresh chat</span>
-                </Button>
+            {/* Left Panel - Agent Interactions */}
+            <ResizablePanel 
+              defaultSize={70}
+              minSize={50}
+              maxSize={isRightPanelCollapsed ? 100 : 70}
+              className="p-4"
+            >
+              <div className="space-y-6" ref={resultsRef}>
+                {task && <UserQuery task={task} />}
+
+                <AgentSteps progress={progress} isStreaming={isStreaming} />
+
+                {loading && <LoadingAnimation />}
+                
+                {error && (
+                  <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                {result && (
+                  <div className="animate-in fade-in slide-in-from-bottom-2">
+                    <MarkdownResult content={result} />
+                  </div>
+                )}
               </div>
 
-              <AgentSteps progress={progress} isStreaming={isStreaming} />
+              {/* Input Form */}
+              <InputForm
+                task={task}
+                loading={loading}
+                maxChars={MAX_CHARS}
+                onSubmit={handleSubmit}
+                onChange={(e) => setTask(e.target.value)}
+                onKeyDown={handleKeyDown}
+                defaultEmail={userEmail}
+              />
+            </ResizablePanel>
 
-              {loading && <LoadingAnimation />}
-              
-              {error && (
-                <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                  {error}
+            <ResizableHandle withHandle className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" />
+
+            {/* Right Panel - Task Recording */}
+            <ResizablePanel 
+              defaultSize={30}
+              minSize={10}
+              maxSize={50}
+              className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
+            >
+              <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
+                <div className="flex items-center gap-2 mb-4">
+                  <button
+                    onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
+                    className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                    aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
+                  >
+                    <IconLayoutColumns size={18} className="text-gray-600" />
+                  </button>
+                  <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <IconPhoto size={18} className="text-blue-500" />
+                      <span className="text-gray-900 font-medium">Task Recording</span>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              {result && (
-                <div className="animate-in fade-in slide-in-from-bottom-2">
-                  <MarkdownResult content={result} />
+                <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
+                  {isGifLoading ? (
+                    <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-600">Loading view...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <TaskRecording 
+                      gifContent={gifContent} 
+                      isAgentRunning={loading && isStreaming} 
+                    />
+                  )}
                 </div>
-              )}
-            </div>
-
-            {/* Input Form */}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <div className="space-y-8">
+            {task && <UserQuery task={task} />}
+            <Suggestions />
             <InputForm
               task={task}
               loading={loading}
@@ -331,98 +372,40 @@ export default function Home() {
               onKeyDown={handleKeyDown}
               defaultEmail={userEmail}
             />
-          </ResizablePanel>
+            <TemplateSection 
+              onSubmit={(templateTask) => {
+                setTask(templateTask);
+                const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
+                handleSubmit(event, undefined, userEmail);
+              }} 
+            />
+          </div>
+        )}
 
-          <ResizableHandle withHandle className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" />
-
-          {/* Right Panel - Task Recording */}
-          <ResizablePanel 
-            defaultSize={30}
-            minSize={10}
-            maxSize={50}
-            className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
+        {/* Floating Toggle Button */}
+        {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
+          <button
+            onClick={() => setIsRightPanelCollapsed(false)}
+            className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
+            aria-label="Show recording panel"
           >
-            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
-              <div className="flex items-center gap-2 mb-4">
-                <button
-                  onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                  aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
-                >
-                  <IconLayoutColumns size={18} className="text-gray-600" />
-                </button>
-                <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <IconPhoto size={18} className="text-blue-500" />
-                    <span className="text-gray-900 font-medium">Task Recording</span>
-                  </div>
-                </div>
-              </div>
+            <IconPhoto size={20} className="text-blue-500" />
+          </button>
+        )}
 
-              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
-                {isGifLoading ? (
-                  <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600">Loading view...</span>
-                    </div>
-                  </div>
-                ) : (
-                  <TaskRecording 
-                    gifContent={gifContent} 
-                    isAgentRunning={loading && isStreaming} 
-                  />
-                )}
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      ) : (
-        <div className="space-y-8">
-          {task && <UserQuery task={task} />}
-          <Suggestions />
-          <InputForm
-            task={task}
-            loading={loading}
-            maxChars={MAX_CHARS}
-            onSubmit={handleSubmit}
-            onChange={(e) => setTask(e.target.value)}
-            onKeyDown={handleKeyDown}
-            defaultEmail={userEmail}
-          />
-          <TemplateSection 
-            onSubmit={(templateTask) => {
-              setTask(templateTask);
-              const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
-              handleSubmit(event, undefined, userEmail);
-            }} 
-          />
-        </div>
-      )}
-
-      {/* Floating Toggle Button */}
-      {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
-        <button
-          onClick={() => setIsRightPanelCollapsed(false)}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
-          aria-label="Show recording panel"
-        >
-          <IconPhoto size={20} className="text-blue-500" />
-        </button>
-      )}
-
-      {/* Scroll to Bottom Button */}
-      {showScrollButton && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
-          onClick={scrollToBottom}
-          aria-label="Scroll to bottom"
-        >
-          <IconArrowDown size={20} className="text-gray-600" />
-        </Button>
-      )}
-    </div>
+        {/* Scroll to Bottom Button */}
+        {showScrollButton && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
+            onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
+          >
+            <IconArrowDown size={20} className="text-gray-600" />
+          </Button>
+        )}
+      </div>
+    </RootLayoutClient>
   );
 }
