@@ -21,7 +21,7 @@ interface AgentStepsProps {
 
 export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) => {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     setEvents(progress);
@@ -38,7 +38,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
     if (isStreaming) {
       return (
         <div className="flex items-center gap-2">
-          Agent is running <SyncLoader size={8} color="#2563eb" />
+          Agent is running <SyncLoader size={5} color="#2563eb" />
         </div>
       );
     }
@@ -111,7 +111,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
               {/* Show streaming indicator */}
               {isStreaming && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 pl-8">
-                  <SyncLoader size={8} color="#2563eb" />
+                  <SyncLoader size={5} color="#2563eb" />
                   Agent is running...
                 </div>
               )}

@@ -89,10 +89,10 @@ export default function Home() {
   const fetchGifContent = async (runId: string) => {
     try {
       setIsGifLoading(true);
-      console.log('Fetching GIF content for run ID:', runId);
+      console.log('[GIF Fetch] Starting fetch for run ID:', runId);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.warn('No session available for GIF fetch');
+        console.warn('[GIF Fetch] No session available for GIF fetch');
         setIsGifLoading(false);
         return;
       }
@@ -104,21 +104,31 @@ export default function Home() {
       });
 
       if (!response.ok) {
+        console.error('[GIF Fetch] Failed to fetch GIF content:', {
+          status: response.status,
+          statusText: response.statusText
+        });
         throw new Error('Failed to fetch GIF content');
       }
 
       const data = await response.json();
-      console.log('Received history data:', { 
+      console.log('[GIF Fetch] Received history data:', { 
         hasGifContent: !!data.gif_content,
         gifContentLength: data.gif_content ? data.gif_content.length : 0 
       });
       
       if (data.gif_content) {
         setGifContent(data.gif_content);
-        console.log('Set GIF content successfully');
+        console.log('[GIF Fetch] Set GIF content successfully');
+      } else {
+        console.warn('[GIF Fetch] No GIF content in response');
       }
     } catch (error) {
-      console.error('Error fetching GIF:', error);
+      console.error('[GIF Fetch] Error:', error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : error);
     } finally {
       setIsGifLoading(false);
     }
@@ -160,7 +170,16 @@ export default function Home() {
   const handleSubmit = async (e: TemplateFormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
     e.preventDefault();
     const currentTask = e.templateTask || task;
-    if (!currentTask.trim()) return;
+    if (!currentTask.trim()) {
+      console.warn('[Submit] Empty task submitted');
+      return;
+    }
+
+    console.log('[Submit] Starting task submission:', {
+      hasTemplateTask: !!e.templateTask,
+      hasSensitiveData: !!sensitiveData,
+      hasEmail: !!email
+    });
 
     setLoading(true);
     setIsStreaming(true);
@@ -176,6 +195,7 @@ export default function Home() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.error('[Submit] No active session found');
         toast({
           variant: "destructive",
           title: "Authentication Required",
@@ -184,6 +204,7 @@ export default function Home() {
         return;
       }
 
+      console.log('[Submit] Making API request');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
         method: 'POST',
         headers: {
@@ -198,19 +219,28 @@ export default function Home() {
       });
 
       if (!response.ok) {
+        console.error('[Submit] API request failed:', {
+          status: response.status,
+          statusText: response.statusText
+        });
         throw new Error('Failed to start task');
       }
 
       const reader = response.body?.getReader();
       if (!reader) {
+        console.error('[Submit] No response stream available');
         throw new Error('No response stream available');
       }
 
       let currentProgress: ProgressEvent[] = [];
+      console.log('[Submit] Starting to read stream');
       
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log('[Submit] Stream completed');
+          break;
+        }
 
         // Convert the stream chunk to text
         const chunk = new TextDecoder().decode(value);
@@ -219,30 +249,50 @@ export default function Home() {
         for (const line of lines) {
           try {
             const event = JSON.parse(line) as ProgressEvent;
+            console.log('[Submit] Received event:', { type: event.type, hasMessage: !!event.message });
             
             if (event.type === 'run_id') {
               currentRunId = event.message || null;
+              console.log('[Submit] Received run ID:', currentRunId);
             } else if (event.type === 'error') {
+              console.error('[Submit] Error event received:', event.message);
               setError(event.message || 'An error occurred');
             } else if (event.type === 'complete') {
+              console.log('[Submit] Task completed');
               setResult(event.message || null);
               // Start fetching GIF after completion
               if (currentRunId) {
+                console.log('[Submit] Initiating GIF fetch for run:', currentRunId);
                 await fetchGifContent(currentRunId);
               }
             } else if (event.type === 'gif') {
+              console.log('[Submit] GIF generation started');
               setIsGifLoading(true);
             }
 
             currentProgress = [...currentProgress, event];
             setProgress(currentProgress);
           } catch (e) {
-            console.error('Error parsing event:', e);
+            console.error('[Submit] Error parsing event:', {
+              error: e instanceof Error ? {
+                name: e.name,
+                message: e.message,
+                stack: e.stack
+              } : e,
+              line
+            });
           }
         }
       }
     } catch (e) {
-      console.error('Error:', e);
+      console.error('[Submit] Task execution error:', {
+        error: e instanceof Error ? {
+          name: e.name,
+          message: e.message,
+          stack: e.stack
+        } : e,
+        currentRunId
+      });
       setError(e instanceof Error ? e.message : 'An error occurred');
       toast({
         variant: "destructive",
@@ -250,6 +300,7 @@ export default function Home() {
         description: e instanceof Error ? e.message : 'An error occurred',
       });
     } finally {
+      console.log('[Submit] Task execution completed');
       setLoading(false);
       setIsStreaming(false);
     }
