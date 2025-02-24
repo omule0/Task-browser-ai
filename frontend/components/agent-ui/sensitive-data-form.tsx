@@ -54,36 +54,37 @@ export function SensitiveDataForm({ onSensitiveDataChange }: SensitiveDataFormPr
       <Button
         variant="ghost"
         size="sm"
-        className="text-xs text-muted-foreground hover:text-foreground"
+        className="text-[10px] sm:text-xs text-muted-foreground hover:text-foreground h-7 sm:h-8 px-2 sm:px-3"
         onClick={handleAddEntry}
       >
-        <IconPlus size={14} className="mr-1" />
+        <IconPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
         Add Sensitive Data
       </Button>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Sensitive Data</h3>
+        <h3 className="text-xs sm:text-sm font-medium">Sensitive Data</h3>
         <Button
           variant="outline"
           size="sm"
           onClick={handleAddEntry}
+          className="h-7 sm:h-8 px-2.5 sm:px-3 text-xs sm:text-sm"
         >
-          <IconPlus size={16} className="mr-2" />
+          <IconPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           Add Field
         </Button>
       </div>
       
       {entries.map((entry, index) => (
-        <div key={index} className="flex gap-2">
+        <div key={index} className="flex flex-col sm:flex-row gap-2">
           <Input
             placeholder="Variable name"
             value={entry.key}
             onChange={(e) => handleEntryChange(index, 'key', e.target.value)}
-            className="flex-1"
+            className="flex-1 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3"
           />
           <div className="relative flex-1">
             <Input
@@ -91,25 +92,29 @@ export function SensitiveDataForm({ onSensitiveDataChange }: SensitiveDataFormPr
               placeholder="Value"
               value={entry.value}
               onChange={(e) => handleEntryChange(index, 'value', e.target.value)}
-              className="w-full pr-10"
+              className="w-full pr-8 sm:pr-10 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3"
             />
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 sm:h-7 w-6 sm:w-7 p-0.5 sm:p-1"
               onClick={() => toggleShowValue(index)}
             >
-              {showValues[index] ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+              {showValues[index] ? (
+                <IconEyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              ) : (
+                <IconEye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              )}
             </Button>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => handleRemoveEntry(index)}
-            className="shrink-0"
+            className="shrink-0 h-8 sm:h-9 w-8 sm:w-9 sm:ml-0.5"
           >
-            <IconTrash size={16} />
+            <IconTrash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
         </div>
       ))}

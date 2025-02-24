@@ -29,7 +29,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
 
   if (!historyId) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground">
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] text-muted-foreground text-sm sm:text-base">
         <p>Select a task to view details</p>
       </div>
     );
@@ -37,7 +37,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[300px] sm:min-h-[400px]">
         <LoadingAnimation />
       </div>
     );
@@ -45,11 +45,11 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <Alert variant="destructive" className="max-w-md">
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4">
+        <Alert variant="destructive" className="max-w-[340px] sm:max-w-md">
           <IconAlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error Loading Details</AlertTitle>
-          <AlertDescription>
+          <AlertTitle className="text-sm sm:text-base">Error Loading Details</AlertTitle>
+          <AlertDescription className="text-xs sm:text-sm">
             {error instanceof Error ? error.message : 'An error occurred'}
           </AlertDescription>
         </Alert>
@@ -70,53 +70,56 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-8 p-6">
+        <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
           {/* Header */}
-          <div className="space-y-4">
-            <div className="flex items-start justify-between">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight">Task Details</h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">Task Details</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Created {formatDistanceToNow(new Date(data.created_at), { addSuffix: true })}
                 </p>
               </div>
-              <Badge variant={data.error ? "destructive" : data.result ? "default" : "secondary"}>
+              <Badge 
+                variant={data.error ? "destructive" : data.result ? "default" : "secondary"}
+                className="text-xs sm:text-sm px-2 sm:px-2.5 py-0.5 sm:py-1"
+              >
                 {data.error ? "Failed" : data.result ? "Completed" : "In Progress"}
               </Badge>
             </div>
           </div>
 
           {/* Task */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Task</h3>
+              <h3 className="text-base sm:text-lg font-medium">Task</h3>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-xs"
+                className="h-7 sm:h-8 px-2 text-xs sm:text-sm"
                 onClick={handleCopyTask}
               >
                 {copied ? (
-                  <IconCheck size={16} className="mr-1" />
+                  <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                 ) : (
-                  <IconClipboard size={16} className="mr-1" />
+                  <IconClipboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                 )}
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <div className="text-sm pl-4">
+            <div className="text-xs sm:text-sm pl-3 sm:pl-4">
               {data.task}
             </div>
           </div>
 
           {/* Error */}
           {data.error && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium text-destructive">Error</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="text-base sm:text-lg font-medium text-destructive">Error</h3>
               <Alert variant="destructive">
-                <IconAlertTriangle className="h-4 w-4" />
-                <AlertTitle>Task Failed</AlertTitle>
-                <AlertDescription className="mt-2">
+                <IconAlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <AlertTitle className="text-sm sm:text-base">Task Failed</AlertTitle>
+                <AlertDescription className="mt-1.5 sm:mt-2 text-xs sm:text-sm">
                   {data.error}
                 </AlertDescription>
               </Alert>
@@ -125,9 +128,9 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
 
           {/* Progress */}
           {progress && progress.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium">Progress</h3>
-              <div className="pl-4">
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="text-base sm:text-lg font-medium">Progress</h3>
+              <div className="pl-3 sm:pl-4">
                 <AgentSteps progress={progress} />
               </div>
             </div>
@@ -135,9 +138,9 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
 
           {/* Result */}
           {data.result && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium">Result</h3>
-              <div className="pl-4">
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="text-base sm:text-lg font-medium">Result</h3>
+              <div className="pl-3 sm:pl-4">
                 <MarkdownResult content={data.result} />
               </div>
             </div>

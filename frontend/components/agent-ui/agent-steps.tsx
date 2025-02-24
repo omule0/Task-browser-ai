@@ -47,60 +47,60 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
   };
 
   return (
-    <div className="max-w-[100%] space-y-4 animate-in fade-in slide-in-from-bottom-2">
+    <div className="max-w-[100%] space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-2">
       {/* Completion Status Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center">
-          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-            <div className={`w-2 h-2 rounded-full bg-white ${isStreaming ? 'animate-pulse' : ''}`} />
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center">
+          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500 flex items-center justify-center">
+            <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white ${isStreaming ? 'animate-pulse' : ''}`} />
           </div>
         </div>
-        <h2 className="text-lg font-medium text-blue-500">
+        <h2 className="text-base sm:text-lg font-medium text-blue-500">
           {getStatusText()}
         </h2>
       </div>
 
-      <div className="bg-[#F4F9F9] rounded-xl">
-        <div className="flex items-center justify-between px-6 py-4">
-          <h3 className="text-blue-500 text-lg font-medium">Steps</h3>
+      <div className="bg-[#F4F9F9] rounded-lg sm:rounded-xl">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+          <h3 className="text-base sm:text-lg font-medium text-blue-500">Steps</h3>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-2"
+            className="text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"
             aria-label={isCollapsed ? "Show all steps" : "Hide steps"}
           >
             {isCollapsed ? (
               <>
                 Show all
-                <IconChevronDown size={20} />
+                <IconChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
               </>
             ) : (
               <>
                 Hide all
-                <IconChevronUp size={20} />
+                <IconChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
               </>
             )}
           </button>
         </div>
 
         {!isCollapsed && (
-          <ScrollArea className="h-[400px] px-6 pb-4">
-            <div className="space-y-4 relative pr-4">
+          <ScrollArea className="h-[300px] sm:h-[400px] px-4 sm:px-6 pb-3 sm:pb-4">
+            <div className="space-y-3 sm:space-y-4 relative pr-3 sm:pr-4">
               {/* Stream individual events */}
               {events.map((event, index) => (
                 event.type !== 'section' && event.message && (
-                  <div key={`${event.type}-${index}`} className="flex items-start gap-3 relative">
-                    <div className="absolute left-[9px] top-5 bottom-0 w-[2px] bg-blue-100" 
+                  <div key={`${event.type}-${index}`} className="flex items-start gap-2 sm:gap-3 relative">
+                    <div className="absolute left-[7px] sm:left-[9px] top-4 sm:top-5 bottom-0 w-[2px] bg-blue-100" 
                          style={{ display: index === events.length - 1 ? 'none' : 'block' }} />
-                    <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center z-10">
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500 flex items-center justify-center z-10">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-blue-500 font-medium mb-1">
+                      <h4 className="text-sm sm:text-base text-blue-500 font-medium mb-0.5 sm:mb-1">
                         {event.type === 'complete' ? 'Task Completion' : 
                          event.type === 'start' ? 'Starting' : 
                          event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         {event.message}
                       </p>
                     </div>
@@ -110,9 +110,9 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
 
               {/* Show streaming indicator */}
               {isStreaming && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 pl-8">
-                  <SyncLoader size={5} color="#2563eb" />
-                  Agent is running...
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 pl-6 sm:pl-8">
+                  <SyncLoader size={4} color="#2563eb" />
+                  <span>Agent is running...</span>
                 </div>
               )}
             </div>

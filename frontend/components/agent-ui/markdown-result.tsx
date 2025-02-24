@@ -30,23 +30,44 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="prose prose-sm dark:prose-invert max-w-none">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="prose prose-xs sm:prose-sm dark:prose-invert max-w-none">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
-          className="text-sm text-muted-foreground"
+          className="text-xs sm:text-sm text-muted-foreground"
           components={{
-            p: ({children}) => <p className="text-sm text-muted-foreground mb-4">{children}</p>,
-            a: ({href, children}) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-            ul: ({children}) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
-            ol: ({children}) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
-            li: ({children}) => <li className="mb-1">{children}</li>,
-            h1: ({children}) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
-            h2: ({children}) => <h2 className="text-lg font-semibold mb-3">{children}</h2>,
-            h3: ({children}) => <h3 className="text-base font-medium mb-2">{children}</h3>,
-            code: ({children}) => <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>,
-            pre: ({children}) => <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">{children}</pre>,
-            blockquote: ({children}) => <blockquote className="border-l-4 border-primary/10 pl-4 italic mb-4">{children}</blockquote>,
+            p: ({children}) => <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">{children}</p>,
+            a: ({href, children}) => (
+              <a 
+                href={href} 
+                className="text-primary hover:underline text-xs sm:text-sm" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                {children}
+              </a>
+            ),
+            ul: ({children}) => <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 text-xs sm:text-sm">{children}</ul>,
+            ol: ({children}) => <ol className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 text-xs sm:text-sm">{children}</ol>,
+            li: ({children}) => <li className="mb-1 sm:mb-1.5">{children}</li>,
+            h1: ({children}) => <h1 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{children}</h1>,
+            h2: ({children}) => <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{children}</h2>,
+            h3: ({children}) => <h3 className="text-sm sm:text-base font-medium mb-1.5 sm:mb-2">{children}</h3>,
+            code: ({children}) => (
+              <code className="bg-muted px-1 sm:px-1.5 py-0.5 rounded text-xs sm:text-sm">
+                {children}
+              </code>
+            ),
+            pre: ({children}) => (
+              <pre className="bg-muted p-3 sm:p-4 rounded-lg overflow-x-auto mb-3 sm:mb-4 text-xs sm:text-sm">
+                {children}
+              </pre>
+            ),
+            blockquote: ({children}) => (
+              <blockquote className="border-l-2 sm:border-l-4 border-primary/10 pl-3 sm:pl-4 italic mb-3 sm:mb-4 text-xs sm:text-sm">
+                {children}
+              </blockquote>
+            ),
           }}
         >
           {content}
@@ -56,14 +77,14 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8 rounded-full"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
           onClick={handleCopy}
           aria-label="Copy content"
         >
           {copied ? (
-            <IconCheck size={16} className="text-green-500" />
+            <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
           ) : (
-            <IconCopy size={16} className="text-gray-500" />
+            <IconCopy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
           )}
         </Button>
       </div>

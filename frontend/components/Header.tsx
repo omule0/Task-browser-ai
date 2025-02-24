@@ -63,20 +63,20 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
         isScrolled ? 'bg-white/80 backdrop-blur-sm shadow-sm' : 'bg-transparent'
       } ${className}`}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-14 sm:h-16">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Sidebar Toggle */}
             <Button
               variant="ghost"
               size="icon"
-              className="w-10 h-10 rounded-xl hover:bg-muted"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl hover:bg-muted"
               onClick={() => onToggle(!isCollapsed)}
             >
               {isCollapsed ? (
-                <IconLayoutSidebarRightCollapse size={20} />
+                <IconLayoutSidebarRightCollapse className="w-4 h-4 sm:w-5 sm:h-5" />
               ) : (
-                <IconLayoutSidebar size={20} />
+                <IconLayoutSidebar className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </Button>
 
@@ -85,23 +85,23 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
               href="/" 
               className="flex items-center"
             >
-              <span className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              <span className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 DigestAI
               </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               onClick={() => window.location.href = '/'}
               aria-label="Start new task"
             >
-              <IconPlus size={16} />
-              <span>New Task</span>
+              <IconPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">New Task</span>
             </Button>
             {userEmail ? (
               <Popover>
@@ -109,26 +109,28 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full"
+                    className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0"
                     aria-label="Profile menu"
                   >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                      <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
                         {getInitials(userEmail)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-2" align="end">
-                  <div className="mb-3 px-2 py-1.5">
-                    <div className="text-sm font-medium text-gray-900">{userEmail}</div>
+                <PopoverContent className="w-56 sm:w-64 p-2" align="end">
+                  <div className="mb-2 sm:mb-3 px-2 py-1.5">
+                    <div className="text-xs sm:text-sm font-medium text-gray-900 break-all">
+                      {userEmail}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      className="w-full flex items-center px-2 py-1.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                     >
-                      <IconLogout className="w-4 h-4 mr-2" />
+                      <IconLogout className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       Sign out
                     </button>
                   </div>
