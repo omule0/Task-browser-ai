@@ -44,7 +44,6 @@ components/
 - User profile display with email initials
 - Collapsible sidebar toggle
 - Authentication status
-- Refresh chat functionality
 - Responsive design
 - Scroll-based styling
 

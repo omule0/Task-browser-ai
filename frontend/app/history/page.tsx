@@ -9,13 +9,6 @@ import { HistoryDetail } from '@/components/history/history-detail';
 import { useToast } from "@/hooks/use-toast";
 import { useHistory, useDeleteHistory } from '@/hooks/useHistory';
 
-interface HistoryItem {
-  id: string;
-  task: string;
-  created_at: string;
-  error: string | null;
-  result: string | null;
-}
 
 export default function HistoryPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);

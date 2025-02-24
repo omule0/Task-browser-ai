@@ -7,7 +7,7 @@ import {
   IconLayoutSidebar,
   IconLayoutSidebarRightCollapse,
   IconLogout,
-  IconRefresh
+  IconPlus
 } from '@tabler/icons-react';
 import { Button } from './ui/button';
 import {
@@ -22,10 +22,9 @@ interface HeaderProps {
   className?: string;
   isCollapsed: boolean;
   onToggle: (value: boolean) => void;
-  onReset?: () => void;
 }
 
-const Header = ({ className = '', isCollapsed, onToggle, onReset }: HeaderProps) => {
+const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const supabase = createClient();
@@ -94,17 +93,16 @@ const Header = ({ className = '', isCollapsed, onToggle, onReset }: HeaderProps)
 
           {/* Desktop Navigation */}
           <nav className="flex items-center space-x-4">
-            {onReset && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={onReset}
-              >
-                <IconRefresh size={16} />
-                <span className="ml-2 text-sm">Refresh chat</span>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              onClick={() => window.location.href = '/'}
+              aria-label="Start new task"
+            >
+              <IconPlus size={16} />
+              <span>New Task</span>
+            </Button>
             {userEmail ? (
               <Popover>
                 <PopoverTrigger asChild>

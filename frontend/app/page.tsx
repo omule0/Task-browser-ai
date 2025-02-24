@@ -157,14 +157,6 @@ export default function Home() {
     }
   };
 
-  const handleReset = () => {
-    setTask('');
-    setProgress([]);
-    setResult(null);
-    setError(null);
-    setGifContent(undefined);
-    setIsGifLoading(false);
-  };
 
   const handleSubmit = async (e: TemplateFormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
     e.preventDefault();

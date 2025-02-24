@@ -31,7 +31,6 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
 
   return (
     <div className="space-y-4">
-     
       <div className="prose prose-sm dark:prose-invert max-w-none">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
@@ -53,7 +52,7 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
           {content}
         </ReactMarkdown>
       </div>
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end">
         <Button
           variant="outline"
           size="icon"

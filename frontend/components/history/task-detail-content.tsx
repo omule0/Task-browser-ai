@@ -104,8 +104,8 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <p className="text-sm">{data.task}</p>
+            <div className="text-sm pl-4">
+              {data.task}
             </div>
           </div>
 
@@ -127,7 +127,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           {progress && progress.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-lg font-medium">Progress</h3>
-              <div className="rounded-lg border p-4">
+              <div className="pl-4">
                 <AgentSteps progress={progress} />
               </div>
             </div>
@@ -137,7 +137,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           {data.result && (
             <div className="space-y-3">
               <h3 className="text-lg font-medium">Result</h3>
-              <div className="rounded-lg border p-4">
+              <div className="pl-4">
                 <MarkdownResult content={data.result} />
               </div>
             </div>

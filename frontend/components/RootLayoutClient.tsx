@@ -10,13 +10,12 @@ import '../app/globals.css';
 
 interface RootLayoutClientProps {
   children: React.ReactNode;
-  onReset?: () => void;
 }
 
 // Create a singleton instance for sidebar state
 let sidebarInstance: { isCollapsed: boolean } | null = null;
 
-export function RootLayoutClient({ children, onReset }: RootLayoutClientProps) {
+export function RootLayoutClient({ children }: RootLayoutClientProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (!sidebarInstance) {
       sidebarInstance = { isCollapsed: true };
@@ -36,7 +35,6 @@ export function RootLayoutClient({ children, onReset }: RootLayoutClientProps) {
       <Header 
         isCollapsed={isSidebarCollapsed} 
         onToggle={handleSidebarToggle}
-        onReset={onReset}
       />
       <div className="flex min-h-screen bg-background">
         <Sidebar isCollapsed={isSidebarCollapsed} />
