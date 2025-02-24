@@ -23,7 +23,7 @@ interface HistoryListProps {
 export function HistoryList({ history, selectedId, onSelect, onDelete, loading }: HistoryListProps) {
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
         <LoadingAnimation />
       </div>
     );
@@ -31,10 +31,10 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground">
-        <IconClock size={48} className="mb-4 opacity-20" />
-        <p className="text-lg font-medium">No History Found</p>
-        <p className="text-sm text-center mt-2">Your task history will appear here</p>
+      <div className="flex flex-col items-center justify-center min-h-[200px] sm:min-h-[300px] text-muted-foreground">
+        <IconClock size={36} className="mb-3 opacity-20" />
+        <p className="text-base sm:text-lg font-medium">No History Found</p>
+        <p className="text-xs sm:text-sm text-center mt-1 sm:mt-2">Your task history will appear here</p>
       </div>
     );
   }
@@ -54,29 +54,24 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold tracking-tight">Task History</h2>
-        <div className="text-sm text-muted-foreground">
-          {history.length} {history.length === 1 ? 'task' : 'tasks'}
-        </div>
-      </div>
-      <div className="space-y-3">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-2 sm:space-y-3">
         {history.map((item) => (
           <div
             key={item.id}
             className={cn(
-              "group relative rounded-xl border transition-all duration-200 hover:shadow-md",
+              "group relative rounded-xl border transition-all duration-200",
+              "hover:shadow-md cursor-pointer",
               selectedId === item.id ? "bg-primary/5 border-primary/20" : "bg-card hover:bg-accent/5",
               item.error && "hover:border-destructive/30"
             )}
           >
             <Button
               variant="ghost"
-              className="w-full justify-start h-auto p-4 space-y-2"
+              className="w-full justify-start h-auto p-3 sm:p-4 space-y-1 sm:space-y-2"
               onClick={() => onSelect(item.id)}
             >
-              <div className="flex items-start gap-4 w-full">
+              <div className="flex items-start gap-3 sm:gap-4 w-full">
                 <div className={cn(
                   "mt-1 p-1 rounded-full transition-colors",
                   selectedId === item.id ? "bg-primary/10" : "bg-muted"
@@ -84,10 +79,10 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
                   {getStatusIcon(item)}
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium leading-none mb-1 truncate pr-8">
+                  <p className="text-sm sm:text-base font-medium leading-tight mb-1 line-clamp-2">
                     {item.task}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                     <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
                     {item.error && (
                       <>
@@ -105,7 +100,7 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
               className={cn(
                 "absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-200",
                 "group-hover:opacity-100",
-                "h-8 w-8"
+                "h-7 w-7 sm:h-8 sm:w-8"
               )}
               onClick={(e) => handleDelete(e, item.id)}
               aria-label="Delete task"

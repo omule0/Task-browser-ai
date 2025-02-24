@@ -298,15 +298,15 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 mt-14 sm:mt-16 md:mt-20 max-w-full sm:max-w-7xl">
+    <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
       {/* Status Message */}
       {!(progress.length > 0 || result || loading) && (
-        <div className="mb-3 sm:mb-4 md:mb-8 p-2.5 sm:p-3 md:p-4 bg-white rounded-lg border border-gray-100">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2 text-gray-600">
-            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <IconInfoCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-gray-600" />
+        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-gray-600">
+            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-gray-600" />
             </div>
-            <p className="text-xs sm:text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
+            <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
         </div>
       )}
@@ -315,16 +315,16 @@ export default function Home() {
       {(progress.length > 0 || result || loading) ? (
         <ResizablePanelGroup
           direction="horizontal"
-          className="min-h-[200px] sm:min-h-[300px]"
+          className="min-h-[200px]"
         >
           {/* Left Panel - Agent Interactions */}
           <ResizablePanel 
             defaultSize={70}
             minSize={50}
             maxSize={isRightPanelCollapsed ? 100 : 70}
-            className="p-3 sm:p-4"
+            className="p-4"
           >
-            <div className="space-y-4 sm:space-y-6" ref={resultsRef}>
+            <div className="space-y-6" ref={resultsRef}>
               {task && <UserQuery task={task} />}
 
               <AgentSteps progress={progress} isStreaming={isStreaming} />
@@ -332,7 +332,7 @@ export default function Home() {
               {loading && <LoadingAnimation />}
               
               {error && (
-                <div className="mb-3 sm:mb-4 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-destructive bg-destructive/10 rounded-lg">
+                <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
                   {error}
                 </div>
               )}
@@ -363,31 +363,31 @@ export default function Home() {
             defaultSize={30}
             minSize={10}
             maxSize={50}
-            className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-3 sm:p-4'}`}
+            className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
           >
-            <div className={`sticky top-6 sm:top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-6rem)] sm:h-[calc(100vh-8rem)]`}>
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
+              <div className="flex items-center gap-2 mb-4">
                 <button
                   onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
                   aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
                 >
-                  <IconLayoutColumns className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-gray-600" />
+                  <IconLayoutColumns size={18} className="text-gray-600" />
                 </button>
-                <div className="bg-white rounded-full px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm border border-gray-100">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <IconPhoto className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-blue-500" />
-                    <span className="text-sm sm:text-base text-gray-900 font-medium">Task Recording</span>
+                <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <IconPhoto size={18} className="text-blue-500" />
+                    <span className="text-gray-900 font-medium">Task Recording</span>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-lg sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-3rem)] sm:h-[calc(100%-4rem)]">
+              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
                 {isGifLoading ? (
-                  <div className="flex items-center justify-center py-16 sm:py-20 bg-gray-50 h-full">
-                    <div className="flex flex-col items-center gap-1.5 sm:gap-2">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 sm:border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs sm:text-sm text-gray-600">Loading view...</span>
+                  <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-gray-600">Loading view...</span>
                     </div>
                   </div>
                 ) : (
@@ -401,7 +401,7 @@ export default function Home() {
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-8">
           {task && <UserQuery task={task} />}
           <Suggestions />
           <InputForm
@@ -427,10 +427,10 @@ export default function Home() {
       {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
         <button
           onClick={() => setIsRightPanelCollapsed(false)}
-          className="fixed top-10 sm:top-12 right-4 sm:right-8 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-md sm:shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
           aria-label="Show recording panel"
         >
-          <IconPhoto className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+          <IconPhoto size={20} className="text-blue-500" />
         </button>
       )}
 
@@ -439,11 +439,11 @@ export default function Home() {
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-6 sm:bottom-8 right-4 sm:right-8 h-8 w-8 sm:h-10 sm:w-10 rounded-full shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
+          className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
           onClick={scrollToBottom}
           aria-label="Scroll to bottom"
         >
-          <IconArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+          <IconArrowDown size={20} className="text-gray-600" />
         </Button>
       )}
     </div>

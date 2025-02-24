@@ -31,7 +31,12 @@ interface ProgressEvent {
   items?: string[];
 }
 
-const fetchHistory = async (): Promise<HistoryItem[]> => {
+interface PaginatedResponse {
+  data: HistoryItem[];
+  total: number;
+}
+
+const fetchHistory = async (page: number = 1, limit: number = 10): Promise<PaginatedResponse> => {
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
   
@@ -39,7 +44,8 @@ const fetchHistory = async (): Promise<HistoryItem[]> => {
     throw new Error('You must be logged in to view history');
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history`, {
+  const offset = (page - 1) * limit;
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?limit=${limit}&offset=${offset}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -77,10 +83,11 @@ const fetchHistoryDetail = async (id: string): Promise<HistoryItem> => {
   return response.json();
 };
 
-export function useHistory() {
+export function useHistory(page: number = 1, limit: number = 10) {
   return useQuery({
-    queryKey: ['history'],
-    queryFn: fetchHistory,
+    queryKey: ['history', page, limit],
+    queryFn: () => fetchHistory(page, limit),
+    keepPreviousData: true,
   });
 }
 

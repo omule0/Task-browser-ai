@@ -89,7 +89,7 @@ async def get_run_history(
     limit: int = 10,
     offset: int = 0,
     auth_tokens: Optional[AuthTokens] = None
-) -> List[Dict]:
+) -> Dict:
     """Get paginated run history for a specific user."""
     try:
         # Set auth context if tokens are provided
@@ -103,7 +103,16 @@ async def get_run_history(
                 logging.error(f"Error setting session: {str(e)}")
                 raise
 
-        response = supabase.table(HISTORY_TABLE)\
+        # Get total count
+        count_response = supabase.table(HISTORY_TABLE)\
+            .select('id', count='exact')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        total = count_response.count if hasattr(count_response, 'count') else 0
+
+        # Get paginated data
+        data_response = supabase.table(HISTORY_TABLE)\
             .select('*')\
             .eq('user_id', user_id)\
             .order('created_at', desc=True)\
@@ -111,7 +120,10 @@ async def get_run_history(
             .offset(offset)\
             .execute()
 
-        return response.data
+        return {
+            "data": data_response.data,
+            "total": total
+        }
 
     except Exception as e:
         logging.error(f"Error getting run history: {str(e)}")

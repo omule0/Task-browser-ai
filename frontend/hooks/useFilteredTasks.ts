@@ -1,20 +1,24 @@
 import { useState, useMemo } from 'react';
-import { useHistory } from './useHistory';
+import { useHistory, HistoryItem } from './useHistory';
 
 export const MAX_VISIBLE_TASKS = 4;
 
 export function useFilteredTasks() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: tasks = [], isLoading, isError, error } = useHistory();
+  const { data, isLoading, isError, error } = useHistory(1, MAX_VISIBLE_TASKS);
+
+  const tasks = data?.data || [];
+  const totalTasks = data?.total || 0;
 
   const filteredTasks = useMemo(() => {
-    const filtered = tasks.filter(task => 
-      task.task.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    return filtered.slice(0, MAX_VISIBLE_TASKS);
+    if (!tasks) return [];
+    
+    return tasks
+      .filter(task => task.task.toLowerCase().includes(searchQuery.toLowerCase()))
+      .slice(0, MAX_VISIBLE_TASKS);
   }, [tasks, searchQuery]);
 
-  const hasMoreTasks = tasks.length > MAX_VISIBLE_TASKS;
+  const hasMoreTasks = totalTasks > MAX_VISIBLE_TASKS;
 
   return {
     searchQuery,

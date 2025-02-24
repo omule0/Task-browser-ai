@@ -36,13 +36,17 @@ export function RootLayoutClient({ children }: RootLayoutClientProps) {
         isCollapsed={isSidebarCollapsed} 
         onToggle={handleSidebarToggle}
       />
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-background">
         <Sidebar isCollapsed={isSidebarCollapsed} />
         <main className={cn(
-          "flex-1 w-full transition-all duration-300",
-          isSidebarCollapsed ? "ml-0" : "ml-[200px]"
+          "flex-1 w-full transition-all duration-300 ease-in-out",
+          isSidebarCollapsed 
+            ? "ml-0" 
+            : "ml-[180px] sm:ml-[200px]"
         )}>
-          {children}
+          <div className="h-full px-3 sm:px-4 py-3 sm:py-4">
+            {children}
+          </div>
         </main>
       </div>
       <Toaster />
