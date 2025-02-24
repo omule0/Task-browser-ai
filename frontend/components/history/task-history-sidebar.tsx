@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { useFilteredTasks } from '@/hooks/useFilteredTasks';
+import { HistoryItem } from '@/hooks/useHistory';
 
 interface TaskHistorySidebarProps {
   isCollapsed: boolean;
@@ -65,7 +66,7 @@ export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
             </div>
           ) : (
             <>
-              {filteredTasks.map((task) => (
+              {filteredTasks.map((task: HistoryItem) => (
                 <Link
                   key={task.id}
                   href={`/task/${task.id}`}
