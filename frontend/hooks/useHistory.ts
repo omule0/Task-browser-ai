@@ -84,10 +84,10 @@ const fetchHistoryDetail = async (id: string): Promise<HistoryItem> => {
 };
 
 export function useHistory(page: number = 1, limit: number = 10) {
-  return useQuery({
+  return useQuery<PaginatedResponse>({
     queryKey: ['history', page, limit],
     queryFn: () => fetchHistory(page, limit),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData
   });
 }
 
