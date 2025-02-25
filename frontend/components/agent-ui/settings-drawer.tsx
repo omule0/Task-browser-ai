@@ -2,18 +2,13 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from 
 import { IconSettings } from '@tabler/icons-react';
 import { Button } from "@/components/ui/button";
 import { SensitiveDataForm } from './sensitive-data-form';
-import { EmailNotification } from './email-notification';
 
 interface SettingsDrawerProps {
   onSensitiveDataChange: (data: Record<string, string>) => void;
-  onEmailChange: (email: string | null) => void;
-  defaultEmail?: string | null;
 }
 
 export const SettingsDrawer = ({ 
-  onSensitiveDataChange, 
-  onEmailChange, 
-  defaultEmail 
+  onSensitiveDataChange
 }: SettingsDrawerProps) => {
   return (
     <Drawer>
@@ -34,12 +29,6 @@ export const SettingsDrawer = ({
             <DrawerTitle>Settings</DrawerTitle>
           </DrawerHeader>
           <div className="p-4 space-y-6">
-            <div className="space-y-4">
-              <EmailNotification 
-                onEmailChange={onEmailChange} 
-                defaultEmail={defaultEmail} 
-              />
-            </div>
             <div className="space-y-4">
               <SensitiveDataForm 
                 onSensitiveDataChange={onSensitiveDataChange} 

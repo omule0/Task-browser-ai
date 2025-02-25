@@ -44,7 +44,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [gifContent, setGifContent] = useState<string | undefined>(undefined);
   const [isGifLoading, setIsGifLoading] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const MAX_CHARS = 2000;
@@ -58,33 +57,14 @@ export default function Home() {
     const checkIsMobile = () => {
       const mobileView = window.innerWidth < 768;
       setIsMobile(mobileView);
-      
-      // Auto-collapse right panel on mobile by default
       if (mobileView) {
         setIsRightPanelCollapsed(true);
       }
     };
-    
-    // Initial check
     checkIsMobile();
-    
-    // Add event listener for window resize
     window.addEventListener('resize', checkIsMobile);
-    
-    // Cleanup
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
-
-  // Fetch user's email on component mount
-  useEffect(() => {
-    const fetchUserEmail = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email) {
-        setUserEmail(session.user.email);
-      }
-    };
-    fetchUserEmail();
-  }, [supabase.auth]);
 
   // Add scroll event listener
   useEffect(() => {
@@ -181,7 +161,7 @@ export default function Home() {
   };
 
 
-  const handleSubmit = async (e: TemplateFormEvent, sensitiveData?: Record<string, string>, email?: string | null) => {
+  const handleSubmit = async (e: TemplateFormEvent, sensitiveData?: Record<string, string>) => {
     e.preventDefault();
     const currentTask = e.templateTask || task;
     if (!currentTask.trim()) {
@@ -191,8 +171,7 @@ export default function Home() {
 
     console.log('[Submit] Starting task submission:', {
       hasTemplateTask: !!e.templateTask,
-      hasSensitiveData: !!sensitiveData,
-      hasEmail: !!email
+      hasSensitiveData: !!sensitiveData
     });
 
     setLoading(true);
@@ -227,8 +206,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           task: currentTask,
-          sensitive_data: sensitiveData,
-          email,
+          sensitive_data: sensitiveData
         }),
       });
 
@@ -380,7 +358,6 @@ export default function Home() {
             onSubmit={handleSubmit}
             onChange={(e) => setTask(e.target.value)}
             onKeyDown={handleKeyDown}
-            defaultEmail={userEmail}
           />
         </div>
 
@@ -488,7 +465,6 @@ export default function Home() {
             onSubmit={handleSubmit}
             onChange={(e) => setTask(e.target.value)}
             onKeyDown={handleKeyDown}
-            defaultEmail={userEmail}
           />
         </ResizablePanel>
 
@@ -587,13 +563,12 @@ export default function Home() {
             onSubmit={handleSubmit}
             onChange={(e) => setTask(e.target.value)}
             onKeyDown={handleKeyDown}
-            defaultEmail={userEmail}
           />
           <TemplateSection 
             onSubmit={(templateTask) => {
               setTask(templateTask);
               const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
-              handleSubmit(event, undefined, userEmail);
+              handleSubmit(event);
             }} 
           />
         </div>

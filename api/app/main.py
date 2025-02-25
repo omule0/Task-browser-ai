@@ -19,7 +19,6 @@ import base64
 import tempfile
 import shutil
 from pathlib import Path
-from app.services.email_service import send_task_completion_email
 
 load_dotenv()
 
@@ -113,7 +112,6 @@ class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
-    email: Optional[str] = None  # Add email field
 
 
 class HistoryResponse(BaseModel):
@@ -344,7 +342,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
             progress_events.append(complete_event)
             yield json.dumps(complete_event) + "\n"
 
-            # Save the complete run history and send email notification
+            # Save the complete run history
             if not history_saved:
                 history_id = await save_run_history(
                     user_id=user_id,
@@ -357,15 +355,6 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     run_id=run_id
                 )
                 history_saved = True
-
-                # Send email notification if email is provided
-                if browser_task.email:
-                    await send_task_completion_email(
-                        recipient_email=browser_task.email,
-                        task=task,
-                        result=final_result,
-                        error=error_message
-                    )
 
         except Exception as e:
             error_message = f"Error processing results: {str(e)}"
@@ -422,7 +411,7 @@ async def browse(request: Request, browser_task: BrowserTask):
         )
 
     except Exception as e:
-        # Save failed run and send email notification
+        # Save failed run
         await save_run_history(
             user_id=user_id,
             task=browser_task.task,
@@ -430,12 +419,5 @@ async def browse(request: Request, browser_task: BrowserTask):
             error=str(e),
             auth_tokens=tokens
         )
-
-        if browser_task.email:
-            await send_task_completion_email(
-                recipient_email=browser_task.email,
-                task=browser_task.task,
-                error=str(e)
-            )
 
         raise HTTPException(status_code=500, detail=str(e))

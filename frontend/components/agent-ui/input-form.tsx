@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { IconPrompt, IconSend } from '@tabler/icons-react';
@@ -8,10 +8,9 @@ interface InputFormProps {
   task: string;
   loading: boolean;
   maxChars: number;
-  onSubmit: (e: React.FormEvent, sensitiveData?: Record<string, string>, email?: string | null) => void;
+  onSubmit: (e: React.FormEvent, sensitiveData?: Record<string, string>) => void;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  defaultEmail?: string | null;
 }
 
 export const InputForm = ({ 
@@ -20,20 +19,12 @@ export const InputForm = ({
   maxChars, 
   onSubmit, 
   onChange, 
-  onKeyDown,
-  defaultEmail
+  onKeyDown
 }: InputFormProps) => {
   const [sensitiveData, setSensitiveData] = useState<Record<string, string>>({});
-  const [email, setEmail] = useState<string | null>(defaultEmail || null);
-
-  useEffect(() => {
-    if (defaultEmail) {
-      setEmail(defaultEmail);
-    }
-  }, [defaultEmail]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    onSubmit(e, sensitiveData, email);
+    onSubmit(e, sensitiveData);
   };
 
   return (
@@ -58,8 +49,6 @@ export const InputForm = ({
       <div className="absolute bottom-2 sm:bottom-3 right-12 sm:right-16 flex items-center gap-1.5 sm:gap-2">
         <SettingsDrawer
           onSensitiveDataChange={setSensitiveData}
-          onEmailChange={setEmail}
-          defaultEmail={defaultEmail}
         />
         <Button
           type="submit"
