@@ -496,11 +496,7 @@ export default function Home() {
 
             {loading && <LoadingAnimation />}
             
-            {error && (
-              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                {error}
-              </div>
-            )}
+            {/* Error messages are hidden as per requirements */}
 
             {result && (
               <div className="animate-in fade-in slide-in-from-bottom-2">
