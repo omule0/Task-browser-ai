@@ -51,6 +51,29 @@ export default function Home() {
   const supabase = createClient();
   const { toast } = useToast();
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen size and set right panel collapsed on mobile by default
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const mobileView = window.innerWidth < 768;
+      setIsMobile(mobileView);
+      
+      // Auto-collapse right panel on mobile by default
+      if (mobileView) {
+        setIsRightPanelCollapsed(true);
+      }
+    };
+    
+    // Initial check
+    checkIsMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIsMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // Fetch user's email on component mount
   useEffect(() => {
@@ -297,75 +320,53 @@ export default function Home() {
     }
   };
 
-  return (
-    <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
-      {/* Status Message */}
-      {!(progress.length > 0 || result || loading) && (
-        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-gray-600">
-            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-gray-600" />
-            </div>
-            <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
+  // Render responsive layout 
+  const renderDualPanelLayout = () => {
+    const showMobileTaskRecording = isMobile && !isRightPanelCollapsed;
+    
+    return (
+      <div className={`relative ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
+        {/* Agent Interactions Panel */}
+        <div className={`${showMobileTaskRecording ? 'invisible h-0 overflow-hidden' : 'visible'}`}>
+          <div className="space-y-6" ref={resultsRef}>
+            {task && <UserQuery task={task} />}
+
+            <AgentSteps progress={progress} isStreaming={isStreaming} />
+
+            {loading && <LoadingAnimation />}
+            
+            {error && (
+              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {result && (
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <MarkdownResult content={result} />
+              </div>
+            )}
           </div>
+
+          {/* Input Form */}
+          <InputForm
+            task={task}
+            loading={loading}
+            maxChars={MAX_CHARS}
+            onSubmit={handleSubmit}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={handleKeyDown}
+            defaultEmail={userEmail}
+          />
         </div>
-      )}
 
-      {/* Main Content */}
-      {(progress.length > 0 || result || loading) ? (
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="min-h-[200px]"
-        >
-          {/* Left Panel - Agent Interactions */}
-          <ResizablePanel 
-            defaultSize={70}
-            minSize={50}
-            maxSize={isRightPanelCollapsed ? 100 : 70}
-            className="p-4"
+        {/* Task Recording - Full screen on mobile when visible */}
+        {(!isRightPanelCollapsed || showMobileTaskRecording) && (
+          <div 
+            className={`${isMobile ? 'fixed inset-0 z-50 bg-white p-4' : ''} 
+              ${isRightPanelCollapsed && !isMobile ? 'hidden' : 'block'}`}
           >
-            <div className="space-y-6" ref={resultsRef}>
-              {task && <UserQuery task={task} />}
-
-              <AgentSteps progress={progress} isStreaming={isStreaming} />
-
-              {loading && <LoadingAnimation />}
-              
-              {error && (
-                <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              {result && (
-                <div className="animate-in fade-in slide-in-from-bottom-2">
-                  <MarkdownResult content={result} />
-                </div>
-              )}
-            </div>
-
-            {/* Input Form */}
-            <InputForm
-              task={task}
-              loading={loading}
-              maxChars={MAX_CHARS}
-              onSubmit={handleSubmit}
-              onChange={(e) => setTask(e.target.value)}
-              onKeyDown={handleKeyDown}
-              defaultEmail={userEmail}
-            />
-          </ResizablePanel>
-
-          <ResizableHandle withHandle className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" />
-
-          {/* Right Panel - Task Recording */}
-          <ResizablePanel 
-            defaultSize={30}
-            minSize={10}
-            maxSize={50}
-            className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
-          >
-            <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
+            <div className={`${isMobile ? 'h-full' : 'sticky top-8'} transition-opacity duration-300 ${isMobile ? '' : 'h-[calc(100vh-8rem)]'}`}>
               <div className="flex items-center gap-2 mb-4">
                 <button
                   onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
@@ -398,8 +399,139 @@ export default function Home() {
                 )}
               </div>
             </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // For desktop: show resizable panel layout
+  const renderDesktopLayout = () => {
+    return (
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="min-h-[200px]"
+      >
+        {/* Left Panel - Agent Interactions */}
+        <ResizablePanel 
+          defaultSize={70}
+          minSize={50}
+          maxSize={isRightPanelCollapsed ? 100 : 70}
+          className="p-4"
+        >
+          <div className="space-y-6" ref={resultsRef}>
+            {task && <UserQuery task={task} />}
+
+            <AgentSteps progress={progress} isStreaming={isStreaming} />
+
+            {loading && <LoadingAnimation />}
+            
+            {error && (
+              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {result && (
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <MarkdownResult content={result} />
+              </div>
+            )}
+          </div>
+
+          {/* Input Form */}
+          <InputForm
+            task={task}
+            loading={loading}
+            maxChars={MAX_CHARS}
+            onSubmit={handleSubmit}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={handleKeyDown}
+            defaultEmail={userEmail}
+          />
+        </ResizablePanel>
+
+        <ResizableHandle 
+          withHandle 
+          className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" 
+        />
+
+        {/* Right Panel - Task Recording */}
+        <ResizablePanel 
+          defaultSize={30}
+          minSize={10}
+          maxSize={50}
+          className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
+        >
+          <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
+            <div className="flex items-center gap-2 mb-4">
+              <button
+                onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
+                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
+              >
+                <IconLayoutColumns size={18} className="text-gray-600" />
+              </button>
+              <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <IconPhoto size={18} className="text-blue-500" />
+                  <span className="text-gray-900 font-medium">Task Recording</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
+              {isGifLoading ? (
+                <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-600">Loading view...</span>
+                  </div>
+                </div>
+              ) : (
+                <TaskRecording 
+                  gifContent={gifContent} 
+                  isAgentRunning={loading && isStreaming} 
+                />
+              )}
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    );
+  };
+
+  // Detect if screen size changes while on the recording view (mobile)
+  // This prevents getting stuck in recording view when switching from mobile to desktop
+  useEffect(() => {
+    if (!isMobile && !isRightPanelCollapsed) {
+      // Always make sure desktop shows the recording when available
+      setIsRightPanelCollapsed(false);
+    }
+  }, [isMobile, isRightPanelCollapsed]);
+
+  // Handler for showing/hiding the recording panel
+  const toggleRecordingPanel = () => {
+    setIsRightPanelCollapsed(!isRightPanelCollapsed);
+  };
+
+  return (
+    <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
+      {/* Status Message */}
+      {!(progress.length > 0 || result || loading) && (
+        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-gray-600">
+            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-gray-600" />
+            </div>
+            <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - Responsive Layout */}
+      {(progress.length > 0 || result || loading) ? (
+        isMobile ? renderDualPanelLayout() : renderDesktopLayout()
       ) : (
         <div className="space-y-8">
           {task && <UserQuery task={task} />}
@@ -423,23 +555,34 @@ export default function Home() {
         </div>
       )}
 
-      {/* Floating Toggle Button */}
-      {isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading) && (
+      {/* Floating Toggle Button for desktop when panel is collapsed */}
+      {(!isMobile && isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading)) && (
         <button
-          onClick={() => setIsRightPanelCollapsed(false)}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100"
+          onClick={toggleRecordingPanel}
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
           aria-label="Show recording panel"
         >
           <IconPhoto size={20} className="text-blue-500" />
         </button>
       )}
 
-      {/* Scroll to Bottom Button */}
+      {/* Floating Toggle Button for mobile when panel is collapsed */}
+      {(isRightPanelCollapsed && isMobile && (gifContent || isGifLoading) && (progress.length > 0 || result || loading)) && (
+        <button
+          onClick={toggleRecordingPanel}
+          className="fixed bottom-20 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
+          aria-label="Show recording panel"
+        >
+          <IconPhoto size={20} className="text-blue-500" />
+        </button>
+      )}
+
+      {/* Scroll to Bottom Button - Adjusted position for mobile */}
       {showScrollButton && (
         <Button
           variant="outline"
           size="icon"
-          className="fixed bottom-8 right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50"
+          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50 z-20`}
           onClick={scrollToBottom}
           aria-label="Scroll to bottom"
         >
