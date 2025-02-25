@@ -20,6 +20,7 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import TemplateSection from '@/components/TemplateSection';
+import { useGifContent } from '@/hooks/useGifContent';
 
 interface ProgressEvent {
   type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
@@ -43,7 +44,8 @@ export default function Home() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [gifContent, setGifContent] = useState<string | undefined>(undefined);
-  const [isGifLoading, setIsGifLoading] = useState(false);
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+  const [shouldFetchGif, setShouldFetchGif] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const MAX_CHARS = 2000;
@@ -51,6 +53,45 @@ export default function Home() {
   const { toast } = useToast();
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // React Query hook for fetching GIF content
+  const { 
+    data: gifData, 
+    isLoading: isGifLoading, 
+    error: gifError
+  } = useGifContent(currentRunId, !!currentRunId && shouldFetchGif);
+
+  // Update gifContent when gifData changes
+  useEffect(() => {
+    if (gifData?.gif_content) {
+      setGifContent(gifData.gif_content);
+      console.log('[GIF Fetch] Set GIF content successfully');
+    } else if (gifData && !gifData.gif_content && shouldFetchGif) {
+      console.warn('[GIF Fetch] Received data but no GIF content');
+    }
+  }, [gifData, shouldFetchGif]);
+
+  // Log any GIF fetch errors
+  useEffect(() => {
+    if (gifError) {
+      console.error('[GIF Fetch] Error:', gifError);
+      
+      // If the error is that the GIF is not ready yet, retry after a delay
+      if (gifError instanceof Error && 
+          gifError.message.includes('not ready yet') && 
+          shouldFetchGif && 
+          currentRunId) {
+        const retryTimer = setTimeout(() => {
+          console.log('[GIF Fetch] Retrying after delay...');
+          // Force refetch by toggling the shouldFetchGif state
+          setShouldFetchGif(false);
+          setTimeout(() => setShouldFetchGif(true), 100);
+        }, 5000); // 5 second delay before retry
+        
+        return () => clearTimeout(retryTimer);
+      }
+    }
+  }, [gifError, shouldFetchGif, currentRunId]);
 
   // Detect mobile screen size and set right panel collapsed on mobile by default
   useEffect(() => {
@@ -86,54 +127,6 @@ export default function Home() {
       behavior: 'smooth', 
       block: 'end',
     });
-  };
-
-  const fetchGifContent = async (runId: string) => {
-    try {
-      setIsGifLoading(true);
-      console.log('[GIF Fetch] Starting fetch for run ID:', runId);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.warn('[GIF Fetch] No session available for GIF fetch');
-        setIsGifLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history/${runId}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-
-      if (!response.ok) {
-        console.error('[GIF Fetch] Failed to fetch GIF content:', {
-          status: response.status,
-          statusText: response.statusText
-        });
-        throw new Error('Failed to fetch GIF content');
-      }
-
-      const data = await response.json();
-      console.log('[GIF Fetch] Received history data:', { 
-        hasGifContent: !!data.gif_content,
-        gifContentLength: data.gif_content ? data.gif_content.length : 0 
-      });
-      
-      if (data.gif_content) {
-        setGifContent(data.gif_content);
-        console.log('[GIF Fetch] Set GIF content successfully');
-      } else {
-        console.warn('[GIF Fetch] No GIF content in response');
-      }
-    } catch (error) {
-      console.error('[GIF Fetch] Error:', error instanceof Error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      } : error);
-    } finally {
-      setIsGifLoading(false);
-    }
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -180,9 +173,8 @@ export default function Home() {
     setResult(null);
     setError(null);
     setGifContent(undefined);
-    setIsGifLoading(false);
-
-    let currentRunId: string | null = null;
+    setCurrentRunId(null);
+    setShouldFetchGif(false);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -225,56 +217,86 @@ export default function Home() {
       }
 
       let currentProgress: ProgressEvent[] = [];
+      let buffer = ''; // Buffer for accumulating partial chunks
       console.log('[Submit] Starting to read stream');
       
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
           console.log('[Submit] Stream completed');
+          // Process any remaining data in the buffer
+          if (buffer.trim()) {
+            try {
+              const event = JSON.parse(buffer) as ProgressEvent;
+              currentProgress = [...currentProgress, event];
+              setProgress(currentProgress);
+            } catch (e) {
+              console.error('[Submit] Error parsing final buffer:', {
+                error: e instanceof Error ? {
+                  name: e.name,
+                  message: e.message,
+                  stack: e.stack
+                } : e,
+                buffer
+              });
+            }
+          }
           break;
         }
 
-        // Convert the stream chunk to text
+        // Convert the stream chunk to text and add to buffer
         const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
+        buffer += chunk;
 
-        for (const line of lines) {
-          try {
-            const event = JSON.parse(line) as ProgressEvent;
-            console.log('[Submit] Received event:', { type: event.type, hasMessage: !!event.message });
-            
-            if (event.type === 'run_id') {
-              currentRunId = event.message || null;
-              console.log('[Submit] Received run ID:', currentRunId);
-            } else if (event.type === 'error') {
-              console.error('[Submit] Error event received:', event.message);
-              setError(event.message || 'An error occurred');
-            } else if (event.type === 'complete') {
-              console.log('[Submit] Task completed');
-              setResult(event.message || null);
-              // Start fetching GIF after completion
-              if (currentRunId) {
-                console.log('[Submit] Initiating GIF fetch for run:', currentRunId);
-                await fetchGifContent(currentRunId);
+        // Try to process complete JSON objects from the buffer
+        let startIdx = 0;
+        while (true) {
+          // Find the next newline character
+          const endIdx = buffer.indexOf('\n', startIdx);
+          if (endIdx === -1) break; // No more complete lines in buffer
+
+          // Extract the complete line
+          const line = buffer.slice(startIdx, endIdx).trim();
+          if (line) {
+            try {
+              const event = JSON.parse(line) as ProgressEvent;
+              console.log('[Submit] Received event:', { type: event.type, hasMessage: !!event.message });
+              
+              if (event.type === 'run_id') {
+                setCurrentRunId(event.message || null);
+                console.log('[Submit] Received run ID:', event.message);
+              } else if (event.type === 'error') {
+                console.error('[Submit] Error event received:', event.message);
+                setError(event.message || 'An error occurred');
+              } else if (event.type === 'complete') {
+                console.log('[Submit] Task completed');
+                setResult(event.message || null);
+                // Wait a moment to ensure GIF processing is complete before fetching
+                setTimeout(() => {
+                  setShouldFetchGif(true);
+                }, 2000); // 2 second delay to allow GIF processing
+              } else if (event.type === 'gif') {
+                console.log('[Submit] GIF generation started');
               }
-            } else if (event.type === 'gif') {
-              console.log('[Submit] GIF generation started');
-              setIsGifLoading(true);
-            }
 
-            currentProgress = [...currentProgress, event];
-            setProgress(currentProgress);
-          } catch (e) {
-            console.error('[Submit] Error parsing event:', {
-              error: e instanceof Error ? {
-                name: e.name,
-                message: e.message,
-                stack: e.stack
-              } : e,
-              line
-            });
+              currentProgress = [...currentProgress, event];
+              setProgress(currentProgress);
+            } catch (e) {
+              console.error('[Submit] Error parsing event:', {
+                error: e instanceof Error ? {
+                  name: e.name,
+                  message: e.message,
+                  stack: e.stack
+                } : e,
+                line
+              });
+            }
           }
+          startIdx = endIdx + 1;
         }
+
+        // Keep any remaining partial data in the buffer
+        buffer = buffer.slice(startIdx);
       }
     } catch (e) {
       console.error('[Submit] Task execution error:', {
@@ -389,7 +411,37 @@ export default function Home() {
                   <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600">Loading view...</span>
+                      <span className="text-sm text-gray-600">Loading recording...</span>
+                      {currentRunId && (
+                        <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
+                      )}
+                    </div>
+                  </div>
+                ) : gifError && shouldFetchGif ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                    <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
+                      <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                        <IconPhoto size={24} className="text-amber-500" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
+                      <p className="text-sm text-gray-600">
+                        {gifError instanceof Error 
+                          ? gifError.message.includes('not ready yet')
+                            ? "We're still processing your recording. Please wait a moment."
+                            : gifError.message
+                          : "There was an issue loading the recording."}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => {
+                          setShouldFetchGif(false);
+                          setTimeout(() => setShouldFetchGif(true), 100);
+                        }}
+                      >
+                        Try Again
+                      </Button>
                     </div>
                   </div>
                 ) : loading && isStreaming && !gifContent ? (
@@ -502,7 +554,37 @@ export default function Home() {
                 <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-600">Loading view...</span>
+                    <span className="text-sm text-gray-600">Loading recording...</span>
+                    {currentRunId && (
+                      <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
+                    )}
+                  </div>
+                </div>
+              ) : gifError && shouldFetchGif ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                      <IconPhoto size={24} className="text-amber-500" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
+                    <p className="text-sm text-gray-600">
+                      {gifError instanceof Error 
+                        ? gifError.message.includes('not ready yet')
+                          ? "We're still processing your recording. Please wait a moment."
+                          : gifError.message
+                        : "There was an issue loading the recording."}
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => {
+                        setShouldFetchGif(false);
+                        setTimeout(() => setShouldFetchGif(true), 100);
+                      }}
+                    >
+                      Try Again
+                    </Button>
                   </div>
                 </div>
               ) : loading && isStreaming && !gifContent ? (
