@@ -352,7 +352,7 @@ export default function Home() {
       <div className={`relative ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
         {/* Agent Interactions Panel */}
         <div className={`${showMobileTaskRecording ? 'invisible h-0 overflow-hidden' : 'visible'}`}>
-          <div className="space-y-6" ref={resultsRef}>
+          <div className="space-y-6" ref={resultsRef} id="mobile-results-container">
             {task && <UserQuery task={task} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
@@ -489,7 +489,7 @@ export default function Home() {
           maxSize={isRightPanelCollapsed ? 100 : 70}
           className="p-4"
         >
-          <div className="space-y-6" ref={resultsRef}>
+          <div className="space-y-6" ref={resultsRef} id="results-container">
             {task && <UserQuery task={task} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
