@@ -320,6 +320,30 @@ export default function Home() {
     }
   };
 
+  // Detect if screen size changes while on the recording view (mobile)
+  // This prevents getting stuck in recording view when switching from mobile to desktop
+  useEffect(() => {
+    if (!isMobile && !isRightPanelCollapsed) {
+      // Always make sure desktop shows the recording when available
+      setIsRightPanelCollapsed(false);
+    }
+  }, [isMobile, isRightPanelCollapsed]);
+
+  // Initial setup: Show recording panel by default on desktop when agent starts running
+  useEffect(() => {
+    if (!isMobile && loading && isStreaming) {
+      setIsRightPanelCollapsed(false);
+    }
+  }, [isMobile, loading, isStreaming]);
+
+  // Handler for showing/hiding the recording panel
+  const toggleRecordingPanel = () => {
+    setIsRightPanelCollapsed(!isRightPanelCollapsed);
+  };
+
+  // Check if recording is available or potentially will be available
+  const isRecordingRelevant = gifContent || isGifLoading || (loading && isStreaming);
+
   // Render responsive layout 
   const renderDualPanelLayout = () => {
     const showMobileTaskRecording = isMobile && !isRightPanelCollapsed;
@@ -389,6 +413,23 @@ export default function Home() {
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-sm text-gray-600">Loading view...</span>
+                    </div>
+                  </div>
+                ) : loading && isStreaming && !gifContent ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                    <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <IconPhoto size={24} className="text-blue-500" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
+                      <p className="text-sm text-gray-600">
+                        The agent is working on your task. A visual recording will appear here once it&apos;s ready.
+                      </p>
+                      {progress.length > 0 && (
+                        <div className="w-16 h-1 mt-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -488,6 +529,23 @@ export default function Home() {
                     <span className="text-sm text-gray-600">Loading view...</span>
                   </div>
                 </div>
+              ) : loading && isStreaming && !gifContent ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <IconPhoto size={24} className="text-blue-500" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
+                    <p className="text-sm text-gray-600">
+                      The agent is working on your task. A visual recording will appear here once it&apos;s ready.
+                    </p>
+                    {progress.length > 0 && (
+                      <div className="w-16 h-1 mt-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <TaskRecording 
                   gifContent={gifContent} 
@@ -499,20 +557,6 @@ export default function Home() {
         </ResizablePanel>
       </ResizablePanelGroup>
     );
-  };
-
-  // Detect if screen size changes while on the recording view (mobile)
-  // This prevents getting stuck in recording view when switching from mobile to desktop
-  useEffect(() => {
-    if (!isMobile && !isRightPanelCollapsed) {
-      // Always make sure desktop shows the recording when available
-      setIsRightPanelCollapsed(false);
-    }
-  }, [isMobile, isRightPanelCollapsed]);
-
-  // Handler for showing/hiding the recording panel
-  const toggleRecordingPanel = () => {
-    setIsRightPanelCollapsed(!isRightPanelCollapsed);
   };
 
   return (
@@ -556,7 +600,7 @@ export default function Home() {
       )}
 
       {/* Floating Toggle Button for desktop when panel is collapsed */}
-      {(!isMobile && isRightPanelCollapsed && (gifContent || isGifLoading) && (progress.length > 0 || result || loading)) && (
+      {(!isMobile && isRightPanelCollapsed && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
         <button
           onClick={toggleRecordingPanel}
           className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
@@ -567,7 +611,7 @@ export default function Home() {
       )}
 
       {/* Floating Toggle Button for mobile when panel is collapsed */}
-      {(isRightPanelCollapsed && isMobile && (gifContent || isGifLoading) && (progress.length > 0 || result || loading)) && (
+      {(isRightPanelCollapsed && isMobile && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
         <button
           onClick={toggleRecordingPanel}
           className="fixed bottom-20 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
