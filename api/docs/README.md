@@ -67,3 +67,16 @@ The API requires several environment variables to be set in the `.env` file:
 - CORS settings
 
 For detailed setup instructions and environment variable requirements, refer to the individual documentation sections. 
+
+
+docker compose up --build
+
+docker compose down
+
+docker compose up
+
+docker push devdigest/api:api 
+
+docker build -t devdigest/api:api .
+
+docker login -u devdigest

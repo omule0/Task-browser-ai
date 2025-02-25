@@ -26,4 +26,4 @@ COPY ./app /code/app
 EXPOSE 8080
 
 # Run the FastAPI application
-CMD ["fastapi", "run", "app/main.py", "--port", "8080", "--workers", "4"]
+CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8080"]

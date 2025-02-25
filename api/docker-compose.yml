@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: sh -c "fastapi run app/main.py --host 0.0.0.0 --port 8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app:/code/app
+    env_file:
+      - .env
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+      - ANCHOR_API_KEY=${ANCHOR_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
