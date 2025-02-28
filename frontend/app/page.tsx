@@ -194,7 +194,8 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Connection': 'keep-alive'
         },
         body: JSON.stringify({
           task: currentTask,
