@@ -191,6 +191,7 @@ export default function Home() {
 
       console.log('[Submit] Making API request');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
+        keepalive: true,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
