@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
-    
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.13.0",
