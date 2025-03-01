@@ -18,7 +18,7 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
       const initialEntries = Object.entries(initialData).map(([key, value]) => ({ key, value }));
       setEntries(initialEntries);
     }
-  }, []);
+  }, [initialData]);
 
   const handleAddEntry = () => {
     setEntries([...entries, { key: '', value: '' }]);
