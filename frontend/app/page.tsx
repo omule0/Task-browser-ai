@@ -42,6 +42,7 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const [result, setResult] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
   const [gifContent, setGifContent] = useState<string | undefined>(undefined);
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
@@ -190,133 +191,193 @@ export default function Home() {
       }
 
       console.log('[Submit] Making API request');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
-        keepalive: true,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'Connection': 'keep-alive'
-        },
-        body: JSON.stringify({
-          task: currentTask,
-          sensitive_data: sensitiveData
-        }),
-      });
-
-      if (!response.ok) {
-        console.error('[Submit] API request failed:', {
-          status: response.status,
-          statusText: response.statusText
-        });
-        throw new Error('Failed to start task');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        console.error('[Submit] No response stream available');
-        throw new Error('No response stream available');
-      }
-
-      let currentProgress: ProgressEvent[] = [];
-      let buffer = ''; // Buffer for accumulating partial chunks
-      console.log('[Submit] Starting to read stream');
       
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          console.log('[Submit] Stream completed');
-          // Process any remaining data in the buffer
-          if (buffer.trim()) {
-            try {
-              const event = JSON.parse(buffer) as ProgressEvent;
-              currentProgress = [...currentProgress, event];
-              setProgress(currentProgress);
-            } catch (e) {
-              console.error('[Submit] Error parsing final buffer:', {
-                error: e instanceof Error ? {
-                  name: e.name,
-                  message: e.message,
-                  stack: e.stack
-                } : e,
-                buffer
-              });
-            }
+      // Function to handle stream processing with retry capability
+      const processStream = async (retryCount = 0, lastProgressCount = 0): Promise<void> => {
+        const maxRetries = 3;
+        
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/browse`, {
+            keepalive: true,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+              'Connection': 'keep-alive',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              task: currentTask,
+              sensitive_data: sensitiveData,
+              retry_count: retryCount, // Let server know if this is a retry
+              last_progress_count: lastProgressCount // Help server know where to resume from
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('[Submit] API request failed:', {
+              status: response.status,
+              statusText: response.statusText
+            });
+            throw new Error(`Failed to start task: ${response.status} ${response.statusText}`);
           }
-          break;
-        }
 
-        // Convert the stream chunk to text and add to buffer
-        const chunk = new TextDecoder().decode(value);
-        buffer += chunk;
+          const reader = response.body?.getReader();
+          if (!reader) {
+            console.error('[Submit] No response stream available');
+            throw new Error('No response stream available');
+          }
 
-        // Try to process complete JSON objects from the buffer
-        let startIdx = 0;
-        while (true) {
-          // Find the next newline character
-          const endIdx = buffer.indexOf('\n', startIdx);
-          if (endIdx === -1) break; // No more complete lines in buffer
-
-          // Extract the complete line
-          const line = buffer.slice(startIdx, endIdx).trim();
-          if (line) {
-            try {
-              const event = JSON.parse(line) as ProgressEvent;
-              console.log('[Submit] Received event:', { type: event.type, hasMessage: !!event.message });
+          let currentProgress: ProgressEvent[] = [...progress]; // Start with existing progress
+          let buffer = ''; // Buffer for accumulating partial chunks
+          console.log('[Submit] Starting to read stream');
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              console.log('[Submit] Stream completed');
               
-              if (event.type === 'run_id') {
-                setCurrentRunId(event.message || null);
-                console.log('[Submit] Received run ID:', event.message);
-              } else if (event.type === 'error') {
-                console.error('[Submit] Error event received:', event.message);
-                setError(event.message || 'An error occurred');
-              } else if (event.type === 'complete') {
-                console.log('[Submit] Task completed');
-                setResult(event.message || null);
-                // Wait a moment to ensure GIF processing is complete before fetching
-                setTimeout(() => {
-                  setShouldFetchGif(true);
-                }, 2000); // 2 second delay to allow GIF processing
-              } else if (event.type === 'gif') {
-                console.log('[Submit] GIF generation started');
+              // Process any remaining data in the buffer
+              if (buffer.trim()) {
+                try {
+                  const event = JSON.parse(buffer) as ProgressEvent;
+                  currentProgress = [...currentProgress, event];
+                  setProgress(currentProgress);
+                } catch (e) {
+                  console.error('[Submit] Error parsing final buffer:', {
+                    error: e instanceof Error ? {
+                      name: e.name,
+                      message: e.message,
+                      stack: e.stack
+                    } : e,
+                    buffer
+                  });
+                }
               }
-
-              currentProgress = [...currentProgress, event];
-              setProgress(currentProgress);
-            } catch (e) {
-              console.error('[Submit] Error parsing event:', {
-                error: e instanceof Error ? {
-                  name: e.name,
-                  message: e.message,
-                  stack: e.stack
-                } : e,
-                line
-              });
+              break;
             }
-          }
-          startIdx = endIdx + 1;
-        }
 
-        // Keep any remaining partial data in the buffer
-        buffer = buffer.slice(startIdx);
+            // Convert the stream chunk to text and add to buffer
+            const chunk = new TextDecoder().decode(value);
+            buffer += chunk;
+
+            // Try to process complete JSON objects from the buffer
+            let startIdx = 0;
+            while (true) {
+              // Find the next newline character
+              const endIdx = buffer.indexOf('\n', startIdx);
+              if (endIdx === -1) break; // No more complete lines in buffer
+
+              // Extract the complete line
+              const line = buffer.slice(startIdx, endIdx).trim();
+              if (line) {
+                try {
+                  const event = JSON.parse(line) as ProgressEvent;
+                  console.log('[Submit] Received event:', { type: event.type, hasMessage: !!event.message });
+                  
+                  if (event.type === 'run_id') {
+                    setCurrentRunId(event.message || null);
+                    console.log('[Submit] Received run ID:', event.message);
+                  } else if (event.type === 'error') {
+                    console.error('[Submit] Error event received:', event.message);
+                    setError(event.message || 'An error occurred');
+                  } else if (event.type === 'complete') {
+                    console.log('[Submit] Task completed');
+                    setResult(event.message || null);
+                    // Wait a moment to ensure GIF processing is complete before fetching
+                    setTimeout(() => {
+                      setShouldFetchGif(true);
+                    }, 2000); // 2 second delay to allow GIF processing
+                  } else if (event.type === 'gif') {
+                    console.log('[Submit] GIF generation started');
+                  }
+
+                  currentProgress = [...currentProgress, event];
+                  setProgress(currentProgress);
+                } catch (e) {
+                  console.error('[Submit] Error parsing event:', {
+                    error: e instanceof Error ? {
+                      name: e.name,
+                      message: e.message,
+                      stack: e.stack
+                    } : e,
+                    line
+                  });
+                }
+              }
+              startIdx = endIdx + 1;
+            }
+
+            // Keep any remaining partial data in the buffer
+            buffer = buffer.slice(startIdx);
+          }
+        } catch (e) {
+          // Handle network errors with retry logic
+          if (
+            e instanceof Error && 
+            ['NetworkError', 'Failed to fetch', 'net::'].some(errType => 
+              e.message.includes(errType) || e.toString().includes(errType)
+            ) &&
+            retryCount < maxRetries &&
+            !progress.some(p => p.type === 'complete')
+          ) {
+            console.warn(`[Submit] Network error, retrying (${retryCount + 1}/${maxRetries})...`, e);
+            // Wait before retry with exponential backoff
+            const backoffMs = Math.min(1000 * Math.pow(2, retryCount), 10000);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+            return processStream(retryCount + 1, progress.length);
+          } else {
+            // Propagate other errors
+            throw e;
+          }
+        }
+      };
+
+      try {
+        await processStream();
+      } catch (e) {
+        console.error('[Submit] Task execution error:', {
+          error: e instanceof Error ? {
+            name: e.name,
+            message: e.message,
+            stack: e.stack
+          } : e,
+          currentRunId
+        });
+        
+        // Provide more informative error messages based on error type
+        let errorMessage = 'An error occurred';
+        if (e instanceof Error) {
+          if (e.message.includes('QUIC_TOO_MANY_RTOS') || e.message.includes('ERR_QUIC_PROTOCOL_ERROR')) {
+            errorMessage = 'Network issue detected. The response may be too large. Please try again with a more specific task.';
+          } else if (e.message.includes('NetworkError')) {
+            errorMessage = 'Network connection error. Please check your internet connection and try again.';
+          } else {
+            errorMessage = e.message;
+          }
+        }
+        
+        setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorMessage,
+        });
+      } finally {
+        console.log('[Submit] Task execution completed');
+        setLoading(false);
+        setIsStreaming(false);
       }
     } catch (e) {
-      console.error('[Submit] Task execution error:', {
-        error: e instanceof Error ? {
-          name: e.name,
-          message: e.message,
-          stack: e.stack
-        } : e,
-        currentRunId
-      });
-      setError(e instanceof Error ? e.message : 'An error occurred');
+      // This outer catch block only handles session/authentication errors
+      console.error('[Submit] Authentication or initialization error:', e);
+      setError(e instanceof Error ? e.message : 'An authentication error occurred');
       toast({
         variant: "destructive",
         title: "Error",
-        description: e instanceof Error ? e.message : 'An error occurred',
+        description: e instanceof Error ? e.message : 'An authentication error occurred',
       });
-    } finally {
-      console.log('[Submit] Task execution completed');
       setLoading(false);
       setIsStreaming(false);
     }
@@ -361,11 +422,7 @@ export default function Home() {
 
             {loading && <LoadingAnimation />}
             
-            {error && (
-              <div className="mb-4 px-4 py-3 text-sm text-destructive bg-destructive/10 rounded-lg">
-                {error}
-              </div>
-            )}
+            {/* Error messages removed as per requirements */}
 
             {result && (
               <div className="animate-in fade-in slide-in-from-bottom-2">
@@ -498,7 +555,7 @@ export default function Home() {
 
             {loading && <LoadingAnimation />}
             
-            {/* Error messages are hidden as per requirements */}
+            {/* Error messages removed as per requirements */}
 
             {result && (
               <div className="animate-in fade-in slide-in-from-bottom-2">
