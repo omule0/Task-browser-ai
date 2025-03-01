@@ -18,7 +18,7 @@ const templates: Template[] = [
   // Marketing Templates
   {
     id: 'marketing-1',
-    icon: <IconBrandTwitter className="w-6 h-6 text-purple-400" />,
+    icon: <IconBrandTwitter className="w-6 h-6 text-indigo-400" />,
     title: 'Twitter / X Engagement Analysis',
     category: 'Marketing',
     subtitle: 'Marketing',
@@ -27,7 +27,7 @@ const templates: Template[] = [
   },
   {
     id: 'marketing-2',
-    icon: <IconNews className="w-6 h-6 text-purple-400" />,
+    icon: <IconNews className="w-6 h-6 text-indigo-400" />,
     title: 'Check News about Brand',
     category: 'Marketing',
     subtitle: 'Marketing',
@@ -38,7 +38,7 @@ const templates: Template[] = [
   // Research Templates
   {
     id: 'research-1',
-    icon: <IconSearch className="w-6 h-6 text-purple-400" />,
+    icon: <IconSearch className="w-6 h-6 text-indigo-400" />,
     title: 'Goto',
     category: 'Research',
     subtitle: 'Research',
@@ -47,7 +47,7 @@ const templates: Template[] = [
   },
   {
     id: 'research-2',
-    icon: <IconSearch className="w-6 h-6 text-purple-400" />,
+    icon: <IconSearch className="w-6 h-6 text-indigo-400" />,
     title: 'Top Posts on Hacker News',
     category: 'Research',
     subtitle: 'Research',
@@ -55,7 +55,7 @@ const templates: Template[] = [
   },
   {
     id: 'research-3',
-    icon: <IconSearch className="w-6 h-6 text-purple-400" />,
+    icon: <IconSearch className="w-6 h-6 text-indigo-400" />,
     title: 'Crypto Daily Digest',
     category: 'Research',
     subtitle: 'Research',
@@ -64,7 +64,7 @@ const templates: Template[] = [
   },
   {
     id: 'research-4',
-    icon: <IconSearch className="w-6 h-6 text-purple-400" />,
+    icon: <IconSearch className="w-6 h-6 text-indigo-400" />,
     title: 'Top ML Papers',
     category: 'Research',
     subtitle: 'Research',
@@ -75,7 +75,7 @@ const templates: Template[] = [
   // News Templates
   {
     id: 'news-1',
-    icon: <IconBrandTwitter className="w-6 h-6 text-purple-400" />,
+    icon: <IconBrandTwitter className="w-6 h-6 text-indigo-400" />,
     title: 'Whats trending on X?',
     category: 'News',
     subtitle: 'News',
@@ -84,7 +84,7 @@ const templates: Template[] = [
   },
   {
     id: 'news-2',
-    icon: <IconNews className="w-6 h-6 text-purple-400" />,
+    icon: <IconNews className="w-6 h-6 text-indigo-400" />,
     title: 'Right / Left Unbiased News Coverage',
     category: 'News',
     subtitle: 'News',
@@ -93,7 +93,7 @@ const templates: Template[] = [
   },
   {
     id: 'news-3',
-    icon: <IconNews className="w-6 h-6 text-purple-400" />,
+    icon: <IconNews className="w-6 h-6 text-indigo-400" />,
     title: 'Daily News Digest',
     category: 'News',
     subtitle: 'News',
@@ -104,7 +104,7 @@ const templates: Template[] = [
   // Business Templates
   {
     id: 'business-1',
-    icon: <IconChartBar className="w-6 h-6 text-purple-400" />,
+    icon: <IconChartBar className="w-6 h-6 text-indigo-400" />,
     title: 'Company Sentiment Analysis',
     category: 'Business',
     subtitle: 'Business',
@@ -115,7 +115,7 @@ const templates: Template[] = [
   // Other Templates
   {
     id: 'other-1',
-    icon: <IconUser className="w-6 h-6 text-purple-400" />,
+    icon: <IconUser className="w-6 h-6 text-indigo-400" />,
     title: 'Research on a Person',
     category: 'Other',
     subtitle: 'Other',
@@ -165,15 +165,15 @@ const TemplateModal = ({ template, onClose, onSubmit }: TemplateModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+    <div className="fixed inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-lg">
         {/* Header - Fixed */}
-        <div className="p-4 sm:p-6 md:p-8 border-b border-gray-100">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-border">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl text-blue-500 font-medium">View Template</h2>
+            <h2 className="text-lg sm:text-xl text-primary font-medium">View Template</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 transition-colors p-1"
+              className="text-muted-foreground hover:text-foreground transition-colors p-1"
               aria-label="Close modal"
             >
               <IconX className="w-5 h-5" />
@@ -185,19 +185,19 @@ const TemplateModal = ({ template, onClose, onSubmit }: TemplateModalProps) => {
         <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
           <div className="space-y-4 sm:space-y-6">
             <div>
-              <h3 className="text-xs sm:text-sm text-blue-500 mb-1">Template Name</h3>
-              <h4 className="text-xl sm:text-2xl text-gray-900">{template.title}</h4>
+              <h3 className="text-xs sm:text-sm text-primary mb-1">Template Name</h3>
+              <h4 className="text-xl sm:text-2xl text-foreground">{template.title}</h4>
             </div>
 
             <div>
-              <p className="text-sm sm:text-base text-orange-400">Created by {template.subtitle}</p>
+              <p className="text-sm sm:text-base text-indigo-400">Created by {template.subtitle}</p>
             </div>
 
             <div>
-              <h3 className="text-xs sm:text-sm text-blue-500 mb-2">Prompt</h3>
-              <p className="text-xs sm:text-sm text-blue-300 mb-2">Highlight and turn parts of your prompt into editable fields.</p>
-              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                <p className="text-sm sm:text-base text-gray-600 whitespace-pre-wrap">
+              <h3 className="text-xs sm:text-sm text-primary mb-2">Prompt</h3>
+              <p className="text-xs sm:text-sm text-primary/70 mb-2">Highlight and turn parts of your prompt into editable fields.</p>
+              <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
+                <p className="text-sm sm:text-base text-accent-foreground whitespace-pre-wrap">
                   {template.prompt || 'No prompt available'}
                 </p>
               </div>
@@ -205,20 +205,20 @@ const TemplateModal = ({ template, onClose, onSubmit }: TemplateModalProps) => {
 
             {template.variables && template.variables.length > 0 && (
               <div>
-                <h3 className="text-xs sm:text-sm text-blue-500 mb-2">Template Variables</h3>
-                <p className="text-xs sm:text-sm text-blue-300 mb-4">Fill in the values for each variable:</p>
+                <h3 className="text-xs sm:text-sm text-primary mb-2">Template Variables</h3>
+                <p className="text-xs sm:text-sm text-primary/70 mb-4">Fill in the values for each variable:</p>
                 <div className="space-y-3 sm:space-y-4">
                   {template.variables.map((variable) => (
                     <div key={variable} className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                        <span className="text-sm sm:text-base text-gray-600">{variable}</span>
+                      <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
+                        <span className="text-sm sm:text-base text-accent-foreground">{variable}</span>
                       </div>
                       <input
                         type="text"
                         value={variables[variable] || ''}
                         onChange={(e) => setVariables(prev => ({ ...prev, [variable]: e.target.value }))}
                         placeholder="Enter value"
-                        className="px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-100 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        className="px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base text-foreground bg-background border border-input rounded-lg sm:rounded-xl focus:ring-2 focus:ring-ring focus:border-primary focus-visible:outline-none placeholder:text-muted-foreground/60 transition-all"
                       />
                     </div>
                   ))}
@@ -229,17 +229,17 @@ const TemplateModal = ({ template, onClose, onSubmit }: TemplateModalProps) => {
         </div>
 
         {/* Footer - Fixed */}
-        <div className="p-4 sm:p-6 md:p-8 border-t border-gray-100">
+        <div className="p-4 sm:p-6 md:p-8 border-t border-border">
           <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 text-gray-500 hover:text-gray-600 transition-colors text-sm sm:text-base order-2 sm:order-1"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 text-muted-foreground hover:text-foreground transition-colors text-sm sm:text-base order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors order-1 sm:order-2"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors order-1 sm:order-2"
             >
               <IconPlayerPlay className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="text-sm sm:text-base">Run Task</span>
@@ -258,21 +258,21 @@ const TemplateCard = ({ template, onSubmit }: { template: Template; onSubmit: (t
     <>
       <div
         onClick={() => setIsModalOpen(true)}
-        className="group p-4 sm:p-5 bg-white rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer"
+        className="group p-4 sm:p-5 bg-background rounded-xl sm:rounded-2xl border border-border hover:border-primary/20 hover:shadow-lg transition-all duration-200 cursor-pointer"
       >
         <div className="flex items-start gap-2.5 sm:gap-3">
           <div className="flex-shrink-0">
-            <div className="p-2 sm:p-2.5 bg-purple-50 rounded-lg sm:rounded-xl group-hover:bg-purple-100 transition-colors duration-200">
+            <div className="p-2 sm:p-2.5 bg-primary/5 rounded-lg sm:rounded-xl group-hover:bg-primary/10 transition-colors duration-200">
               {template.icon}
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600 mb-2 sm:mb-2.5 truncate transition-colors duration-200">
+            <h3 className="text-sm sm:text-base font-medium text-foreground group-hover:text-primary mb-2 sm:mb-2.5 truncate transition-colors duration-200">
               {template.title}
             </h3>
             <div className="flex items-center flex-wrap gap-x-2 sm:gap-x-3 gap-y-1.5 sm:gap-y-2">
-              <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">{template.subtitle}</span>
-              <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-full whitespace-nowrap group-hover:bg-blue-100 transition-colors duration-200">
+              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{template.subtitle}</span>
+              <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded-full whitespace-nowrap group-hover:bg-primary/20 transition-colors duration-200">
                 {template.category}
               </span>
             </div>
@@ -311,8 +311,8 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
                 onClick={() => setActiveCategory(category.label)}
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base transition-all duration-200 whitespace-nowrap ${
                   activeCategory === category.label
-                    ? 'bg-blue-500 text-white shadow-md'
-                    : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-primary hover:text-primary/90 hover:bg-primary/10'
                 }`}
                 aria-label={`Filter by ${category.label}`}
               >

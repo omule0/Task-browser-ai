@@ -73,11 +73,11 @@ export const InputForm = ({
           aria-label="Task input"
           className={cn(
             "min-h-[100px] sm:min-h-[120px] resize-none pl-10 sm:pl-12 pr-24 sm:pr-32 py-3.5 sm:py-4.5",
-            "bg-background/80 border border-input/30",
-            "focus-visible:ring-1 focus-visible:ring-primary/30 focus-visible:border-primary/40",
+            "bg-background border border-input",
+            "focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary",
             "text-sm sm:text-base rounded-xl",
             "shadow-sm hover:shadow-md focus:shadow-lg",
-            "transition-all duration-300 ease-in-out",
+            "transition-colors duration-300 ease-in-out",
             loading && "opacity-70 cursor-not-allowed",
             isFocused && "bg-background"
           )}
@@ -99,7 +99,7 @@ export const InputForm = ({
             >
               {task.length}/{maxChars}
             </div>
-            <div className="absolute -bottom-1.5 left-0 w-full h-0.5 bg-muted/40 rounded-full">
+            <div className="absolute -bottom-1.5 left-0 w-full h-0.5 bg-muted rounded-full">
               <div 
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
@@ -107,7 +107,7 @@ export const InputForm = ({
                     ? charPercentage > 95 
                       ? "bg-destructive" 
                       : "bg-amber-500" 
-                    : "bg-primary/50"
+                    : "bg-primary"
                 )}
                 style={{ width: `${charPercentage}%` }}
               />
@@ -140,7 +140,7 @@ export const InputForm = ({
                 aria-label={loading ? "Processing" : "Send message"}
                 className={cn(
                   "h-8 w-8 sm:h-10 sm:w-10 rounded-full",
-                  "bg-primary text-white hover:bg-primary/90",
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
                   "shadow-sm hover:shadow transition-all duration-200",
                   "flex items-center justify-center",
                   loading && "cursor-not-allowed opacity-70"

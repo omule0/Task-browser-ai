@@ -75,7 +75,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">Task Details</h2>
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Task Details</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Created {formatDistanceToNow(new Date(data.created_at), { addSuffix: true })}
                 </p>
@@ -92,7 +92,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           {/* Task */}
           <div className="space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-medium">Task</h3>
+              <h3 className="text-base sm:text-lg font-medium text-foreground">Task</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -100,14 +100,14 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
                 onClick={handleCopyTask}
               >
                 {copied ? (
-                  <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                  <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-primary" />
                 ) : (
-                  <IconClipboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                  <IconClipboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 text-muted-foreground" />
                 )}
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <div className="text-xs sm:text-sm pl-3 sm:pl-4">
+            <div className="text-xs sm:text-sm pl-3 sm:pl-4 text-foreground/90">
               {data.task}
             </div>
           </div>
@@ -129,7 +129,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           {/* Progress */}
           {progress && progress.length > 0 && (
             <div className="space-y-2 sm:space-y-3">
-              <h3 className="text-base sm:text-lg font-medium">Progress</h3>
+              <h3 className="text-base sm:text-lg font-medium text-foreground">Progress</h3>
               <div className="pl-3 sm:pl-4">
                 <AgentSteps progress={progress} />
               </div>
@@ -139,7 +139,7 @@ export function TaskDetailContent({ historyId }: TaskDetailContentProps) {
           {/* Result */}
           {data.result && (
             <div className="space-y-2 sm:space-y-3">
-              <h3 className="text-base sm:text-lg font-medium">Result</h3>
+              <h3 className="text-base sm:text-lg font-medium text-foreground">Result</h3>
               <div className="pl-3 sm:pl-4">
                 <MarkdownResult content={data.result} />
               </div>

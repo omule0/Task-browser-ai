@@ -56,7 +56,7 @@ export const Suggestions = () => {
         {loading ? (
           <Skeleton className="h-8 sm:h-12 w-48 sm:w-64 mx-auto rounded-lg" />
         ) : (
-          <h1 className="text-2xl sm:text-4xl font-light tracking-tight text-gray-800">
+          <h1 className="text-2xl sm:text-4xl font-light tracking-tight text-foreground">
             Greetings, {getFirstName(profile?.full_name)}
           </h1>
         )}
@@ -64,23 +64,23 @@ export const Suggestions = () => {
 
       {/* Sensitive Data Disclaimer */}
       {showDisclaimer && (
-        <div className="relative mx-4 sm:mx-0 rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm">
+        <div className="relative mx-4 sm:mx-0 rounded-lg border border-border bg-accent p-3 sm:p-4 shadow-sm">
           <div className="flex items-start gap-2 sm:gap-3">
-            <IconInfoCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-gray-600 mt-0.5" />
+            <IconInfoCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary mt-0.5" />
             <div className="flex-1 min-w-0">
-              <h2 className="text-xs sm:text-sm font-medium text-gray-900">
+              <h2 className="text-xs sm:text-sm font-medium text-foreground">
                 Sensitive Data Disclaimer
               </h2>
-              <p className="mt-1 text-xs sm:text-sm text-gray-500 break-words">
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words">
                 Our agent doesn&apos;t need to see your sensitive or other highly confidential information (e.g.passwords and access keys) unless you want to share it with the agent.
               </p>
             </div>
             <button
               onClick={() => setShowDisclaimer(false)}
-              className="flex-shrink-0 rounded-lg p-1 hover:bg-gray-50 -mt-1"
+              className="flex-shrink-0 rounded-lg p-1 hover:bg-accent/70 -mt-1"
               aria-label="Close disclaimer"
             >
-              <IconX className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+              <IconX className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </button>
           </div>
         </div>

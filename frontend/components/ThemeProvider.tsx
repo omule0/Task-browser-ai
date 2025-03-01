@@ -1,0 +1,122 @@
+import { createContext, useContext, useEffect, useState } from 'react';
+import { lightColors, darkColors, toHslCssVariables } from '../lib/colors';
+
+type Theme = 'light' | 'dark' | 'system';
+
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+}
+
+interface ThemeContextValue {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  isDarkMode: boolean;
+}
+
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+export function ThemeProvider({
+  children,
+  defaultTheme = 'system',
+}: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Update the theme
+  const applyTheme = (newTheme: Theme) => {
+    const root = window.document.documentElement;
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    
+    const resolvedTheme = newTheme === 'system' ? systemTheme : newTheme;
+    
+    // Remove class
+    root.classList.remove('light', 'dark');
+    
+    // Add the correct class based on the resolved theme
+    root.classList.add(resolvedTheme);
+    
+    // Update state
+    setIsDarkMode(resolvedTheme === 'dark');
+    
+    // Apply CSS variables
+    const colors = resolvedTheme === 'dark' ? darkColors : lightColors;
+    const cssVars = toHslCssVariables(colors);
+    
+    Object.entries(cssVars).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
+  };
+
+  // Initial theme setup
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  // Listen for system preference changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Initial check
+    if (theme === 'system') {
+      applyTheme('system');
+    }
+    
+    // Add listener for changes
+    const handleChange = () => {
+      if (theme === 'system') {
+        applyTheme('system');
+      }
+    };
+    
+    // Use the addEventListener if supported, otherwise fall back to deprecated addListener
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    } else {
+      // @ts-ignore - For older browsers
+      mediaQuery.addListener(handleChange);
+      // @ts-ignore - For older browsers
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, [theme]);
+
+  // Save theme preference to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme]);
+
+  // Load theme preference from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme | null;
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    }
+  }, []);
+
+  const value = {
+    theme,
+    setTheme,
+    isDarkMode,
+  };
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export const useTheme = (): ThemeContextValue => {
+  const context = useContext(ThemeContext);
+  
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  
+  return context;
+}; 

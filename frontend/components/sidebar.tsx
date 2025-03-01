@@ -28,7 +28,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
   return (
     <aside 
       className={cn(
-        "fixed top-14 sm:top-16 left-0 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] bg-background border-r flex flex-col items-center py-3 sm:py-4 gap-1.5 sm:gap-2 transition-all duration-300 z-40",
+        "fixed top-14 sm:top-16 left-0 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] bg-sidebar border-sidebar-border flex flex-col items-center py-3 sm:py-4 gap-1.5 sm:gap-2 transition-all duration-300 z-40",
         isCollapsed ? "-translate-x-full" : "translate-x-0",
         "w-[180px] sm:w-[200px]"
       )}
@@ -43,8 +43,10 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               variant="ghost"
               className={cn(
                 "w-full flex items-center gap-3 sm:gap-4 justify-start px-2",
-                "h-8 sm:h-10 rounded-lg text-xs sm:text-sm",
-                isActive && "bg-primary/10 text-primary hover:bg-primary/15"
+                "h-8 sm:h-10 rounded-lg text-xs sm:text-sm text-sidebar-foreground",
+                isActive 
+                  ? "bg-sidebar-primary/10 text-sidebar-primary hover:bg-sidebar-primary/15" 
+                  : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               )}
               asChild
             >
@@ -72,8 +74,10 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
           variant="ghost"
           className={cn(
             "w-full flex items-center gap-3 sm:gap-4 justify-start px-2",
-            "h-8 sm:h-10 rounded-lg text-xs sm:text-sm",
-            pathname === '/profile' && "bg-primary/10 text-primary hover:bg-primary/15"
+            "h-8 sm:h-10 rounded-lg text-xs sm:text-sm text-sidebar-foreground",
+            pathname === '/profile' 
+              ? "bg-sidebar-primary/10 text-sidebar-primary hover:bg-sidebar-primary/15"
+              : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}
           asChild
         >

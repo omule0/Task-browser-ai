@@ -62,11 +62,12 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
     <div className="flex flex-col h-[calc(100vh-2rem)]">
       {/* Fixed Header */}
       <div className="flex items-center justify-between py-3 px-1">
-        <h2 className="text-lg font-semibold">Run Details</h2>
+        <h2 className="text-lg font-semibold text-foreground">Run Details</h2>
         <Button
           variant="ghost"
           size="icon"
           onClick={onClose}
+          className="text-muted-foreground hover:text-foreground"
         >
           <IconX size={16} />
         </Button>
@@ -76,7 +77,7 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
       <div className="flex-1 overflow-y-auto pr-1">
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium mb-2">Task</h3>
+            <h3 className="text-sm font-medium mb-2 text-foreground">Task</h3>
             <p className="text-sm text-muted-foreground">{data.task}</p>
           </div>
 
@@ -92,22 +93,22 @@ export function HistoryDetail({ historyId, onClose }: HistoryDetailProps) {
 
           {progress && progress.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium mb-2">Progress</h3>
+              <h3 className="text-sm font-medium mb-2 text-foreground">Progress</h3>
               <AgentSteps progress={progress} />
             </div>
           )}
 
           {data.result && (
             <div>
-              <h3 className="text-sm font-medium mb-2">Result</h3>
+              <h3 className="text-sm font-medium mb-2 text-foreground">Result</h3>
               <MarkdownResult content={data.result} />
             </div>
           )}
 
           {data.gif_content ? (
             <div>
-              <h3 className="text-sm font-medium mb-2">Recording</h3>
-              <div className="rounded-lg overflow-hidden border">
+              <h3 className="text-sm font-medium mb-2 text-foreground">Recording</h3>
+              <div className="rounded-lg overflow-hidden border border-border">
                 <Image
                   src={`data:image/gif;base64,${data.gif_content}`}
                   alt="Task Recording"

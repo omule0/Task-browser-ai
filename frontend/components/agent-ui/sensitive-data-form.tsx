@@ -63,7 +63,7 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
       <Button
         variant="ghost"
         size="sm"
-        className="text-[10px] sm:text-xs text-muted-foreground hover:text-foreground h-7 sm:h-8 px-2 sm:px-3"
+        className="text-[10px] sm:text-xs text-muted-foreground hover:text-foreground h-7 sm:h-8 px-2 sm:px-3 hover:bg-accent transition-colors"
         onClick={handleAddEntry}
       >
         <IconPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
@@ -75,12 +75,12 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
   return (
     <div className="space-y-2 sm:space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs sm:text-sm font-medium">Sensitive Data</h3>
+        <h3 className="text-xs sm:text-sm font-medium text-foreground">Sensitive Data</h3>
         <Button
           variant="outline"
           size="sm"
           onClick={handleAddEntry}
-          className="h-7 sm:h-8 px-2.5 sm:px-3 text-xs sm:text-sm"
+          className="h-7 sm:h-8 px-2.5 sm:px-3 text-xs sm:text-sm border-border hover:bg-accent hover:text-accent-foreground"
         >
           <IconPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           Add Field
@@ -93,7 +93,7 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
             placeholder="Variable name"
             value={entry.key}
             onChange={(e) => handleEntryChange(index, 'key', e.target.value)}
-            className="flex-1 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3"
+            className="flex-1 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border focus:ring-primary"
           />
           <div className="relative flex-1">
             <Input
@@ -101,13 +101,13 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
               placeholder="Value"
               value={entry.value}
               onChange={(e) => handleEntryChange(index, 'value', e.target.value)}
-              className="w-full pr-8 sm:pr-10 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3"
+              className="w-full pr-8 sm:pr-10 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border focus:ring-primary"
             />
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 sm:h-7 w-6 sm:w-7 p-0.5 sm:p-1"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 sm:h-7 w-6 sm:w-7 p-0.5 sm:p-1 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => toggleShowValue(index)}
             >
               {showValues[index] ? (
@@ -121,7 +121,7 @@ export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: S
             variant="ghost"
             size="icon"
             onClick={() => handleRemoveEntry(index)}
-            className="shrink-0 h-8 sm:h-9 w-8 sm:w-9 sm:ml-0.5"
+            className="shrink-0 h-8 sm:h-9 w-8 sm:w-9 sm:ml-0.5 hover:bg-accent hover:text-destructive transition-colors"
           >
             <IconTrash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>

@@ -546,7 +546,7 @@ export default function Home() {
           defaultSize={isRightPanelCollapsed ? 100 : 70}
           minSize={isRightPanelCollapsed ? 100 : 50}
           maxSize={isRightPanelCollapsed ? 100 : 70}
-          className="p-6 bg-gradient-to-b from-white to-gray-50 rounded-lg shadow-sm border border-gray-100"
+          className="p-6 bg-gradient-to-b from-background to-accent/50 rounded-lg shadow-sm border border-border"
         >
           <div className="space-y-6 mb-6" ref={resultsRef} id="results-container">
             {submittedTask && <UserQuery task={submittedTask} />}
@@ -578,7 +578,7 @@ export default function Home() {
         {/* Always include the handle and right panel, but manage visibility with CSS */}
         <ResizableHandle 
           withHandle 
-          className={`border-x border-gray-200 bg-transparent hover:bg-blue-50 transition-colors ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'}`} 
+          className={`border-x border-border bg-transparent hover:bg-primary/10 transition-colors ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'}`} 
         />
 
         {/* Right Panel - Task Recording - Always present in DOM but can be collapsed */}
@@ -587,46 +587,46 @@ export default function Home() {
           defaultSize={isRightPanelCollapsed ? 0 : 30}
           minSize={isRightPanelCollapsed ? 0 : 5}
           maxSize={isRightPanelCollapsed ? 0 : 50}
-          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-sm border border-gray-100'}`}
+          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-gradient-to-br from-background to-accent/50 rounded-lg shadow-sm border border-border'}`}
         >
           <div className={`sticky top-8 transition-opacity duration-300 h-[calc(100vh-8rem)] ${isRightPanelCollapsed ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors"
                 aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
               >
-                <IconLayoutColumns size={18} className="text-gray-600" />
+                <IconLayoutColumns size={18} className="text-muted-foreground" />
               </button>
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full px-4 py-2 shadow-sm border border-blue-100">
+                <div className="bg-gradient-to-r from-primary/10 to-indigo-100 rounded-full px-4 py-2 shadow-sm border border-primary/20">
                 <div className="flex items-center gap-2">
-                  <IconPhoto size={18} className="text-blue-500" />
-                  <span className="text-gray-900 font-medium">Task Recording</span>
+                  <IconPhoto size={18} className="text-primary" />
+                  <span className="text-foreground font-medium">Task Recording</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md h-[calc(100%-4rem)]">
+            <div className="rounded-xl overflow-hidden border border-border shadow-md h-[calc(100%-4rem)]">
               {isGifLoading ? (
-                <div className="flex items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
+                <div className="flex items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-600 font-medium">Loading recording...</span>
+                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-muted-foreground font-medium">Loading recording...</span>
                     {currentRunId && (
-                      <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
+                      <span className="text-xs text-muted-foreground/70 mt-1">Run ID: {currentRunId}</span>
                     )}
                   </div>
                 </div>
               ) : gifError && shouldFetchGif ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
                     <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
                       <IconPhoto size={24} className="text-amber-500" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-lg font-medium text-foreground">Recording not ready</h3>
+                    <p className="text-sm text-muted-foreground">
                       {gifError instanceof Error 
                         ? gifError.message.includes('not ready yet')
                           ? "We're still processing your recording. Please wait a moment."
@@ -647,18 +647,18 @@ export default function Home() {
                   </div>
                 </div>
               ) : loading && isStreaming && !gifContent ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shadow-sm pulse-animation">
-                      <IconPhoto size={24} className="text-blue-500" />
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-sm pulse-animation">
+                      <IconPhoto size={24} className="text-primary" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-lg font-medium text-foreground">Recording in progress</h3>
+                    <p className="text-sm text-muted-foreground">
                       The agent is working on your task. A visual recording will appear here once it&apos;s ready.
                     </p>
                     {progress.length > 0 && (
-                      <div className="w-32 h-1.5 mt-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
+                      <div className="w-32 h-1.5 mt-2 bg-accent rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
                       </div>
                     )}
                   </div>
@@ -680,10 +680,10 @@ export default function Home() {
     <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
       {/* Status Message */}
       {!(progress.length > 0 || result || loading) && (
-        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-gray-600">
-            <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-blue-500" />
+        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-muted-foreground">
+            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-primary" />
             </div>
             <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
@@ -719,10 +719,10 @@ export default function Home() {
       {(!isMobile && isRightPanelCollapsed && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
         <button
           onClick={toggleRecordingPanel}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-blue-50 transition-colors border border-gray-200 z-50"
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-background shadow-lg flex items-center justify-center hover:bg-primary/10 transition-colors border border-border z-50"
           aria-label="Show recording panel"
         >
-          <IconPhoto size={20} className="text-blue-500" />
+          <IconPhoto size={20} className="text-primary" />
         </button>
       )}
 
@@ -730,21 +730,21 @@ export default function Home() {
       {(isMobile && gifContent && (progress.length > 0 || result || loading)) && (
         <button
           onClick={handleMobileDownload}
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-blue-50 transition-all duration-300 border border-gray-200 z-50 hover:scale-105"
+          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50 hover:scale-105"
           aria-label="Download recording"
           disabled={!gifContent}
         >
-          <IconDownload size={24} className="text-blue-500" />
+          <IconDownload size={24} className="text-primary" />
         </button>
       )}
 
       {/* Loading indicator for mobile when GIF is processing */}
       {(isMobile && isRecordingRelevant && !gifContent && (progress.length > 0 || result || loading)) && (
         <div
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border border-gray-200 z-50 pulse-animation"
+          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center border border-border z-50 pulse-animation"
           aria-label="Recording in progress"
         >
-          <IconPhoto size={24} className="text-blue-500" />
+          <IconPhoto size={24} className="text-primary" />
         </div>
       )}
 
@@ -753,11 +753,11 @@ export default function Home() {
         <Button
           variant="outline"
           size="icon"
-          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-blue-50 z-20 hover:scale-105`}
+          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-background hover:bg-primary/10 z-20 hover:scale-105`}
           onClick={scrollToBottom}
           aria-label="Scroll to bottom"
         >
-          <IconArrowDown size={20} className="text-blue-500" />
+          <IconArrowDown size={20} className="text-primary" />
         </Button>
       )}
       
@@ -771,12 +771,12 @@ export default function Home() {
           0%, 100% {
             opacity: 1;
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 0 rgba(var(--primary), 0.5);
           }
           50% {
             opacity: 0.8;
             transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            box-shadow: 0 0 0 10px rgba(var(--primary), 0);
           }
         }
       `}</style>

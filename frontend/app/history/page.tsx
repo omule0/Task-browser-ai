@@ -79,9 +79,9 @@ export default function HistoryPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* History List Card */}
-          <Card className="order-2 lg:order-1 p-3 sm:p-4 lg:p-6">
+          <Card className="order-2 lg:order-1 p-3 sm:p-4 lg:p-6 bg-card text-card-foreground border-border">
             <div className="flex flex-col h-full">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Task History</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-foreground">Task History</h2>
               
               <div className="flex-1">
                 <HistoryList
@@ -101,14 +101,14 @@ export default function HistoryPage() {
                     size="sm"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1 || isLoading}
-                    className="h-8 sm:h-9"
+                    className="h-8 sm:h-9 border-border text-foreground"
                   >
                     <IconChevronLeft className="h-4 w-4" />
                   </Button>
                   
                   <div className="flex items-center gap-1 sm:gap-2">
                     <span className="text-sm text-muted-foreground">
-                      Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                      Page <span className="font-medium text-foreground">{currentPage}</span> of <span className="font-medium text-foreground">{totalPages}</span>
                     </span>
                   </div>
                   
@@ -117,7 +117,7 @@ export default function HistoryPage() {
                     size="sm"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages || isLoading}
-                    className="h-8 sm:h-9"
+                    className="h-8 sm:h-9 border-border text-foreground"
                   >
                     <IconChevronRight className="h-4 w-4" />
                   </Button>
@@ -127,7 +127,7 @@ export default function HistoryPage() {
           </Card>
 
           {/* History Detail Card */}
-          <Card className="order-1 lg:order-2 p-3 sm:p-4 lg:p-6 min-h-[300px] lg:min-h-[600px]">
+          <Card className="order-1 lg:order-2 p-3 sm:p-4 lg:p-6 min-h-[300px] lg:min-h-[600px] bg-card text-card-foreground border-border">
             <HistoryDetail
               historyId={selectedId}
               onClose={() => setSelectedId(null)}

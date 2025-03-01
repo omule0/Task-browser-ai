@@ -32,6 +32,9 @@ const LoginButton = () => {
   if (user) {
     return (
       <Button
+        variant="destructive"
+        size="sm"
+        className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm transition-colors bg-destructive/90 hover:bg-destructive"
         onClick={() => {
           signout();
           setUser(null);
@@ -44,6 +47,8 @@ const LoginButton = () => {
   return (
     <Button
       variant="outline"
+      size="sm"
+      className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm border border-input hover:bg-accent hover:text-accent-foreground transition-colors"
       onClick={() => {
         router.push("/login");
       }}

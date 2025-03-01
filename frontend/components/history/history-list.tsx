@@ -79,7 +79,7 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
                   {getStatusIcon(item)}
                 </div>
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm sm:text-base font-medium leading-tight mb-1 line-clamp-2">
+                  <p className="text-sm sm:text-base font-medium leading-tight mb-1 line-clamp-2 text-foreground">
                     {item.task}
                   </p>
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">

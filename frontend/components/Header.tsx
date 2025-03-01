@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { createClient } from '@/utils/supabase/client';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { ThemeToggle, ThemeToggleWithLabel } from './ThemeToggle';
 
 interface HeaderProps {
   className?: string;
@@ -60,7 +61,7 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/80 backdrop-blur-sm shadow-sm' : 'bg-transparent'
+        isScrolled ? 'bg-white/80 backdrop-blur-sm shadow-sm dark:bg-gray-900/80' : 'bg-transparent'
       } ${className}`}
     >
       <div className="container mx-auto px-3 sm:px-4">
@@ -93,10 +94,13 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
 
           {/* Desktop Navigation */}
           <nav className="flex items-center space-x-2 sm:space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle className="mr-1" />
+            
             <Button
               variant="outline"
               size="sm"
-              className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-gray-800"
               onClick={() => window.location.href = '/'}
               aria-label="Start new task"
             >
@@ -113,7 +117,7 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
                     aria-label="Profile menu"
                   >
                     <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                      <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm">
+                      <AvatarFallback className="bg-blue-100 text-blue-600 text-xs sm:text-sm dark:bg-blue-900 dark:text-blue-200">
                         {getInitials(userEmail)}
                       </AvatarFallback>
                     </Avatar>
@@ -121,14 +125,18 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
                 </PopoverTrigger>
                 <PopoverContent className="w-56 sm:w-64 p-2" align="end">
                   <div className="mb-2 sm:mb-3 px-2 py-1.5">
-                    <div className="text-xs sm:text-sm font-medium text-gray-900 break-all">
+                    <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 break-all">
                       {userEmail}
                     </div>
                   </div>
                   <div className="space-y-1">
+                    {/* Theme Toggle with Label */}
+                    <div className="w-full px-2 py-1.5 mb-2">
+                      <ThemeToggleWithLabel className="w-full" />
+                    </div>
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center px-2 py-1.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      className="w-full flex items-center px-2 py-1.5 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
                     >
                       <IconLogout className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                       Sign out

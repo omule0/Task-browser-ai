@@ -63,13 +63,13 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
       <div 
         id="agent-result-content"
         ref={resultRef}
-        className="prose prose-xs sm:prose-sm dark:prose-invert max-w-none bg-white p-4 rounded-lg"
+        className="prose prose-xs sm:prose-sm dark:prose-invert max-w-none bg-accent p-4 rounded-lg border border-border"
       >
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
-          className="text-xs sm:text-sm text-muted-foreground"
+          className="text-xs sm:text-sm text-foreground"
           components={{
-            p: ({children}) => <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">{children}</p>,
+            p: ({children}) => <p className="text-xs sm:text-sm text-foreground mb-3 sm:mb-4">{children}</p>,
             a: ({href, children}) => (
               <a 
                 href={href} 
@@ -82,22 +82,22 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
             ),
             ul: ({children}) => <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 text-xs sm:text-sm">{children}</ul>,
             ol: ({children}) => <ol className="list-decimal pl-4 sm:pl-6 mb-3 sm:mb-4 text-xs sm:text-sm">{children}</ol>,
-            li: ({children}) => <li className="mb-1 sm:mb-1.5">{children}</li>,
-            h1: ({children}) => <h1 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{children}</h1>,
-            h2: ({children}) => <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{children}</h2>,
-            h3: ({children}) => <h3 className="text-sm sm:text-base font-medium mb-1.5 sm:mb-2">{children}</h3>,
+            li: ({children}) => <li className="mb-1 sm:mb-1.5 text-muted-foreground">{children}</li>,
+            h1: ({children}) => <h1 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-foreground">{children}</h1>,
+            h2: ({children}) => <h2 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-foreground">{children}</h2>,
+            h3: ({children}) => <h3 className="text-sm sm:text-base font-medium mb-1.5 sm:mb-2 text-foreground">{children}</h3>,
             code: ({children}) => (
-              <code className="bg-muted px-1 sm:px-1.5 py-0.5 rounded text-xs sm:text-sm">
+              <code className="bg-accent/50 px-1 sm:px-1.5 py-0.5 rounded text-xs sm:text-sm text-primary">
                 {children}
               </code>
             ),
             pre: ({children}) => (
-              <pre className="bg-muted p-3 sm:p-4 rounded-lg overflow-x-auto mb-3 sm:mb-4 text-xs sm:text-sm">
+              <pre className="bg-accent/50 p-3 sm:p-4 rounded-lg overflow-x-auto mb-3 sm:mb-4 text-xs sm:text-sm border border-border">
                 {children}
               </pre>
             ),
             blockquote: ({children}) => (
-              <blockquote className="border-l-2 sm:border-l-4 border-primary/10 pl-3 sm:pl-4 italic mb-3 sm:mb-4 text-xs sm:text-sm">
+              <blockquote className="border-l-2 sm:border-l-4 border-primary/20 pl-3 sm:pl-4 italic mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">
                 {children}
               </blockquote>
             ),
@@ -110,24 +110,24 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
         <Button
           variant="outline"
           size="icon"
-          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-background border-border hover:bg-accent hover:border-border"
           onClick={handleDownloadPDF}
           disabled={downloading}
           aria-label="Download as PDF"
         >
-          <IconFileDownload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+          <IconFileDownload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-background border-border hover:bg-accent hover:border-border"
           onClick={handleCopy}
           aria-label="Copy content"
         >
           {copied ? (
-            <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+            <IconCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
           ) : (
-            <IconCopy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+            <IconCopy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
           )}
         </Button>
       </div>

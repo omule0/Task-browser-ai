@@ -59,30 +59,30 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'start':
-        return <IconRocket className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconRocket className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'complete':
-        return <IconCircleCheck className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconCircleCheck className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'error':
-        return <IconAlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconAlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'thought':
-        return <IconBrain className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconBrain className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'url':
-        return <IconLink className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconLink className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'action':
-        return <IconTerminal className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconTerminal className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'gif':
-        return <IconPhoto className="w-3 h-3 sm:w-4 sm:h-4 text-white" />;
+        return <IconPhoto className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       default:
-        return <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />;
+        return <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-background" />;
     }
   };
 
   const getEventColor = (type: string) => {
     switch (type) {
       case 'error':
-        return 'bg-red-500';
+        return 'bg-destructive';
       case 'complete':
-        return 'bg-green-500';
+        return 'bg-success';
       case 'thought':
         return 'bg-purple-500';
       case 'url':
@@ -92,7 +92,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
       case 'gif':
         return 'bg-pink-500';
       default:
-        return 'bg-blue-500';
+        return 'bg-primary';
     }
   };
 
@@ -118,32 +118,32 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
     <div className="max-w-[100%] space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       {/* Completion Status Header */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#F4F9F9] flex items-center justify-center shadow-sm">
-          <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center transition-all ${isStreaming ? 'scale-110' : ''}`}>
-            <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white ${isStreaming ? 'animate-pulse' : ''}`} />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center shadow-sm">
+          <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center transition-all ${isStreaming ? 'scale-110' : ''}`}>
+            <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-background ${isStreaming ? 'animate-pulse' : ''}`} />
           </div>
         </div>
         <div>
-          <h2 className="text-base sm:text-lg font-medium text-blue-500">
+          <h2 className="text-base sm:text-lg font-medium text-primary">
             {getStatusText()}
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
+          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
             {isStreaming ? "The agent is actively processing information" : "All agent steps are complete"}
           </p>
         </div>
       </div>
 
-      <div className="bg-[#F4F9F9] rounded-lg sm:rounded-xl shadow-sm border border-blue-100">
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-blue-100">
+      <div className="bg-background rounded-lg sm:rounded-xl shadow-sm border border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <h3 className="text-base sm:text-lg font-medium text-blue-500">Steps</h3>
-            <Badge variant="outline" className="bg-blue-50 text-blue-500 text-xs">
+            <h3 className="text-base sm:text-lg font-medium text-primary">Steps</h3>
+            <Badge variant="outline" className="bg-accent text-accent-foreground text-xs">
               {meaningfulEvents.length}
             </Badge>
           </div>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"
+            className="text-primary hover:text-primary/90 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"
             aria-label={isCollapsed ? "Show all steps" : "Hide steps"}
           >
             {isCollapsed ? (
@@ -170,7 +170,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                     key={`${event.type}-${index}`} 
                     className={cn(
                       "flex items-start gap-2 sm:gap-3 relative p-2 rounded-lg transition-all duration-200",
-                      expandedEvents[index] ? "bg-blue-50" : "hover:bg-blue-50/50"
+                      expandedEvents[index] ? "bg-accent" : "hover:bg-accent/50"
                     )}
                     onClick={() => handleToggleEvent(index)}
                     role="button"
@@ -179,7 +179,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                     onKeyDown={(e) => e.key === 'Enter' && handleToggleEvent(index)}
                   >
                     <div 
-                      className="absolute left-[7px] sm:left-[9px] top-6 bottom-0 w-[2px] bg-blue-100" 
+                      className="absolute left-[7px] sm:left-[9px] top-6 bottom-0 w-[2px] bg-border" 
                       style={{ display: index === events.length - 1 ? 'none' : 'block' }} 
                     />
                     <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full ${getEventColor(event.type)} flex items-center justify-center z-10 mt-1 transition-transform ${expandedEvents[index] ? 'scale-110' : ''}`}>
@@ -187,10 +187,10 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm sm:text-base font-medium mb-0.5 sm:mb-1" style={{ color: expandedEvents[index] ? '#2563eb' : '#3b82f6' }}>
+                        <h4 className="text-sm sm:text-base font-medium mb-0.5 sm:mb-1" style={{ color: expandedEvents[index] ? 'var(--primary)' : 'var(--primary)' }}>
                           {getEventTitle(event.type)}
                         </h4>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {
                             new Date().toLocaleTimeString([], {
                               hour: '2-digit',
@@ -200,7 +200,7 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                         </span>
                       </div>
                       <p className={cn(
-                        "text-xs sm:text-sm text-gray-600 transition-all duration-200",
+                        "text-xs sm:text-sm text-foreground transition-all duration-200",
                         expandedEvents[index] ? "line-clamp-none" : "line-clamp-2"
                       )}>
                         {event.message}
@@ -212,8 +212,8 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
 
               {/* Show streaming indicator */}
               {isStreaming && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 pl-6 sm:pl-8 py-2 animate-pulse">
-                  <SyncLoader size={4} color="#2563eb" margin={4} />
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground pl-6 sm:pl-8 py-2 animate-pulse">
+                  <SyncLoader size={4} color="var(--primary)" margin={4} />
                 </div>
               )}
             </div>
