@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle, IconX } from '@tabler/icons-react';
+import { IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle, IconX, IconDownload } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -420,14 +420,84 @@ export default function Home() {
   // Check if recording is available or potentially will be available
   const isRecordingRelevant = gifContent || isGifLoading || (loading && isStreaming);
 
+  // Add function to handle direct download on mobile
+  const handleMobileDownload = () => {
+    if (!gifContent) {
+      console.error('Download failed: No GIF content available');
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "No recording content available to download.",
+      });
+      return;
+    }
+    
+    try {
+      console.log('Starting download process...');
+      
+      // Handle both with and without data URL prefix
+      let base64Content = gifContent;
+      if (base64Content.includes('base64,')) {
+        base64Content = base64Content.split('base64,')[1];
+      }
+      
+      // Create a Blob directly from the base64 data
+      const binaryString = window.atob(base64Content);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: 'image/gif' });
+      console.log('Blob created successfully:', blob.size, 'bytes');
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      console.log('Object URL created:', url);
+      
+      // Show feedback toast
+      toast({
+        title: "Download Started",
+        description: "Your recording is being downloaded.",
+      });
+      
+      // Use download attribute for more reliable downloading
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'task-recording.gif';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      
+      console.log('Triggering download click...');
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log('Download cleanup complete');
+      }, 1000); // Increased timeout for reliability
+    } catch (e) {
+      console.error('Download failed:', e);
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: e instanceof Error ? e.message : "Failed to download the recording.",
+      });
+    }
+  };
+
   // Render responsive layout 
   const renderDualPanelLayout = () => {
-    const showMobileTaskRecording = isMobile && !isRightPanelCollapsed;
+    // On mobile, no need to show recording panel anymore, just use download
+    const showMobileTaskRecording = false; // Always false for mobile as we're downloading instead
     
     return (
       <div className={`relative ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
         {/* Agent Interactions Panel */}
-        <div className={`${showMobileTaskRecording ? 'invisible h-0 overflow-hidden' : 'visible'}`}>
+        <div className="visible">
           <div className="space-y-6 mb-6" ref={resultsRef} id="mobile-results-container">
             {submittedTask && <UserQuery task={submittedTask} />}
 
@@ -455,100 +525,7 @@ export default function Home() {
           />
         </div>
 
-        {/* Task Recording - Full screen on mobile when visible */}
-        {(!isRightPanelCollapsed || showMobileTaskRecording) && (
-          <div 
-            className={`${isMobile ? 'fixed inset-0 z-50 bg-white p-4' : ''} 
-              ${isRightPanelCollapsed && !isMobile ? 'hidden' : 'block'}`}
-          >
-            <div className={`${isMobile ? 'h-full' : 'sticky top-8'} transition-opacity duration-300 ${isMobile ? '' : 'h-[calc(100vh-8rem)]'}`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                  aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
-                >
-                    {isMobile ? (
-                      <IconX size={18} className="text-gray-600" />
-                    ) : (
-                  <IconLayoutColumns size={18} className="text-gray-600" />
-                    )}
-                </button>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full px-4 py-2 shadow-sm border border-blue-100">
-                  <div className="flex items-center gap-2">
-                    <IconPhoto size={18} className="text-blue-500" />
-                    <span className="text-gray-900 font-medium">Task Recording</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md h-[calc(100%-4rem)]">
-                {isGifLoading ? (
-                  <div className="flex items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600 font-medium">Loading recording...</span>
-                      {currentRunId && (
-                        <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
-                      )}
-                    </div>
-                  </div>
-                ) : gifError && shouldFetchGif ? (
-                  <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
-                    <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                      <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
-                        <IconPhoto size={24} className="text-amber-500" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
-                      <p className="text-sm text-gray-600">
-                        {gifError instanceof Error 
-                          ? gifError.message.includes('not ready yet')
-                            ? "We're still processing your recording. Please wait a moment."
-                            : gifError.message
-                          : "There was an issue loading the recording."}
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-2"
-                        onClick={() => {
-                          setShouldFetchGif(false);
-                          setTimeout(() => setShouldFetchGif(true), 100);
-                        }}
-                      >
-                        Try Again
-                      </Button>
-                    </div>
-                  </div>
-                ) : loading && isStreaming && !gifContent ? (
-                  <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
-                    <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shadow-sm pulse-animation">
-                        <IconPhoto size={24} className="text-blue-500" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
-                      <p className="text-sm text-gray-600">
-                        The agent is working on your task. A visual recording will appear here once it&apos;s ready.
-                      </p>
-                      {progress.length > 0 && (
-                        <div className="w-32 h-1.5 mt-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <TaskRecording 
-                    gifContent={gifContent} 
-                    isAgentRunning={loading && isStreaming} 
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Task Recording panel removed for mobile - using download button instead */}
       </div>
     );
   };
@@ -749,15 +726,26 @@ export default function Home() {
         </button>
       )}
 
-      {/* Floating Toggle Button for mobile when panel is collapsed */}
-      {(isRightPanelCollapsed && isMobile && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
+      {/* Floating Download Button for mobile */}
+      {(isMobile && gifContent && (progress.length > 0 || result || loading)) && (
         <button
-          onClick={toggleRecordingPanel}
+          onClick={handleMobileDownload}
           className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-blue-50 transition-all duration-300 border border-gray-200 z-50 hover:scale-105"
-          aria-label="Show recording panel"
+          aria-label="Download recording"
+          disabled={!gifContent}
+        >
+          <IconDownload size={24} className="text-blue-500" />
+        </button>
+      )}
+
+      {/* Loading indicator for mobile when GIF is processing */}
+      {(isMobile && isRecordingRelevant && !gifContent && (progress.length > 0 || result || loading)) && (
+        <div
+          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center border border-gray-200 z-50 pulse-animation"
+          aria-label="Recording in progress"
         >
           <IconPhoto size={24} className="text-blue-500" />
-        </button>
+        </div>
       )}
 
       {/* Scroll to Bottom Button - Adjusted position for mobile */}
