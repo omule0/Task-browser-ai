@@ -74,9 +74,9 @@ export function ThemeProvider({
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     } else {
-      // @ts-ignore - For older browsers
+
       mediaQuery.addListener(handleChange);
-      // @ts-ignore - For older browsers
+
       return () => mediaQuery.removeListener(handleChange);
     }
   }, [theme]);
