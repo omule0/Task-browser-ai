@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import {  IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle } from '@tabler/icons-react';
+import { IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle, IconX } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -38,6 +38,7 @@ interface TemplateFormEvent extends React.FormEvent {
 
 export default function Home() {
   const [task, setTask] = useState('');
+  const [submittedTask, setSubmittedTask] = useState('');
   const [loading, setLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
@@ -168,6 +169,9 @@ export default function Home() {
       hasSensitiveData: !!sensitiveData
     });
 
+    // Set the submitted task to display in the UI
+    setSubmittedTask(currentTask);
+    
     setLoading(true);
     setIsStreaming(true);
     setProgress([]);
@@ -399,6 +403,15 @@ export default function Home() {
     }
   }, [isMobile, loading, isStreaming]);
 
+  // Force layout recalculation when panel collapse state changes
+  useEffect(() => {
+    // Small delay to let state update complete
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [isRightPanelCollapsed]);
+
   // Handler for showing/hiding the recording panel
   const toggleRecordingPanel = () => {
     setIsRightPanelCollapsed(!isRightPanelCollapsed);
@@ -415,8 +428,8 @@ export default function Home() {
       <div className={`relative ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
         {/* Agent Interactions Panel */}
         <div className={`${showMobileTaskRecording ? 'invisible h-0 overflow-hidden' : 'visible'}`}>
-          <div className="space-y-6" ref={resultsRef} id="mobile-results-container">
-            {task && <UserQuery task={task} />}
+          <div className="space-y-6 mb-6" ref={resultsRef} id="mobile-results-container">
+            {submittedTask && <UserQuery task={submittedTask} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
 
@@ -449,37 +462,43 @@ export default function Home() {
               ${isRightPanelCollapsed && !isMobile ? 'hidden' : 'block'}`}
           >
             <div className={`${isMobile ? 'h-full' : 'sticky top-8'} transition-opacity duration-300 ${isMobile ? '' : 'h-[calc(100vh-8rem)]'}`}>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
                   className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
                   aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
                 >
+                    {isMobile ? (
+                      <IconX size={18} className="text-gray-600" />
+                    ) : (
                   <IconLayoutColumns size={18} className="text-gray-600" />
+                    )}
                 </button>
-                <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full px-4 py-2 shadow-sm border border-blue-100">
                   <div className="flex items-center gap-2">
                     <IconPhoto size={18} className="text-blue-500" />
                     <span className="text-gray-900 font-medium">Task Recording</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
+              <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md h-[calc(100%-4rem)]">
                 {isGifLoading ? (
-                  <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600">Loading recording...</span>
+                      <span className="text-sm text-gray-600 font-medium">Loading recording...</span>
                       {currentRunId && (
                         <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
                       )}
                     </div>
                   </div>
                 ) : gifError && shouldFetchGif ? (
-                  <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                     <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                      <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
                         <IconPhoto size={24} className="text-amber-500" />
                       </div>
                       <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
@@ -504,9 +523,9 @@ export default function Home() {
                     </div>
                   </div>
                 ) : loading && isStreaming && !gifContent ? (
-                  <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                  <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                     <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shadow-sm pulse-animation">
                         <IconPhoto size={24} className="text-blue-500" />
                       </div>
                       <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
@@ -514,7 +533,7 @@ export default function Home() {
                         The agent is working on your task. A visual recording will appear here once it&apos;s ready.
                       </p>
                       {progress.length > 0 && (
-                        <div className="w-16 h-1 mt-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="w-32 h-1.5 mt-2 bg-gray-200 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
                         </div>
                       )}
@@ -540,16 +559,20 @@ export default function Home() {
       <ResizablePanelGroup
         direction="horizontal"
         className="min-h-[200px]"
+        onLayout={(sizes) => {
+          // This callback ensures the panel sizes are properly applied
+          console.log("Layout updated:", sizes);
+        }}
       >
         {/* Left Panel - Agent Interactions */}
         <ResizablePanel 
-          defaultSize={70}
-          minSize={50}
+          defaultSize={isRightPanelCollapsed ? 100 : 70}
+          minSize={isRightPanelCollapsed ? 100 : 50}
           maxSize={isRightPanelCollapsed ? 100 : 70}
-          className="p-4"
+          className="p-6 bg-gradient-to-b from-white to-gray-50 rounded-lg shadow-sm border border-gray-100"
         >
-          <div className="space-y-6" ref={resultsRef} id="results-container">
-            {task && <UserQuery task={task} />}
+          <div className="space-y-6 mb-6" ref={resultsRef} id="results-container">
+            {submittedTask && <UserQuery task={submittedTask} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
 
@@ -575,20 +598,23 @@ export default function Home() {
           />
         </ResizablePanel>
 
+        {/* Always include the handle and right panel, but manage visibility with CSS */}
         <ResizableHandle 
           withHandle 
-          className="border-x border-gray-200 bg-transparent hover:bg-gray-100 transition-colors" 
+          className={`border-x border-gray-200 bg-transparent hover:bg-blue-50 transition-colors ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'}`} 
         />
 
-        {/* Right Panel - Task Recording */}
+        {/* Right Panel - Task Recording - Always present in DOM but can be collapsed */}
         <ResizablePanel 
-          defaultSize={30}
-          minSize={10}
-          maxSize={50}
-          className={`transition-all duration-300 ${isRightPanelCollapsed ? 'invisible w-0 p-0' : 'visible p-4'}`}
+          id="rightPanel"
+          defaultSize={isRightPanelCollapsed ? 0 : 30}
+          minSize={isRightPanelCollapsed ? 0 : 5}
+          maxSize={isRightPanelCollapsed ? 0 : 50}
+          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-sm border border-gray-100'}`}
         >
-          <div className={`sticky top-8 ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-[calc(100vh-8rem)]`}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className={`sticky top-8 transition-opacity duration-300 h-[calc(100vh-8rem)] ${isRightPanelCollapsed ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
                 className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -596,29 +622,30 @@ export default function Home() {
               >
                 <IconLayoutColumns size={18} className="text-gray-600" />
               </button>
-              <div className="bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full px-4 py-2 shadow-sm border border-blue-100">
                 <div className="flex items-center gap-2">
                   <IconPhoto size={18} className="text-blue-500" />
                   <span className="text-gray-900 font-medium">Task Recording</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm h-[calc(100%-4rem)]">
+            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-md h-[calc(100%-4rem)]">
               {isGifLoading ? (
-                <div className="flex items-center justify-center py-20 bg-gray-50 h-full">
+                <div className="flex items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-600">Loading recording...</span>
+                    <span className="text-sm text-gray-600 font-medium">Loading recording...</span>
                     {currentRunId && (
                       <span className="text-xs text-gray-500 mt-1">Run ID: {currentRunId}</span>
                     )}
                   </div>
                 </div>
               ) : gifError && shouldFetchGif ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
                       <IconPhoto size={24} className="text-amber-500" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900">Recording not ready</h3>
@@ -643,9 +670,9 @@ export default function Home() {
                   </div>
                 </div>
               ) : loading && isStreaming && !gifContent ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-gray-50 to-white h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shadow-sm pulse-animation">
                       <IconPhoto size={24} className="text-blue-500" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900">Recording in progress</h3>
@@ -653,7 +680,7 @@ export default function Home() {
                       The agent is working on your task. A visual recording will appear here once it&apos;s ready.
                     </p>
                     {progress.length > 0 && (
-                      <div className="w-16 h-1 mt-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-32 h-1.5 mt-2 bg-gray-200 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
                       </div>
                     )}
@@ -676,10 +703,10 @@ export default function Home() {
     <div className={`container mx-auto px-4 py-4 mt-16 ${(progress.length > 0 || result || loading) ? 'max-w-7xl' : 'max-w-4xl'}`}>
       {/* Status Message */}
       {!(progress.length > 0 || result || loading) && (
-        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100">
+        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-gray-600">
-            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-gray-600" />
+            <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-blue-500" />
             </div>
             <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
@@ -691,7 +718,7 @@ export default function Home() {
         isMobile ? renderDualPanelLayout() : renderDesktopLayout()
       ) : (
         <div className="space-y-8">
-          {task && <UserQuery task={task} />}
+          {submittedTask && <UserQuery task={submittedTask} />}
           <Suggestions />
           <InputForm
             task={task}
@@ -715,7 +742,7 @@ export default function Home() {
       {(!isMobile && isRightPanelCollapsed && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
         <button
           onClick={toggleRecordingPanel}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-blue-50 transition-colors border border-gray-200 z-50"
           aria-label="Show recording panel"
         >
           <IconPhoto size={20} className="text-blue-500" />
@@ -726,10 +753,10 @@ export default function Home() {
       {(isRightPanelCollapsed && isMobile && isRecordingRelevant && (progress.length > 0 || result || loading)) && (
         <button
           onClick={toggleRecordingPanel}
-          className="fixed bottom-20 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-100 z-50"
+          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-blue-50 transition-all duration-300 border border-gray-200 z-50 hover:scale-105"
           aria-label="Show recording panel"
         >
-          <IconPhoto size={20} className="text-blue-500" />
+          <IconPhoto size={24} className="text-blue-500" />
         </button>
       )}
 
@@ -738,13 +765,33 @@ export default function Home() {
         <Button
           variant="outline"
           size="icon"
-          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-gray-50 z-20`}
+          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-white hover:bg-blue-50 z-20 hover:scale-105`}
           onClick={scrollToBottom}
           aria-label="Scroll to bottom"
         >
-          <IconArrowDown size={20} className="text-gray-600" />
+          <IconArrowDown size={20} className="text-blue-500" />
         </Button>
       )}
+      
+      {/* Add a little CSS for custom animation */}
+      <style jsx global>{`
+        .pulse-animation {
+          animation: custom-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes custom-pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

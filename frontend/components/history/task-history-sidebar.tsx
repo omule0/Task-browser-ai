@@ -1,16 +1,19 @@
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { IconSearch, IconCheck, IconX, IconAlertTriangle, IconArrowRight } from '@tabler/icons-react';
+import { IconSearch, IconCheck, IconX, IconAlertTriangle, IconArrowRight, IconRefresh } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { useFilteredTasks } from '@/hooks/useFilteredTasks';
 import { HistoryItem } from '@/hooks/useHistory';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState, useEffect } from 'react';
 
 interface TaskHistorySidebarProps {
   isCollapsed: boolean;
+  pollingInterval?: number;
 }
 
 // Function to truncate text with ellipsis
@@ -19,7 +22,7 @@ const truncateText = (text: string, maxLength: number) => {
   return text.slice(0, maxLength) + '...';
 };
 
-export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
+export function TaskHistorySidebar({ isCollapsed, pollingInterval = 60000 }: TaskHistorySidebarProps) {
   const pathname = usePathname();
   const {
     searchQuery,
@@ -28,8 +31,23 @@ export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
     hasMoreTasks,
     isLoading,
     isError,
-    error
-  } = useFilteredTasks();
+    error,
+    refetch,
+    isFetching
+  } = useFilteredTasks(pollingInterval);
+
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+
+  // Update the last refresh time whenever data is refreshed
+  useEffect(() => {
+    if (!isFetching) {
+      setLastRefreshTime(new Date());
+    }
+  }, [isFetching]);
+
+  const handleManualRefresh = () => {
+    refetch();
+  };
 
   if (isError) {
     console.error('Error fetching tasks:', error);
@@ -37,19 +55,50 @@ export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
 
   return (
     <div className="flex flex-col w-full px-1.5 sm:px-2">
-      {/* Search Input */}
+      {/* Search Input and Refresh Button */}
       {!isCollapsed && (
-        <div className="relative mb-1.5 sm:mb-2">
-          <IconSearch 
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" 
-          />
-          <Input
-            type="text"
-            placeholder="Search tasks"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 sm:pl-8 h-7 sm:h-9 text-xs sm:text-sm bg-muted/50"
-          />
+        <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2">
+          <div className="relative flex-1">
+            <IconSearch 
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" 
+            />
+            <Input
+              type="text"
+              placeholder="Search tasks"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-7 sm:pl-8 h-7 sm:h-9 text-xs sm:text-sm bg-muted/50"
+            />
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-7 sm:h-9 w-7 sm:w-9 flex-shrink-0 relative"
+                  onClick={handleManualRefresh}
+                  disabled={isFetching}
+                  aria-label="Refresh tasks"
+                >
+                  <IconRefresh 
+                    className={cn(
+                      "w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]",
+                      isFetching && "animate-spin"
+                    )} 
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">
+                  {isFetching 
+                    ? "Refreshing..." 
+                    : `Last refreshed ${formatDistanceToNow(lastRefreshTime, { addSuffix: true })}`
+                  }
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
 
@@ -99,6 +148,14 @@ export function TaskHistorySidebar({ isCollapsed }: TaskHistorySidebarProps) {
                   )}
                 </Link>
               ))}
+
+              {/* Loading indicator during background refresh */}
+              {isFetching && !isLoading && (
+                <div className="flex items-center justify-center py-1 text-xs text-muted-foreground opacity-70">
+                  <IconRefresh className="w-3 h-3 animate-spin mr-1" />
+                  <span>Updating...</span>
+                </div>
+              )}
               
               {/* View All Link */}
               {hasMoreTasks && !isCollapsed && (

@@ -1,15 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IconPlus, IconTrash, IconEyeOff, IconEye } from '@tabler/icons-react';
 
 interface SensitiveDataFormProps {
+  initialData?: Record<string, string>;
   onSensitiveDataChange: (data: Record<string, string>) => void;
 }
 
-export function SensitiveDataForm({ onSensitiveDataChange }: SensitiveDataFormProps) {
+export function SensitiveDataForm({ initialData = {}, onSensitiveDataChange }: SensitiveDataFormProps) {
   const [entries, setEntries] = useState<Array<{ key: string; value: string }>>([]);
   const [showValues, setShowValues] = useState<Record<number, boolean>>({});
+
+  // Initialize entries from initialData
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      const initialEntries = Object.entries(initialData).map(([key, value]) => ({ key, value }));
+      setEntries(initialEntries);
+    }
+  }, []);
 
   const handleAddEntry = () => {
     setEntries([...entries, { key: '', value: '' }]);
