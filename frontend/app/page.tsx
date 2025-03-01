@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle, IconX, IconDownload } from '@tabler/icons-react';
+import { IconArrowDown, IconPhoto, IconLayoutColumns, IconInfoCircle, IconDownload } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
