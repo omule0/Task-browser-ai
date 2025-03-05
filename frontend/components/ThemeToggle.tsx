@@ -9,12 +9,18 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   const handleToggle = () => {
-    if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('system');
-    } else {
-      setTheme('light');
+    switch (theme) {
+      case 'light':
+        setTheme('dark');
+        break;
+      case 'dark':
+        setTheme('system');
+        break;
+      case 'system':
+        setTheme('light');
+        break;
+      default:
+        setTheme('light');
     }
   };
 

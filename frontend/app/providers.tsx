@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system">
+      <ThemeProvider defaultTheme="light">
         {children}
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />  
