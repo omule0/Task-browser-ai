@@ -317,7 +317,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         yield serialize_event(run_id_event)
 
         # Run the agent in a background task
-        agent_task = asyncio.create_task(agent.run(max_steps=30))
+        agent_task = asyncio.create_task(agent.run(max_steps=50))
 
         # Track previous state more efficiently
         prev_state_lengths = {
@@ -435,11 +435,12 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         except asyncio.TimeoutError:
             logging.warning("GIF creation timed out")
 
-        # Complete event
+
+        # Complete event with sources and references
         complete_event = {
             "type": "complete",
             "message": safe_serialize(final_result),
-            "success": bool(is_done)
+            "success": bool(is_done),
         }
         progress_events.append(complete_event)
         yield serialize_event(complete_event)
@@ -487,38 +488,77 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 @app.post("/api/browse")
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
     """Handle browser automation task with optimized performance."""
-    user_id, tokens = await get_user_id_and_tokens(request)
-
     try:
-        browser = get_browser()
-        agent = Agent(
-            task=browser_task.task,
-            #browser=browser,
-            llm=ChatOpenAI(
-                model=browser_task.model,
-                temperature=0.7
-            ),
-            sensitive_data=browser_task.sensitive_data or {},
-        )
+        user_id, tokens = await get_user_id_and_tokens(request)
+        logging.info(f"Starting browse task for user {user_id}")
+
+        # Initialize browser with error handling
+        try:
+            browser = get_browser()
+            logging.info("Browser initialized successfully")
+        except Exception as browser_error:
+            logging.error(
+                f"Failed to initialize browser: {str(browser_error)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Browser initialization failed: {str(browser_error)}"
+            )
+
+        # Initialize agent with error handling
+        try:
+            agent = Agent(
+                task=browser_task.task,
+                browser=browser,
+                llm=ChatOpenAI(
+                    model=browser_task.model,
+                    temperature=0.7
+                ),
+                sensitive_data=browser_task.sensitive_data or {},
+            )
+            logging.info("Agent initialized successfully")
+        except Exception as agent_error:
+            logging.error(f"Failed to initialize agent: {str(agent_error)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Agent initialization failed: {str(agent_error)}"
+            )
 
         # Use background tasks to manage cleanup operations
         background_tasks.add_task(clean_cache)
 
-        return StreamingResponse(
-            stream_agent_progress(agent, browser_task.task,
-                                  user_id, tokens, browser_task),
-            media_type="text/event-stream"
-        )
+        try:
+            return StreamingResponse(
+                stream_agent_progress(agent, browser_task.task,
+                                      user_id, tokens, browser_task),
+                media_type="text/event-stream"
+            )
+        except Exception as stream_error:
+            logging.error(
+                f"Failed to create streaming response: {str(stream_error)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Streaming response failed: {str(stream_error)}"
+            )
 
+    except HTTPException as http_error:
+        # Re-raise HTTP exceptions with their original status code
+        raise http_error
     except Exception as e:
+        # Log the full error with traceback
+        logging.error(
+            f"Unexpected error in browse endpoint: {str(e)}", exc_info=True)
+
         # Save failed run in background
         background_tasks.add_task(
             save_run_history,
-            user_id=user_id,
+            user_id=user_id if 'user_id' in locals() else None,
             task=browser_task.task,
             progress_events=[{"type": "error", "message": str(e)}],
             error=str(e),
-            auth_tokens=tokens
+            auth_tokens=tokens if 'tokens' in locals() else None
         )
 
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
