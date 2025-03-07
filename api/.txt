@@ -1,0 +1,11 @@
+docker compose up --build
+
+docker compose down
+
+docker compose up
+
+docker push devdigest/api:api 
+
+docker build -t devdigest/api:api .
+
+docker login -u devdigest
