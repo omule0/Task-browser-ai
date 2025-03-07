@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactNode } from 'react'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
 const queryClient = new QueryClient({
@@ -19,7 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider defaultTheme="light">
         {children}
       </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />  
+      {/* <ReactQueryDevtools initialIsOpen={false} />   */}
     </QueryClientProvider>
   )
 } 

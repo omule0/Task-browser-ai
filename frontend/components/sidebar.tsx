@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   IconUser,
+  IconMessage,
 } from '@tabler/icons-react';
 import { TaskHistorySidebar } from './history/task-history-sidebar';
 
@@ -87,6 +88,28 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <IconUser />
               </div>
               <span>Profile</span>
+            </div>
+          </Link>
+        </Button>
+        
+        {/* Feedback Link */}
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full flex items-center gap-3 sm:gap-4 justify-start px-2",
+            "h-8 sm:h-10 rounded-lg text-xs sm:text-sm text-sidebar-foreground",
+            pathname === '/feedback' 
+              ? "bg-sidebar-primary/10 text-sidebar-primary hover:bg-sidebar-primary/15"
+              : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )}
+          asChild
+        >
+          <Link href="/feedback">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-4 h-4 sm:w-5 sm:h-5">
+                <IconMessage />
+              </div>
+              <span>Feedback</span>
             </div>
           </Link>
         </Button>

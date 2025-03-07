@@ -508,7 +508,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         try:
             agent = Agent(
                 task=browser_task.task,
-                browser=browser,
+                #browser=browser,
                 llm=ChatOpenAI(
                     model=browser_task.model,
                     temperature=0.7

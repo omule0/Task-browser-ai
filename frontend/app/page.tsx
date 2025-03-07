@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { IconInfoCircle } from '@tabler/icons-react';
+// import { IconInfoCircle } from '@tabler/icons-react';
 import { 
   InputForm,
   Suggestions,
@@ -98,35 +98,35 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-4 mt-16 max-w-4xl">
-      {/* Status Message */}
-      <div className="mb-4 md:mb-8 p-3 md:p-4 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-muted-foreground">
-          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-primary" />
+      {/* Status Message
+        <div className="mb-4 md:mb-8 p-3 md:p-4 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-muted-foreground">
+            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <IconInfoCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-primary" />
+            </div>
+            <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
           </div>
-          <p className="text-sm md:text-base">Things might take a moment, but we&apos;re scaling up. Thanks for being part of the journey! 🚀</p>
-        </div>
-      </div>
+        </div> */}
 
       {/* Main Content */}
-      <div className="space-y-8">
-        <Suggestions />
-        <InputForm
-          task={task}
-          loading={loading}
-          maxChars={MAX_CHARS}
-          onSubmit={handleSubmit}
-          onChange={(e) => setTask(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <TemplateSection 
-          onSubmit={(templateTask) => {
-            setTask(templateTask);
-            const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
-            handleSubmit(event);
-          }} 
-        />
-      </div>
+        <div className="space-y-8">
+          <Suggestions />
+          <InputForm
+            task={task}
+            loading={loading}
+            maxChars={MAX_CHARS}
+            onSubmit={handleSubmit}
+            onChange={(e) => setTask(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <TemplateSection 
+            onSubmit={(templateTask) => {
+              setTask(templateTask);
+              const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
+              handleSubmit(event);
+            }} 
+          />
+        </div>
     </div>
   );
 }

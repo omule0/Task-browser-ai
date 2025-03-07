@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import LoginLogoutButton from './LoginLogoutButton';
 import { 
   IconLayoutSidebar,
@@ -26,6 +27,7 @@ interface HeaderProps {
 }
 
 const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const supabase = createClient();
@@ -101,7 +103,7 @@ const Header = ({ className = '', isCollapsed, onToggle }: HeaderProps) => {
               variant="outline"
               size="sm"
               className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-gray-800"
-              onClick={() => window.location.href = '/'}
+              onClick={() => router.push('/')}
               aria-label="Start new task"
             >
               <IconPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
