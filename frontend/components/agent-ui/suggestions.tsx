@@ -1,4 +1,4 @@
-import { IconX, IconInfoCircle } from '@tabler/icons-react';
+// import { IconX, IconInfoCircle } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 import { createClient } from "@/utils/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,7 +11,7 @@ interface Profile {
 }
 
 export const Suggestions = () => {
-  const [showDisclaimer, setShowDisclaimer] = useState(true);
+  // const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -63,7 +63,7 @@ export const Suggestions = () => {
       </div>
 
       {/* Sensitive Data Disclaimer */}
-      {showDisclaimer && (
+      {/* {showDisclaimer && (
         <div className="relative mx-4 sm:mx-0 rounded-lg border border-border bg-accent p-3 sm:p-4 shadow-sm">
           <div className="flex items-start gap-2 sm:gap-3">
             <IconInfoCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary mt-0.5" />
@@ -84,7 +84,7 @@ export const Suggestions = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }; 
