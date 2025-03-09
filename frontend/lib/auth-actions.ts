@@ -50,8 +50,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
-  return { message: "Check your email for the confirmation link!" };
+  redirect("/signup/confirmation");
 }
 
 export async function signout() {
