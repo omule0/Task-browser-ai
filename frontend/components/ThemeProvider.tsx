@@ -59,7 +59,7 @@ export function ThemeProvider({
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     const initialTheme = savedTheme || defaultTheme;
     setTheme(initialTheme);
-  }, []);
+  }, [defaultTheme]);
 
   // Listen for system preference changes
   useEffect(() => {
