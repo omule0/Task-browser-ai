@@ -321,7 +321,7 @@ const TemplateCard = ({ template, onSubmit, onEdit, onDelete }: {
               )}
             </div>
             <div className="flex items-center flex-wrap gap-x-2 sm:gap-x-3 gap-y-1.5 sm:gap-y-2">
-              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">{template.subtitle}</span>
+              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[180px]">{template.subtitle}</span>
               <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded-full whitespace-nowrap group-hover:bg-primary/20 transition-colors duration-200">
                 {template.category}
               </span>

@@ -12,16 +12,17 @@ import { Category, saveTemplate, updateTemplate, getTemplates } from "@/utils/te
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { TemplateIcon } from "@/components/TemplateIcon";
-import { IconCopy, IconShare, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconCopy, IconShare, IconDeviceFloppy, IconRobot } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 
 const categories: { label: Category; icon: React.ReactNode }[] = [
   { label: 'Business', icon: <TemplateIcon category="Business" className="w-5 h-5" /> },
@@ -61,6 +62,12 @@ function TemplateStudioContent() {
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [previewVariables, setPreviewVariables] = useState<PreviewVariables>({});
+  
+  // New state for AI Chat feature
+  const [isAIChatDialogOpen, setIsAIChatDialogOpen] = useState(false);
+  const [userPrompt, setUserPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiResponse, setAiResponse] = useState("");
 
   // Load template for editing
   useEffect(() => {
@@ -306,6 +313,66 @@ function TemplateStudioContent() {
     return previewText;
   };
 
+  // Function to handle generating template fields using AI
+  const handleGenerateTemplateFields = async () => {
+    if (!userPrompt.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Empty Prompt",
+        description: "Please enter a description of the template you want to create.",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    setAiResponse("");
+
+    try {
+      const response = await fetch("/api/generate-template", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: userPrompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate template fields");
+      }
+
+      const data = await response.json();
+      
+      // Update template fields with AI generated content
+      if (data.title) setTemplateName(data.title);
+      if (data.description) setTemplateDescription(data.description);
+      if (data.content) setTemplateContent(data.content);
+      if (data.category) setCategory(data.category as Category);
+      if (data.tags && Array.isArray(data.tags)) setTags(data.tags);
+      
+      // Set variables from the simple array of strings
+      if (data.variables && Array.isArray(data.variables)) {
+        // Convert simple string array to TemplateVariable array
+        setVariables(data.variables.map((varName: string) => ({
+          name: varName,
+          description: ''
+        })));
+      }
+
+      setAiResponse("Template fields generated successfully! You can now review and edit them.");
+      
+      // Close the dialog after a short delay
+      setTimeout(() => {
+        setIsAIChatDialogOpen(false);
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error generating template:", error);
+      setAiResponse("Failed to generate template fields. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="container mx-auto py-8">Loading template...</div>;
   }
@@ -318,6 +385,14 @@ function TemplateStudioContent() {
             {templateId ? 'Edit Template' : 'Create Template'}
           </h1>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAIChatDialogOpen(true)}
+              className="gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Generate
+            </Button>
             {templateId && (
               <>
                 <Button
@@ -567,6 +642,96 @@ function TemplateStudioContent() {
               Copy
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Chat Dialog */}
+      <Dialog open={isAIChatDialogOpen} onOpenChange={setIsAIChatDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <IconRobot className="w-5 h-5" />
+              AI Template Generator
+            </DialogTitle>
+            <DialogDescription>
+              Describe the template you want to create, and AI will generate the fields for you.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-4">
+            <Textarea
+              placeholder="Describe your template (e.g., 'Create a template for analyzing competitor social media posts' or 'Create a template for generating product descriptions')"
+              value={userPrompt}
+              onChange={(e) => setUserPrompt(e.target.value)}
+              className="min-h-[150px]"
+              disabled={isGenerating}
+            />
+            
+            {!userPrompt && !isGenerating && (
+              <div className="space-y-3 p-4 bg-muted rounded-lg">
+                <h3 className="text-sm font-medium">Example prompts:</h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <button 
+                      onClick={() => setUserPrompt("Create a template for analyzing competitor social media accounts. It should check for post frequency, engagement rates, and content types.")}
+                      className="text-primary hover:underline text-left"
+                    >
+                      &quot;Create a template for analyzing competitor social media accounts. It should check for post frequency, engagement rates, and content types.&quot;
+                    </button>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <button 
+                      onClick={() => setUserPrompt("I need a template that helps researchers gather information about a specific topic from multiple news sources and synthesize the findings.")}
+                      className="text-primary hover:underline text-left"
+                    >
+                      &quot;I need a template that helps researchers gather information about a specific topic from multiple news sources and synthesize the findings.&quot;
+                    </button>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <button 
+                      onClick={() => setUserPrompt("Create a template for business users to analyze quarterly financial reports and extract key metrics and trends.")}
+                      className="text-primary hover:underline text-left"
+                    >
+                      &quot;Create a template for business users to analyze quarterly financial reports and extract key metrics and trends.&quot;
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+            
+            {aiResponse && (
+              <div className={`p-4 rounded-md ${aiResponse.includes('Failed') ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+                {aiResponse}
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAIChatDialogOpen(false)}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleGenerateTemplateFields}
+              disabled={!userPrompt.trim() || isGenerating}
+              className="gap-2"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
