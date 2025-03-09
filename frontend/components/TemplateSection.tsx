@@ -350,7 +350,7 @@ interface TemplateSectionProps {
 }
 
 const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
-  const [activeCategory, setActiveCategory] = useState<ExtendedCategory>('Marketing');
+  const [activeCategory, setActiveCategory] = useState<ExtendedCategory>('Custom');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
