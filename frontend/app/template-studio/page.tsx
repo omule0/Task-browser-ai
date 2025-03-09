@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,8 @@ interface PreviewVariables {
   [key: string]: string;
 }
 
-export default function TemplateStudio() {
+// Separate the main content into a new component
+function TemplateStudioContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -569,5 +570,24 @@ export default function TemplateStudio() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// Main page component with Suspense
+export default function TemplateStudio() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto py-8">
+        <Card className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-1/3 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
+          </div>
+        </Card>
+      </div>
+    }>
+      <TemplateStudioContent />
+    </Suspense>
   );
 } 
