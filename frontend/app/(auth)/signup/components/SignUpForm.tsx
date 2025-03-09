@@ -1,5 +1,7 @@
-import Link from "next/link";
+'use client';
 
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +15,18 @@ import { Label } from "@/components/ui/label";
 import { signup } from "@/lib/auth-actions";
 
 export function SignUpForm() {
+  const { toast } = useToast();
+
+  const handleSignup = async (formData: FormData) => {
+    const result = await signup(formData);
+    if (result?.message) {
+      toast({
+        title: "Success",
+        description: result.message,
+      });
+    }
+  };
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -22,7 +36,7 @@ export function SignUpForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action="">
+        <form action={handleSignup}>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -56,9 +70,9 @@ export function SignUpForm() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input name="password" id="password" type="password" />
+              <Input name="password" id="password" type="password" required />
             </div>
-            <Button formAction={signup} type="submit" className="w-full">
+            <Button type="submit" className="w-full">
               Create an account
             </Button>
           </div>

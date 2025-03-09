@@ -8,11 +8,11 @@ import {
   IconLink,
   IconRocket,
   IconTerminal,
-  IconPhoto
+  IconPhoto,
+  IconListDetails
 } from '@tabler/icons-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SyncLoader } from 'react-spinners';
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface ProgressEvent {
@@ -30,31 +30,32 @@ interface AgentStepsProps {
 
 export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) => {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [expandedEvents, setExpandedEvents] = useState<Record<number, boolean>>({});
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     setEvents(progress);
   }, [progress]);
 
-  // Count meaningful events (excluding section and run_id types)
-  const meaningfulEvents = events.filter(event => 
-    event.type !== 'section' && 
-    event.type !== 'run_id' && 
-    event.message
-  );
-
-  const getStatusText = () => {
+  // Timer for running agent
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+    
     if (isStreaming) {
-      return (
-        <div className="flex items-center gap-2">
-          Agent is running <SyncLoader size={4} color="#2563eb" margin={4} />
-        </div>
-      );
+      // Reset timer when agent starts
+      setElapsedTime(0);
+      
+      // Start the timer
+      timerId = setInterval(() => {
+        setElapsedTime(prevTime => prevTime + 1);
+      }, 1000);
     }
-    const count = meaningfulEvents.length;
-    return `Agent has completed: ${count} ${count === 1 ? 'step' : 'steps'}`;
-  };
+    
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [isStreaming]);
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -115,62 +116,103 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
   };
 
   return (
-    <div className="max-w-[100%] space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* Completion Status Header */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center shadow-sm">
-          <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center transition-all ${isStreaming ? 'scale-110' : ''}`}>
-            <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-background ${isStreaming ? 'animate-pulse' : ''}`} />
+    <div className="max-w-[100%] animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="rounded-3xl border border-border/50 bg-card/50">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full text-left p-6 pb-3 relative"
+          aria-label={isCollapsed ? "Expand steps" : "Collapse steps"}
+        >
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {isStreaming ? (
+                  <div className="triangle-loader-container relative">
+                    <div className="triangle-dot-container animate-spin">
+                      <div className="triangle-dot bg-primary"></div>
+                      <div className="triangle-dot bg-primary"></div>
+                      <div className="triangle-dot bg-primary"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <IconListDetails size={22} className="text-foreground" />
+                )}
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-medium text-foreground">
+                    {isStreaming ? "Thinking" : "Steps"}
+                  </h3>
+                  {isStreaming && (
+                    <span className="text-sm text-muted-foreground">
+                      {elapsedTime}s
+                    </span>
+                  )}
           </div>
         </div>
-        <div>
-          <h2 className="text-base sm:text-lg font-medium text-primary">
-            {getStatusText()}
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-            {isStreaming ? "The agent is actively processing information" : "All agent steps are complete"}
-          </p>
+              <div className="flex-shrink-0">
+                {isCollapsed ? (
+                  <IconChevronDown className="w-6 h-6 text-muted-foreground" />
+                ) : (
+                  <IconChevronUp className="w-6 h-6 text-muted-foreground" />
+                )}
         </div>
       </div>
-
-      <div className="bg-background rounded-lg sm:rounded-xl shadow-sm border border-border">
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base sm:text-lg font-medium text-primary">Steps</h3>
-            <Badge variant="outline" className="bg-accent text-accent-foreground text-xs">
-              {meaningfulEvents.length}
-            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {isCollapsed ? "Expand for details" : "Collapse details"}
+            </span>
           </div>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-primary hover:text-primary/90 transition-colors flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base"
-            aria-label={isCollapsed ? "Show all steps" : "Hide steps"}
-          >
-            {isCollapsed ? (
-              <>
-                Show all
-                <IconChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
-              </>
-            ) : (
-              <>
-                Hide all
-                <IconChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
-              </>
-            )}
-          </button>
-        </div>
+        </button>
+
+        {/* Show the latest thought when streaming, even when collapsed */}
+        {isStreaming && isCollapsed && events.length > 0 && (
+          <div className="px-6 pb-4">
+            {(() => {
+              // Find the most recent thought event
+              const thoughtEvents = events.filter(event => 
+                event.type === 'thought' && event.message);
+              
+              const latestThought = thoughtEvents.length > 0 
+                ? thoughtEvents[thoughtEvents.length - 1] 
+                : null;
+              
+              if (latestThought) {
+                return (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {latestThought.message}
+                  </p>
+                );
+              }
+              
+              // If no thought event, show the latest event with a message
+              const eventsWithMessages = events.filter(event => event.message);
+              const latestEvent = eventsWithMessages.length > 0 
+                ? eventsWithMessages[eventsWithMessages.length - 1] 
+                : null;
+              
+              if (latestEvent) {
+                return (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {latestEvent.message}
+                  </p>
+                );
+              }
+              
+              return null;
+            })()}
+          </div>
+        )}
 
         {!isCollapsed && (
-          <ScrollArea className="h-[300px] sm:h-[400px] px-4 sm:px-6 pb-3 sm:pb-4">
-            <div className="space-y-3 sm:space-y-4 relative pr-3 sm:pr-4 pt-3">
+          <div className="px-6 pb-6 pt-0">
+            <ScrollArea className="h-auto">
+              <div className="space-y-4 relative pr-2 mt-2">
               {/* Stream individual events */}
               {events.map((event, index) => (
                 event.type !== 'section' && event.message && (
                   <div 
                     key={`${event.type}-${index}`} 
                     className={cn(
-                      "flex items-start gap-2 sm:gap-3 relative p-2 rounded-lg transition-all duration-200",
-                      expandedEvents[index] ? "bg-accent" : "hover:bg-accent/50"
+                        "flex items-start gap-3 relative p-3 rounded-2xl transition-all duration-200",
+                        expandedEvents[index] ? "bg-accent/40" : "hover:bg-accent/20"
                     )}
                     onClick={() => handleToggleEvent(index)}
                     role="button"
@@ -178,29 +220,17 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                     aria-label={`Toggle event ${getEventTitle(event.type)}`}
                     onKeyDown={(e) => e.key === 'Enter' && handleToggleEvent(index)}
                   >
-                    <div 
-                      className="absolute left-[7px] sm:left-[9px] top-6 bottom-0 w-[2px] bg-border" 
-                      style={{ display: index === events.length - 1 ? 'none' : 'block' }} 
-                    />
-                    <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full ${getEventColor(event.type)} flex items-center justify-center z-10 mt-1 transition-transform ${expandedEvents[index] ? 'scale-110' : ''}`}>
+                      <div className={`w-5 h-5 rounded-full ${getEventColor(event.type)} flex items-center justify-center z-10 mt-1`}>
                       {getEventIcon(event.type)}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm sm:text-base font-medium mb-0.5 sm:mb-1" style={{ color: expandedEvents[index] ? 'var(--primary)' : 'var(--primary)' }}>
+                        <div className="flex items-center">
+                          <h4 className="text-sm font-medium mb-1 text-foreground">
                           {getEventTitle(event.type)}
                         </h4>
-                        <span className="text-xs text-muted-foreground">
-                          {
-                            new Date().toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })
-                          }
-                        </span>
                       </div>
                       <p className={cn(
-                        "text-xs sm:text-sm text-foreground transition-all duration-200",
+                          "text-xs text-muted-foreground transition-all duration-200",
                         expandedEvents[index] ? "line-clamp-none" : "line-clamp-2"
                       )}>
                         {event.message}
@@ -212,14 +242,55 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
 
               {/* Show streaming indicator */}
               {isStreaming && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground pl-6 sm:pl-8 py-2 animate-pulse">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pl-8 py-2">
                   <SyncLoader size={4} color="var(--primary)" margin={4} />
                 </div>
               )}
             </div>
           </ScrollArea>
+          </div>
         )}
       </div>
+      
+      {/* CSS for the triangle dot loader */}
+      <style jsx>{`
+        .triangle-loader-container {
+          width: 22px;
+          height: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .triangle-dot-container {
+          position: relative;
+          width: 18px;
+          height: 18px;
+        }
+        
+        .triangle-dot {
+          position: absolute;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+        }
+        
+        .triangle-dot:nth-child(1) {
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+        
+        .triangle-dot:nth-child(2) {
+          bottom: 0;
+          left: 0;
+        }
+        
+        .triangle-dot:nth-child(3) {
+          bottom: 0;
+          right: 0;
+        }
+      `}</style>
     </div>
   );
 }; 

@@ -712,7 +712,7 @@ export default function TaskChatPage() {
           defaultSize={isRightPanelCollapsed ? 100 : 70}
           minSize={isRightPanelCollapsed ? 100 : 50}
           maxSize={isRightPanelCollapsed ? 100 : 70}
-          className="p-6 bg-gradient-to-b from-background to-accent/50 rounded-lg shadow-sm border border-border"
+          className="p-6 bg-background rounded-lg shadow-sm"
         >
           <div className="space-y-6 mb-6" ref={resultsRef} id="results-container">
             {submittedTask && <UserQuery task={submittedTask} />}
@@ -729,6 +729,21 @@ export default function TaskChatPage() {
               </div>
             )}
           </div>
+
+          {/* Scroll to Bottom Button - Now positioned between results and input */}
+          {showScrollButton && (
+            <div className="flex justify-center mb-4">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full shadow-sm hover:shadow-sm transition-all duration-200 bg-background hover:bg-primary/10"
+                onClick={scrollToBottom}
+                aria-label="Scroll to bottom"
+              >
+                <IconArrowDown size={20} className="text-primary" />
+              </Button>
+            </div>
+          )}
 
           {/* Input Form */}
           <InputForm
@@ -753,7 +768,7 @@ export default function TaskChatPage() {
           defaultSize={isRightPanelCollapsed ? 0 : 30}
           minSize={isRightPanelCollapsed ? 0 : 5}
           maxSize={isRightPanelCollapsed ? 0 : 50}
-          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-gradient-to-br from-background to-accent/50 rounded-lg shadow-sm border border-border'}`}
+          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-background rounded-lg shadow-sm'}`}
         >
           <div className={`sticky top-8 transition-opacity duration-300 h-[calc(100vh-8rem)] ${isRightPanelCollapsed ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
             <div className="flex items-center justify-between mb-4">
@@ -765,7 +780,7 @@ export default function TaskChatPage() {
               >
                 <IconLayoutColumns size={18} className="text-muted-foreground" />
               </button>
-                <div className="bg-gradient-to-r from-primary/10 to-indigo-100 rounded-full px-4 py-2 shadow-sm border border-primary/20">
+                <div className="bg-primary/10 rounded-full px-4 py-2 border border-primary/20">
                 <div className="flex items-center gap-2">
                   <IconPhoto size={18} className="text-primary" />
                   <span className="text-foreground font-medium">Task Recording</span>
@@ -776,7 +791,7 @@ export default function TaskChatPage() {
 
             <div className="rounded-xl overflow-hidden border border-border shadow-md h-[calc(100%-4rem)]">
               {isGifLoading ? (
-                <div className="flex items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
+                <div className="flex items-center justify-center py-20 bg-background h-full">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm text-muted-foreground font-medium">Loading recording...</span>
@@ -786,7 +801,7 @@ export default function TaskChatPage() {
                   </div>
                 </div>
               ) : gifError && shouldFetchGif ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-background h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
                     <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
                       <IconPhoto size={24} className="text-amber-500" />
@@ -813,9 +828,9 @@ export default function TaskChatPage() {
                   </div>
                 </div>
               ) : loading && isStreaming && !gifContent ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-b from-accent to-background h-full">
+                <div className="flex flex-col items-center justify-center py-20 bg-background h-full">
                   <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-sm pulse-animation">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <IconPhoto size={24} className="text-primary" />
                     </div>
                     <h3 className="text-lg font-medium text-foreground">Recording in progress</h3>
@@ -823,8 +838,11 @@ export default function TaskChatPage() {
                       The agent is working on your task. A visual recording will appear here once it&apos;s ready.
                     </p>
                     {progress.length > 0 && (
-                      <div className="w-32 h-1.5 mt-2 bg-accent rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: `${Math.min(progress.length * 5, 100)}%` }}></div>
+                      <div className="w-48 h-1.5 bg-primary/10 rounded-full mt-4 overflow-hidden">
+                        <div 
+                          className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out" 
+                          style={{ width: `${Math.min(progress.length * 5, 100)}%` }}
+                        />
                       </div>
                     )}
                   </div>
@@ -843,7 +861,7 @@ export default function TaskChatPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-4 mt-16 max-w-7xl">
+    <div className="container mx-auto px-4 py-4 mt-8 max-w-full">
       {/* Main Content - Responsive Layout */}
       {isMobile ? renderDualPanelLayout() : renderDesktopLayout()}
 
@@ -851,18 +869,19 @@ export default function TaskChatPage() {
       {(!isMobile && isRightPanelCollapsed && isRecordingRelevant) && (
         <button
           onClick={toggleRecordingPanel}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-background shadow-lg flex items-center justify-center hover:bg-primary/10 transition-colors border border-border z-50"
+          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-background shadow-sm flex items-center justify-center hover:bg-primary/10 transition-colors border border-border z-50"
           aria-label="Show recording panel"
         >
           <IconPhoto size={20} className="text-primary" />
         </button>
       )}
 
+      {/* Remove the old fixed position scroll button */}
       {/* Floating Download Button for mobile */}
       {(isMobile && gifContent) && (
         <button
           onClick={handleMobileDownload}
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50 hover:scale-105"
+          className="fixed bottom-32 right-4 w-12 h-12 rounded-full bg-background shadow-sm flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50"
           aria-label="Download recording"
           disabled={!gifContent}
         >
@@ -873,45 +892,14 @@ export default function TaskChatPage() {
       {/* Loading indicator for mobile when GIF is processing */}
       {(isMobile && isRecordingRelevant && !gifContent) && (
         <div
-          className="fixed bottom-20 right-4 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center border border-border z-50 pulse-animation"
+          className="fixed bottom-32 right-4 w-12 h-12 rounded-full bg-background shadow-sm flex items-center justify-center border border-border z-50"
           aria-label="Recording in progress"
         >
-          <IconPhoto size={24} className="text-primary" />
+          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+          <div className="absolute inset-0 rounded-full bg-primary/5 animate-pulse" />
+          <IconPhoto size={24} className="text-primary relative z-10" />
         </div>
       )}
-
-      {/* Scroll to Bottom Button - Adjusted position for mobile */}
-      {showScrollButton && (
-        <Button
-          variant="outline"
-          size="icon"
-          className={`fixed ${isMobile ? 'bottom-4' : 'bottom-8'} right-4 md:right-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-background hover:bg-primary/10 z-20 hover:scale-105`}
-          onClick={scrollToBottom}
-          aria-label="Scroll to bottom"
-        >
-          <IconArrowDown size={20} className="text-primary" />
-        </Button>
-      )}
-      
-      {/* Add a little CSS for custom animation */}
-      <style jsx global>{`
-        .pulse-animation {
-          animation: custom-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        @keyframes custom-pulse {
-          0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(var(--primary), 0.5);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(var(--primary), 0);
-          }
-        }
-      `}</style>
     </div>
   );
 } 
