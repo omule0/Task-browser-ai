@@ -11,6 +11,7 @@ export interface HistoryItem {
   result: string | null;
   progress: string | ProgressEvent[];
   gif_content?: string;
+  live_view_url?: string;
   task_name?: string;
   task_description?: string;
   steps?: Array<{
@@ -29,6 +30,7 @@ interface ProgressEvent {
   success?: boolean;
   title?: string;
   items?: string[];
+  url?: string; // For live_view_url event
 }
 
 interface PaginatedResponse {

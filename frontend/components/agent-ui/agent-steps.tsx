@@ -9,18 +9,21 @@ import {
   IconRocket,
   IconTerminal,
   IconPhoto,
-  IconListDetails
+  IconListDetails,
+  IconEye
 } from '@tabler/icons-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SyncLoader } from 'react-spinners';
 import { cn } from "@/lib/utils";
+import { LiveView } from './live-view';
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id' | 'live_view_url';
   message?: string;
   success?: boolean;
   title?: string;
   items?: string[];
+  url?: string;
 }
 
 interface AgentStepsProps {
@@ -36,6 +39,12 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
 
   useEffect(() => {
     setEvents(progress);
+    
+    // Debug any live_view_url events
+    const liveViewEvents = progress.filter(event => event.type === 'live_view_url');
+    if (liveViewEvents.length > 0) {
+      console.log('%cLive view URL events found:', 'background: #10b981; color: white; padding: 2px 4px; border-radius: 2px;', liveViewEvents);
+    }
   }, [progress]);
 
   // Timer for running agent
@@ -73,6 +82,8 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
         return <IconTerminal className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       case 'gif':
         return <IconPhoto className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
+      case 'live_view_url':
+        return <IconEye className="w-3 h-3 sm:w-4 sm:h-4 text-background" />;
       default:
         return <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-background" />;
     }
@@ -92,6 +103,8 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
         return 'bg-indigo-500';
       case 'gif':
         return 'bg-pink-500';
+      case 'live_view_url':
+        return 'bg-teal-500';
       default:
         return 'bg-primary';
     }
@@ -103,6 +116,8 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
         return 'Task Completion';
       case 'start':
         return 'Starting';
+      case 'live_view_url':
+        return 'Live Browser View';
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }
@@ -146,16 +161,16 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
                       {elapsedTime}s
                     </span>
                   )}
-          </div>
-        </div>
+                </div>
+              </div>
               <div className="flex-shrink-0">
                 {isCollapsed ? (
                   <IconChevronDown className="w-6 h-6 text-muted-foreground" />
                 ) : (
                   <IconChevronUp className="w-6 h-6 text-muted-foreground" />
                 )}
-        </div>
-      </div>
+              </div>
+            </div>
             <span className="text-sm text-muted-foreground">
               {isCollapsed ? "Expand for details" : "Collapse details"}
             </span>
@@ -198,6 +213,19 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
               
               return null;
             })()}
+
+            {/* Show live browser view buttons if available */}
+            {(() => {
+              const liveViewEvent = events.find(event => event.type === 'live_view_url' && event.url);
+              if (liveViewEvent?.url && isStreaming) {
+                return (
+                  <div className="mt-3">
+                    <LiveView url={liveViewEvent.url} />
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         )}
 
@@ -205,49 +233,55 @@ export const AgentSteps = ({ progress, isStreaming = false }: AgentStepsProps) =
           <div className="px-6 pb-6 pt-0">
             <ScrollArea className="h-auto">
               <div className="space-y-4 relative pr-2 mt-2">
-              {/* Stream individual events */}
-              {events.map((event, index) => (
-                event.type !== 'section' && event.message && (
-                  <div 
-                    key={`${event.type}-${index}`} 
-                    className={cn(
-                        "flex items-start gap-3 relative p-3 rounded-2xl transition-all duration-200",
-                        expandedEvents[index] ? "bg-accent/40" : "hover:bg-accent/20"
-                    )}
-                    onClick={() => handleToggleEvent(index)}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Toggle event ${getEventTitle(event.type)}`}
-                    onKeyDown={(e) => e.key === 'Enter' && handleToggleEvent(index)}
-                  >
+                {/* Stream individual events */}
+                {events.map((event, index) => (
+                  (event.type !== 'section' && (event.message || (event.type === 'live_view_url' && event.url))) && (
+                    <div 
+                      key={`${event.type}-${index}`} 
+                      className={cn(
+                          "flex items-start gap-3 relative p-3 rounded-2xl transition-all duration-200",
+                          expandedEvents[index] ? "bg-accent/40" : "hover:bg-accent/20"
+                      )}
+                      onClick={() => handleToggleEvent(index)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Toggle event ${getEventTitle(event.type)}`}
+                      onKeyDown={(e) => e.key === 'Enter' && handleToggleEvent(index)}
+                    >
                       <div className={`w-5 h-5 rounded-full ${getEventColor(event.type)} flex items-center justify-center z-10 mt-1`}>
-                      {getEventIcon(event.type)}
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex items-center">
-                          <h4 className="text-sm font-medium mb-1 text-foreground">
-                          {getEventTitle(event.type)}
-                        </h4>
+                        {getEventIcon(event.type)}
                       </div>
-                      <p className={cn(
-                          "text-xs text-muted-foreground transition-all duration-200",
-                        expandedEvents[index] ? "line-clamp-none" : "line-clamp-2"
-                      )}>
-                        {event.message}
-                      </p>
+                      <div className="flex-1">
+                          <div className="flex items-center">
+                            <h4 className="text-sm font-medium mb-1 text-foreground">
+                            {getEventTitle(event.type)}
+                          </h4>
+                        </div>
+                        <p className={cn(
+                            "text-xs text-muted-foreground transition-all duration-200",
+                          expandedEvents[index] ? "line-clamp-none" : "line-clamp-2"
+                        )}>
+                          {event.message || (event.type === 'live_view_url' ? 'Live browser view available' : '')}
+                        </p>
+                        
+                        {event.type === 'live_view_url' && event.url && isStreaming && (
+                          <div className="mt-3">
+                            <LiveView url={event.url} />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              ))}
+                  )
+                ))}
 
-              {/* Show streaming indicator */}
-              {isStreaming && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground pl-8 py-2">
-                  <SyncLoader size={4} color="var(--primary)" margin={4} />
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                {/* Show streaming indicator */}
+                {isStreaming && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-8 py-2">
+                    <SyncLoader size={4} color="var(--primary)" margin={4} />
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
         )}
       </div>

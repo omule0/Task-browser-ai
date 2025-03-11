@@ -16,7 +16,8 @@ async def save_run_history(
     error: Optional[str] = None,
     gif_content: Optional[str] = None,
     auth_tokens: Optional[AuthTokens] = None,
-    run_id: Optional[str] = None
+    run_id: Optional[str] = None,
+    live_view_url: Optional[str] = None
 ) -> str:
     """Save run history and associated GIF content."""
     try:
@@ -40,7 +41,8 @@ async def save_run_history(
             'progress': json.dumps(progress_events),
             'result': result,
             'error': error,
-            'created_at': datetime.utcnow().isoformat()
+            'created_at': datetime.utcnow().isoformat(),
+            'live_view_url': live_view_url
         }
 
         logging.info(f"Saving run history for user {user_id}")

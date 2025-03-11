@@ -22,12 +22,13 @@ import { useGifContent } from '@/hooks/useGifContent';
 import { useRouter, useParams } from 'next/navigation';
 
 interface ProgressEvent {
-  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id';
+  type: 'start' | 'url' | 'action' | 'thought' | 'error' | 'complete' | 'gif' | 'section' | 'run_id' | 'live_view_url';
   message?: string;
   content?: string;
   success?: boolean;
   title?: string;
   items?: string[];
+  url?: string; // For live_view_url event
 }
 
 // Add new interface for template events
@@ -303,6 +304,8 @@ export default function TaskChatPage() {
                     }, 2000); // 2 second delay to allow GIF processing
                   } else if (event.type === 'gif') {
                     console.log('[Submit] GIF generation started');
+                  } else if (event.type === 'live_view_url') {
+                    console.log('%c[Submit] Live view URL received', 'background: #10b981; color: white; padding: 2px 4px; border-radius: 2px;', event.url);
                   }
 
                   currentProgress = [...currentProgress, event];

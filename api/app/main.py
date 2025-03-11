@@ -70,6 +70,7 @@ browser_configuration = {
     "adblock_config": {"active": True},
     "captcha_config": {"active": True},
     "proxy_config": {"active": True},
+    "headless": False
 }
 
 # Memory-efficient response cache with TTL
@@ -117,7 +118,10 @@ def create_browser_session():
             json=browser_configuration,
         )
         response.raise_for_status()
-        return response.json()
+        response_data = response.json()
+        logging.info(
+            f"Anchor Browser session created with response: {response_data}")
+        return response_data
     except Exception as e:
         logging.error(f"Failed to create browser session: {e}")
         raise HTTPException(
@@ -125,16 +129,40 @@ def create_browser_session():
 
 
 def get_browser():
-    """Get a configured browser instance with session management."""
+    """Get a configured browser instance with session management and live view URL."""
     try:
         session_data = create_browser_session()
         session_id = session_data["id"]
+        live_view_url = session_data.get("live_view_url")
 
-        return Browser(
+        if live_view_url:
+            logging.info(f"Live view URL found: {live_view_url}")
+        else:
+            # Check if the URL might be under a different key name
+            all_keys = session_data.keys()
+            logging.info(f"No live_view_url found. Available keys: {all_keys}")
+
+            # Check if there's a key that contains 'url' or 'view'
+            url_keys = [k for k in all_keys if 'url' in k.lower()
+                        or 'view' in k.lower()]
+            if url_keys:
+                logging.info(f"Potential URL keys found: {url_keys}")
+                for key in url_keys:
+                    logging.info(f"Key {key} value: {session_data.get(key)}")
+
+            # Construct the URL based on documentation
+            host = "connect.anchorbrowser.io"
+            constructed_url = f"https://live.anchorbrowser.io/inspector.html?host={host}&sessionId={session_id}"
+            logging.info(f"Constructed live view URL: {constructed_url}")
+            live_view_url = constructed_url
+
+        browser = Browser(
             config=BrowserConfig(
                 cdp_url=f"wss://connect.anchorbrowser.io?apiKey={ANCHOR_API_KEY}&sessionId={session_id}",
             )
         )
+
+        return browser, live_view_url
     except Exception as e:
         logging.error(f"Failed to initialize browser: {e}")
         raise HTTPException(
@@ -154,6 +182,7 @@ class HistoryResponse(BaseModel):
     error: Optional[str]
     created_at: str
     progress: List[Dict]
+    live_view_url: Optional[str] = None
 
 
 def safe_serialize(obj: Any) -> str:
@@ -288,7 +317,7 @@ async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
             logging.warning(f"Error cleaning up GIF file: {str(e)}")
 
 
-async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens, browser_task: BrowserTask):
+async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens, browser_task: BrowserTask, live_view_url: Optional[str] = None):
     """Stream the agent's progress as JSON events with optimized performance."""
     progress_events = []
     final_result = None
@@ -315,6 +344,12 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         run_id_event = {"type": "run_id", "message": run_id}
         progress_events.append(run_id_event)
         yield serialize_event(run_id_event)
+
+        # Send live view URL if available
+        if live_view_url:
+            live_view_event = {"type": "live_view_url", "url": live_view_url}
+            progress_events.append(live_view_event)
+            yield serialize_event(live_view_event)
 
         # Run the agent in a background task
         agent_task = asyncio.create_task(agent.run(max_steps=50))
@@ -435,7 +470,6 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         except asyncio.TimeoutError:
             logging.warning("GIF creation timed out")
 
-
         # Complete event with sources and references
         complete_event = {
             "type": "complete",
@@ -457,7 +491,8 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     error=error_message,
                     gif_content=gif_content,
                     auth_tokens=auth_tokens,
-                    run_id=run_id
+                    run_id=run_id,
+                    live_view_url=live_view_url
                 )
             )
             history_saved = True
@@ -485,6 +520,15 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
             )
 
 
+extend_system_message = (
+    'Please provide comprehensive, detailed responses that thoroughly explain your reasoning and actions. '
+    'Include specific observations about webpage elements, your decision-making process, and the steps '
+    'you are taking to accomplish the task. When analyzing content, break down important information '
+    'into clear sections with relevant details. Ensure your summaries capture all key points and nuances '
+    'from the source material. Be thorough in your explanations while maintaining clarity and precision.'
+)
+
+
 @app.post("/api/browse")
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
     """Handle browser automation task with optimized performance."""
@@ -494,7 +538,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
 
         # Initialize browser with error handling
         try:
-            browser = get_browser()
+            browser, live_view_url = get_browser()
             logging.info("Browser initialized successfully")
         except Exception as browser_error:
             logging.error(
@@ -511,9 +555,11 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
                 browser=browser,
                 llm=ChatOpenAI(
                     model=browser_task.model,
-                    temperature=0.7
+                    temperature=0.7,
+                    max_completion_tokens=4000
                 ),
                 sensitive_data=browser_task.sensitive_data or {},
+                message_context=extend_system_message
             )
             logging.info("Agent initialized successfully")
         except Exception as agent_error:
@@ -529,7 +575,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         try:
             return StreamingResponse(
                 stream_agent_progress(agent, browser_task.task,
-                                      user_id, tokens, browser_task),
+                                      user_id, tokens, browser_task, live_view_url),
                 media_type="text/event-stream"
             )
         except Exception as stream_error:
