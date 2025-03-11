@@ -97,7 +97,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-4 mt-16 max-w-fit">
+    <div className="container mx-auto px-4 py-4 mt-16 max-w-5xl">
       {/* Status Message
         <div className="mb-4 md:mb-8 p-3 md:p-4 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-muted-foreground">
