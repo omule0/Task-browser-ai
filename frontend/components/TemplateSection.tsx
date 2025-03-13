@@ -212,47 +212,130 @@ const TemplateModal = ({ template, onClose, onSubmit, onEdit, onDelete, isCustom
 
           {/* Content - Scrollable */}
           <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
-            <div className="space-y-4 sm:space-y-6">
-              <div>
-                <h3 className="text-xs sm:text-sm text-primary mb-1">Template Name</h3>
-                <h4 className="text-xl sm:text-2xl text-foreground">{template.title}</h4>
-              </div>
+            <div className="space-y-8">
+              {/* Template Info Section */}
+              <div className="space-y-6 pb-6 border-b border-border">
+                <div>
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <TemplateIcon category={template.category} className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl sm:text-2xl font-semibold text-foreground">{template.title}</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {isCustom ? 'Created by you' : 'Default template'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-              <div>
-                  <p className="text-sm sm:text-base text-indigo-400">
-                    {isCustom ? 'Created by you' : 'Default template'}
-                  </p>
-              </div>
-
-              <div>
-                <h3 className="text-xs sm:text-sm text-primary mb-2">Prompt</h3>
-                <p className="text-xs sm:text-sm text-primary/70 mb-2">Highlight and turn parts of your prompt into editable fields.</p>
-                <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
-                  <p className="text-sm sm:text-base text-accent-foreground whitespace-pre-wrap">
-                    {template.prompt || 'No prompt available'}
-                  </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-foreground">Prompt Preview</h3>
+                    <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-md">
+                      {template.variables?.length || 0} variables
+                    </span>
+                  </div>
+                  <div className="bg-muted rounded-lg sm:rounded-xl p-4">
+                    <p className="text-sm text-foreground/90 whitespace-pre-wrap">
+                      {template.prompt || 'No prompt available'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
+              {/* Variables Section */}
               {template.variables && template.variables.length > 0 && (
-                <div>
-                  <h3 className="text-xs sm:text-sm text-primary mb-2">Template Variables</h3>
-                  <p className="text-xs sm:text-sm text-primary/70 mb-4">Fill in the values for each variable:</p>
-                  <div className="space-y-3 sm:space-y-4">
-                    {template.variables.map((variable) => (
-                      <div key={variable} className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                        <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
-                          <span className="text-sm sm:text-base text-accent-foreground">{variable}</span>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h3 className="text-base font-medium text-foreground">Task Variables</h3>
+                      <p className="text-sm text-muted-foreground">Fill in the details for your task</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                      <span className="text-sm font-medium text-foreground">
+                        {Object.keys(variables).filter(key => variables[key]).length}/{template.variables.length}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-6">
+                    {template.variables.map((variable) => {
+                      const isValid = variables[variable]?.trim().length > 0;
+                      const isTouched = variable in variables;
+                      
+                      return (
+                        <div key={variable} className="group">
+                          <div className="flex items-center justify-between mb-2">
+                            <label 
+                              htmlFor={`var-${variable}`}
+                              className="text-sm font-medium text-foreground"
+                            >
+                              {variable}
+                            </label>
+                            <div className="flex items-center space-x-2">
+                              {isTouched && !isValid && (
+                                <span className="text-xs font-medium text-destructive px-2 py-0.5 bg-destructive/10 rounded">
+                                  Required
+                                </span>
+                              )}
+                              {isValid && (
+                                <span className="text-xs font-medium text-green-500 px-2 py-0.5 bg-green-500/10 rounded">
+                                  Filled
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="relative">
+                            <input
+                              id={`var-${variable}`}
+                              type="text"
+                              value={variables[variable] || ''}
+                              onChange={(e) => setVariables(prev => ({ ...prev, [variable]: e.target.value }))}
+                              placeholder={`Enter ${variable.toLowerCase()}`}
+                              className={`
+                                w-full px-4 py-3 text-sm text-foreground
+                                bg-background border rounded-lg
+                                placeholder:text-muted-foreground/60
+                                focus:outline-none focus:ring-2 focus:ring-ring
+                                transition-all duration-200
+                                ${isTouched && !isValid ? 'border-destructive/50 focus:border-destructive' : 'border-input'}
+                                ${isValid ? 'border-green-500/50 focus:border-green-500' : ''}
+                              `}
+                              aria-describedby={`hint-${variable}`}
+                            />
+                            
+                            {isValid && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  className="w-4 h-4"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <p 
+                            id={`hint-${variable}`}
+                            className="mt-2 text-xs text-muted-foreground"
+                          >
+                            This value will replace <code className="px-1.5 py-0.5 bg-muted rounded text-foreground/80">{`{${variable}}`}</code> in your prompt
+                          </p>
                         </div>
-                        <input
-                          type="text"
-                          value={variables[variable] || ''}
-                          onChange={(e) => setVariables(prev => ({ ...prev, [variable]: e.target.value }))}
-                          placeholder="Enter value"
-                          className="px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base text-foreground bg-background border border-input rounded-lg sm:rounded-xl focus:ring-2 focus:ring-ring focus:border-primary focus-visible:outline-none placeholder:text-muted-foreground/60 transition-all"
-                        />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -260,29 +343,33 @@ const TemplateModal = ({ template, onClose, onSubmit, onEdit, onDelete, isCustom
           </div>
 
           {/* Footer - Fixed */}
-          <div className="p-4 sm:p-6 md:p-8 border-t border-border">
-            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClose();
-                }}
-                className="w-full sm:w-auto order-2 sm:order-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSubmit();
-                }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 order-1 sm:order-2"
-              >
-                <IconPlayerPlay className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-sm sm:text-base">Run Task</span>
-              </Button>
+          <div className="p-4 sm:p-6 md:p-8 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+              <div className="w-full sm:w-auto order-2 sm:order-1">
+                <Button
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="w-full sm:w-auto order-1 sm:order-2">
+                <Button
+                  variant="default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSubmit();
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
+                >
+                  <IconPlayerPlay className="w-4 h-4" />
+                  <span>Run Task</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -524,56 +611,71 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-foreground">Templates</h2>
-          <Button
-            onClick={() => router.push('/template-studio')}
-            variant="outline"
-            size="sm"
-            className="hidden sm:flex items-center space-x-2"
-          >
-            <IconPlus className="w-4 h-4" />
-            <span>Create Template</span>
-          </Button>
+    <div className="space-y-8 sm:space-y-10">
+      {/* Header Section */}
+      <div className="space-y-4 pb-4 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">Templates</h2>
+            <p className="text-sm text-muted-foreground">
+              Choose a template or create your own to get started quickly
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => router.push('/template-studio')}
+              variant="default"
+              size="sm"
+              className="inline-flex items-center gap-2 px-3"
+            >
+              <IconPlus className="w-4 h-4" />
+              <span>Create Template</span>
+            </Button>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Choose a template or create your own to get started quickly
-        </p>
       </div>
 
-      <div className="flex flex-col space-y-6">
+      <div className="space-y-6">
         {/* Category Tabs */}
-        <div className="flex overflow-x-auto pb-2 -mb-2 scrollbar-none">
-          <div className="flex space-x-2">
-            {categories.map(({ label, icon }) => (
-              <Button
-                key={label}
-                variant={selectedCategory === label ? "default" : "ghost"}
-                size="sm"
-                className="px-4 py-2 h-9 whitespace-nowrap"
-                onClick={() => handleCategoryChange(label)}
-              >
-                <span className="mr-2">{icon}</span>
-                {label}
-              </Button>
-            ))}
+        <div className="relative">
+          <div className="flex overflow-x-auto pb-2 -mb-2 scrollbar-none">
+            <div className="flex gap-2">
+              {categories.map(({ label, icon }) => (
+                <Button
+                  key={label}
+                  variant={selectedCategory === label ? "default" : "ghost"}
+                  size="sm"
+                  className={`
+                    px-4 py-2 h-9 whitespace-nowrap flex items-center gap-2
+                    ${selectedCategory === label ? 'shadow-sm' : ''}
+                  `}
+                  onClick={() => handleCategoryChange(label)}
+                >
+                  <span className="opacity-80">{icon}</span>
+                  <span>{label}</span>
+                </Button>
+              ))}
+            </div>
           </div>
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
         </div>
 
         {/* Templates Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-[140px] bg-accent/20 rounded-xl animate-pulse"
-              />
+                className="relative h-[160px] bg-accent/20 rounded-xl animate-pulse"
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-accent/30" />
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTemplates.length > 0 ? (
               filteredTemplates.map((template) => (
                 <TemplateCard
@@ -593,22 +695,22 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
                 />
               ))
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <IconPlus className="w-6 h-6 text-primary" />
+              <div className="col-span-full flex flex-col items-center justify-center py-16 sm:py-20">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <IconPlus className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">No templates found</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="text-xl font-medium text-foreground mb-3">No templates found</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-[300px] text-center">
                   {selectedCategory === 'Custom'
-                    ? "Create your first template to get started"
-                    : "No templates available in this category"}
+                    ? "Create your first template to get started with custom workflows"
+                    : "No templates available in this category yet"}
                 </p>
                 {selectedCategory === 'Custom' && (
                   <Button
                     onClick={() => router.push('/template-studio')}
                     variant="outline"
-                    size="sm"
-                    className="flex items-center space-x-2"
+                    size="default"
+                    className="flex items-center gap-2"
                   >
                     <IconPlus className="w-4 h-4" />
                     <span>Create Template</span>

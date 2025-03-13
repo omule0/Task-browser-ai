@@ -555,12 +555,12 @@ By following these guidelines, your final response will serve as a clear, compre
 @observe()
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
 
-    # browser_local = Browser(
-    #     config=BrowserConfig(
-    #         headless=False,
-    #         cdp_url='http://localhost:9222',
-    #     )
-    # )
+    browser_local = Browser(
+        config=BrowserConfig(
+            headless=False,
+            cdp_url='http://localhost:9222',
+        )
+    )
 
     """Handle browser automation task with optimized performance."""
     try:
@@ -573,16 +573,16 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         logging.info(f"Starting browse task for user {user_id}")
 
         # Initialize browser with error handling
-        try:
-            browser, live_view_url = get_browser()
-            logging.info("Browser initialized successfully")
-        except Exception as browser_error:
-            logging.error(
-                f"Failed to initialize browser: {str(browser_error)}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Browser initialization failed: {str(browser_error)}"
-            )
+        # try:
+        #     browser, live_view_url = get_browser()
+        #     logging.info("Browser initialized successfully")
+        # except Exception as browser_error:
+        #     logging.error(
+        #         f"Failed to initialize browser: {str(browser_error)}")
+        #     raise HTTPException(
+        #         status_code=500,
+        #         detail=f"Browser initialization failed: {str(browser_error)}"
+        #     )
             
         llm=ChatOpenAI(base_url='https://api.deepseek.com/v1', model=browser_task.model, api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")))    
 
@@ -590,7 +590,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         try:
             agent = Agent(
                 task=browser_task.task,
-                browser=browser,
+                browser=browser_local,
                 llm=llm,
                 # llm=ChatOpenAI(
                 #     model=browser_task.model,
@@ -613,10 +613,10 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
 
         try:
             return StreamingResponse(
-                stream_agent_progress(agent, browser_task.task,
-                                      user_id, tokens, browser_task, live_view_url),
                 # stream_agent_progress(agent, browser_task.task,
-                #                       user_id, tokens, browser_task),
+                #                       user_id, tokens, browser_task, live_view_url),
+                stream_agent_progress(agent, browser_task.task,
+                                      user_id, tokens, browser_task),
                 media_type="text/event-stream"
             )
         except Exception as stream_error:
