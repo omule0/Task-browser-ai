@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from "@/components/sidebar";
 import Header from "@/components/Header";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ interface RootLayoutClientProps {
 let sidebarInstance: { isCollapsed: boolean } | null = null;
 
 export function RootLayoutClient({ children }: RootLayoutClientProps) {
+  const [mounted, setMounted] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (!sidebarInstance) {
       sidebarInstance = { isCollapsed: true };
@@ -67,54 +69,66 @@ export function RootLayoutClient({ children }: RootLayoutClientProps) {
     }
   };
 
+  // Use useEffect to handle mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <Providers>
-      <Header 
-        isCollapsed={isSidebarCollapsed} 
-        onToggle={handleSidebarToggle}
-      />
-      <div className="flex min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-background text-foreground pt-4 sm:pt-6">
-        <Sidebar isCollapsed={isSidebarCollapsed} />
-        <main className={cn(
-          "flex-1 w-full transition-all duration-300 ease-in-out",
-          isSidebarCollapsed 
-            ? "ml-0" 
-            : "ml-[180px] sm:ml-[200px]"
-        )}>
-          <div className="h-full px-3 sm:px-4 py-3 sm:py-4">
-            {children}
-          </div>
-        </main>
+      <div className="relative">
+        <Header 
+          isCollapsed={isSidebarCollapsed} 
+          onToggle={handleSidebarToggle}
+        />
+        <div className="flex min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)] bg-background text-foreground pt-4 sm:pt-6">
+          <Sidebar isCollapsed={isSidebarCollapsed} />
+          <main className={cn(
+            "flex-1 w-full transition-all duration-300 ease-in-out",
+            isSidebarCollapsed 
+              ? "ml-0" 
+              : "ml-[180px] sm:ml-[200px]"
+          )}>
+            <div className="h-full px-3 sm:px-4 py-3 sm:py-4">
+              {children}
+            </div>
+          </main>
+        </div>
+        
+        {/* Floating Feedback Button */}
+        <button 
+          onClick={() => setIsFeedbackOpen(true)}
+          className="fixed bottom-6 right-6 rounded-full bg-primary p-3 text-primary-foreground shadow-lg hover:bg-primary/90 transition-all z-50"
+          aria-label="Give feedback"
+          tabIndex={0}
+        >
+          <MessageSquare className="h-5 w-5" />
+        </button>
+        
+        {/* Feedback Modal */}
+        <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold text-center">
+                We&apos;d Love Your Feedback
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              <FeedbackForm 
+                onSubmit={handleFeedbackSubmit}
+                loading={isSubmitting} 
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        <Toaster />
       </div>
-      
-      {/* Floating Feedback Button */}
-      <button 
-        onClick={() => setIsFeedbackOpen(true)}
-        className="fixed bottom-6 right-6 rounded-full bg-primary p-3 text-primary-foreground shadow-lg hover:bg-primary/90 transition-all z-50"
-        aria-label="Give feedback"
-        tabIndex={0}
-      >
-        <MessageSquare className="h-5 w-5" />
-      </button>
-      
-      {/* Feedback Modal */}
-      <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-center">
-              We&apos;d Love Your Feedback
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            <FeedbackForm 
-              onSubmit={handleFeedbackSubmit}
-              loading={isSubmitting} 
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      <Toaster />
     </Providers>
   );
 } 

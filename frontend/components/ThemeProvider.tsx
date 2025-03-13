@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { lightColors, darkColors, toHslCssVariables } from '../lib/colors';
 
@@ -20,14 +22,16 @@ export function ThemeProvider({
   children,
   defaultTheme = 'system',
 }: ThemeProviderProps) {
+  const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Update the theme
   const applyTheme = (newTheme: Theme) => {
+    if (typeof window === 'undefined') return;
+    
     const root = window.document.documentElement;
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    
     const resolvedTheme = newTheme === 'system' ? systemTheme : newTheme;
     
     // Remove class
@@ -46,6 +50,9 @@ export function ThemeProvider({
     Object.entries(cssVars).forEach(([key, value]) => {
       root.style.setProperty(key, value);
     });
+
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme);
   };
 
   // Handle theme changes
@@ -53,9 +60,9 @@ export function ThemeProvider({
     applyTheme(theme);
   }, [theme]);
 
-  // Initial theme setup
+  // Initial theme setup and hydration fix
   useEffect(() => {
-    // Get saved theme from localStorage or use default
+    setMounted(true);
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     const initialTheme = savedTheme || defaultTheme;
     setTheme(initialTheme);
@@ -63,55 +70,35 @@ export function ThemeProvider({
 
   // Listen for system preference changes
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    if (typeof window === 'undefined') return;
     
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       if (theme === 'system') {
         applyTheme('system');
       }
     };
     
-    // Initial check
-    if (theme === 'system') {
-      handleChange();
-    }
-    
-    // Add listener for changes
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } else {
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-  // Save theme preference to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', theme);
-    }
-  }, [theme]);
-
-  const value = {
-    theme,
-    setTheme,
-    isDarkMode,
-  };
+  // Prevent hydration mismatch by rendering a blank div until mounted
+  if (!mounted) {
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
+  }
 
   return (
-    <ThemeContext.Provider value={value}>
+    <ThemeContext.Provider value={{ theme, setTheme, isDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-export const useTheme = (): ThemeContextValue => {
+export const useTheme = () => {
   const context = useContext(ThemeContext);
-  
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
-  
   return context;
 }; 

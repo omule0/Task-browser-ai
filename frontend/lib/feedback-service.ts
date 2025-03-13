@@ -2,6 +2,22 @@ import { createClient } from '@/utils/supabase/client';
 import { Feedback } from './types';
 
 /**
+ * Get the current page URL safely (works in both client and server)
+ */
+const getCurrentPageUrl = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+  return window.location.href;
+};
+
+/**
+ * Generate a simple session ID for anonymous users
+ */
+function generateSessionId(): string {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
+}
+
+/**
  * Submit feedback to the database
  */
 export async function submitFeedback(
@@ -30,7 +46,7 @@ export async function submitFeedback(
       user_id: userId,
       feedback_text: feedbackText,
       session_id: sessionId,
-      page_url: pageUrl || (typeof window !== 'undefined' ? window.location.href : undefined)
+      page_url: pageUrl || getCurrentPageUrl()
     };
     
     // Insert the feedback into Supabase
@@ -78,13 +94,4 @@ export async function getUserFeedback(): Promise<Feedback[]> {
     console.error('Error in getUserFeedback:', error);
     throw error instanceof Error ? error : new Error('An unexpected error occurred');
   }
-}
-
-/**
- * Generate a simple session ID for anonymous users
- */
-function generateSessionId(): string {
-  // Generate a random string to use as session ID
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
 } 

@@ -8,8 +8,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
-// Update Category type to include 'Custom'
-export type ExtendedCategory = Category | 'Custom';
+// Define a union type for all possible categories including 'Custom'
+type ExtendedCategory = Category | 'Custom';
+
+// Type guard to check if a category is a built-in category
+const isBuiltInCategory = (category: ExtendedCategory): category is Category => {
+  return category !== 'Custom';
+};
 
 const categories: { label: ExtendedCategory; icon: React.ReactNode }[] = [
   { label: 'Custom', icon: <IconUser className="w-5 h-5" /> },
@@ -129,126 +134,159 @@ const TemplateModal = ({ template, onClose, onSubmit, onEdit, onDelete, isCustom
 
   return (
     <>
-    <div className="fixed inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-lg">
-        {/* Header - Fixed */}
-        <div className="p-4 sm:p-6 md:p-8 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl text-primary font-medium">View Template</h2>
+      <div className="fixed inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-background rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-lg">
+          {/* Header - Fixed */}
+          <div className="p-4 sm:p-6 md:p-8 border-b border-border">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg sm:text-xl text-primary font-medium">View Template</h2>
               <div className="flex items-center gap-2">
                 {isCustom ? (
                   <>
-                    <button
-                      onClick={onEdit}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.();
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
                       aria-label="Edit template"
                     >
                       <IconEdit className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={onDelete}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.();
+                      }}
+                      className="text-muted-foreground hover:text-destructive"
                       aria-label="Delete template"
                     >
                       <IconTrash className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setIsShareDialogOpen(true)}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsShareDialogOpen(true);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
                       aria-label="Share template"
                     >
                       <IconShare className="w-5 h-5" />
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button
-                    onClick={onSaveAsCustom}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSaveAsCustom?.();
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
                     aria-label="Save as custom template"
                   >
                     <IconDeviceFloppy className="w-5 h-5" />
-                  </button>
+                  </Button>
                 )}
-                <button
-                  onClick={onClose}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
                   aria-label="Close modal"
                 >
                   <IconX className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
+            </div>
           </div>
-        </div>
 
-        {/* Content - Scrollable */}
-        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
-          <div className="space-y-4 sm:space-y-6">
-            <div>
-              <h3 className="text-xs sm:text-sm text-primary mb-1">Template Name</h3>
-              <h4 className="text-xl sm:text-2xl text-foreground">{template.title}</h4>
-            </div>
-
-            <div>
-                <p className="text-sm sm:text-base text-indigo-400">
-                  {isCustom ? 'Created by you' : 'Default template'}
-                </p>
-            </div>
-
-            <div>
-              <h3 className="text-xs sm:text-sm text-primary mb-2">Prompt</h3>
-              <p className="text-xs sm:text-sm text-primary/70 mb-2">Highlight and turn parts of your prompt into editable fields.</p>
-              <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
-                <p className="text-sm sm:text-base text-accent-foreground whitespace-pre-wrap">
-                  {template.prompt || 'No prompt available'}
-                </p>
-              </div>
-            </div>
-
-            {template.variables && template.variables.length > 0 && (
+          {/* Content - Scrollable */}
+          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-xs sm:text-sm text-primary mb-2">Template Variables</h3>
-                <p className="text-xs sm:text-sm text-primary/70 mb-4">Fill in the values for each variable:</p>
-                <div className="space-y-3 sm:space-y-4">
-                  {template.variables.map((variable) => (
-                    <div key={variable} className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                      <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
-                        <span className="text-sm sm:text-base text-accent-foreground">{variable}</span>
-                      </div>
-                      <input
-                        type="text"
-                        value={variables[variable] || ''}
-                        onChange={(e) => setVariables(prev => ({ ...prev, [variable]: e.target.value }))}
-                        placeholder="Enter value"
-                        className="px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base text-foreground bg-background border border-input rounded-lg sm:rounded-xl focus:ring-2 focus:ring-ring focus:border-primary focus-visible:outline-none placeholder:text-muted-foreground/60 transition-all"
-                      />
-                    </div>
-                  ))}
+                <h3 className="text-xs sm:text-sm text-primary mb-1">Template Name</h3>
+                <h4 className="text-xl sm:text-2xl text-foreground">{template.title}</h4>
+              </div>
+
+              <div>
+                  <p className="text-sm sm:text-base text-indigo-400">
+                    {isCustom ? 'Created by you' : 'Default template'}
+                  </p>
+              </div>
+
+              <div>
+                <h3 className="text-xs sm:text-sm text-primary mb-2">Prompt</h3>
+                <p className="text-xs sm:text-sm text-primary/70 mb-2">Highlight and turn parts of your prompt into editable fields.</p>
+                <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
+                  <p className="text-sm sm:text-base text-accent-foreground whitespace-pre-wrap">
+                    {template.prompt || 'No prompt available'}
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Footer - Fixed */}
-        <div className="p-4 sm:p-6 md:p-8 border-t border-border">
-          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-            <button
-              onClick={onClose}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 text-muted-foreground hover:text-foreground transition-colors text-sm sm:text-base order-2 sm:order-1"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors order-1 sm:order-2"
-            >
-              <IconPlayerPlay className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-sm sm:text-base">Run Task</span>
-            </button>
+              {template.variables && template.variables.length > 0 && (
+                <div>
+                  <h3 className="text-xs sm:text-sm text-primary mb-2">Template Variables</h3>
+                  <p className="text-xs sm:text-sm text-primary/70 mb-4">Fill in the values for each variable:</p>
+                  <div className="space-y-3 sm:space-y-4">
+                    {template.variables.map((variable) => (
+                      <div key={variable} className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                        <div className="bg-accent rounded-lg sm:rounded-xl p-3 sm:p-4">
+                          <span className="text-sm sm:text-base text-accent-foreground">{variable}</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={variables[variable] || ''}
+                          onChange={(e) => setVariables(prev => ({ ...prev, [variable]: e.target.value }))}
+                          placeholder="Enter value"
+                          className="px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base text-foreground bg-background border border-input rounded-lg sm:rounded-xl focus:ring-2 focus:ring-ring focus:border-primary focus-visible:outline-none placeholder:text-muted-foreground/60 transition-all"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer - Fixed */}
+          <div className="p-4 sm:p-6 md:p-8 border-t border-border">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+              <Button
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSubmit();
+                }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 order-1 sm:order-2"
+              >
+                <IconPlayerPlay className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base">Run Task</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <ShareDialog
         isOpen={isShareDialogOpen}
@@ -266,6 +304,7 @@ const TemplateCard = ({ template, onSubmit, onEdit, onDelete }: {
   onDelete?: () => void;
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isCustom = template.is_custom;
   const { toast } = useToast();
   const router = useRouter();
 
@@ -298,50 +337,92 @@ const TemplateCard = ({ template, onSubmit, onEdit, onDelete }: {
   };
 
   return (
-    <>
-      <div
-        onClick={() => setIsModalOpen(true)}
-        className="group p-4 sm:p-5 bg-background rounded-xl sm:rounded-2xl border border-border hover:border-primary/20 hover:shadow-lg transition-all duration-200 cursor-pointer"
-      >
-        <div className="flex items-start gap-2.5 sm:gap-3">
-          <div className="flex-shrink-0">
-            <div className="p-2 sm:p-2.5 bg-primary/5 rounded-lg sm:rounded-xl group-hover:bg-primary/10 transition-colors duration-200">
-              <TemplateIcon category={template.category} />
+    <div 
+      className="group relative bg-card hover:bg-accent/50 rounded-xl border border-border hover:border-border/80 transition-all duration-200 overflow-hidden"
+      onClick={() => setIsModalOpen(true)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setIsModalOpen(true);
+        }
+      }}
+    >
+      <div className="w-full h-full p-4 sm:p-5 text-left">
+        <div className="flex flex-col h-full space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <TemplateIcon category={template.category} className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-medium text-sm sm:text-base text-foreground line-clamp-1">
+                {template.title}
+              </h3>
             </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-            <h3 className="text-sm sm:text-base font-medium text-foreground group-hover:text-primary mb-2 sm:mb-2.5 truncate transition-colors duration-200">
-              {template.title}
-            </h3>
-              {template.is_custom && (
-                <span className="px-2 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded-full">
-                  Custom
-                </span>
+          
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+            {template.prompt}
+          </p>
+          
+          <div className="flex items-center justify-between mt-auto pt-2">
+            <span className="text-xs text-muted-foreground/80">
+              {template.variables?.length || 0} variables
+            </span>
+            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {isCustom ? (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.();
+                    }}
+                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+                    aria-label="Edit template"
+                  >
+                    <IconEdit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                    className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent"
+                    aria-label="Delete template"
+                  >
+                    <IconTrash className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSaveAsCustom();
+                  }}
+                  className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+                  aria-label="Save as custom template"
+                >
+                  <IconDeviceFloppy className="w-4 h-4" />
+                </button>
               )}
-            </div>
-            <div className="flex items-center flex-wrap gap-x-2 sm:gap-x-3 gap-y-1.5 sm:gap-y-2">
-              <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[180px]">{template.subtitle}</span>
-              <span className="px-2 sm:px-2.5 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded-full whitespace-nowrap group-hover:bg-primary/20 transition-colors duration-200">
-                {template.category}
-              </span>
             </div>
           </div>
         </div>
       </div>
-
+      
       {isModalOpen && (
-        <TemplateModal 
-          template={template} 
-          onClose={() => setIsModalOpen(false)} 
+        <TemplateModal
+          template={template}
+          onClose={() => setIsModalOpen(false)}
           onSubmit={onSubmit}
           onEdit={onEdit}
           onDelete={onDelete}
-          isCustom={template.is_custom}
+          isCustom={isCustom}
           onSaveAsCustom={handleSaveAsCustom}
         />
       )}
-    </>
+    </div>
   );
 };
 
@@ -350,11 +431,11 @@ interface TemplateSectionProps {
 }
 
 const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
-  const [activeCategory, setActiveCategory] = useState<ExtendedCategory>('Custom');
+  const [selectedCategory, setSelectedCategory] = useState<ExtendedCategory>('Custom');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
   const router = useRouter();
+  const { toast } = useToast();
   const supabase = createClient();
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -399,7 +480,7 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
       });
       return;
     }
-    setActiveCategory(category);
+    setSelectedCategory(category);
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
@@ -429,12 +510,13 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
   };
 
   const filteredTemplates = templates.filter(template => {
-    if (activeCategory === 'Custom') {
-      // Only show custom templates that belong to the current user
+    if (selectedCategory === 'Custom') {
       return template.is_custom && template.user_id === userId;
     }
-    // For non-custom templates, show all templates in the category
-    return template.category === activeCategory;
+    if (isBuiltInCategory(selectedCategory)) {
+      return !template.is_custom && template.category === selectedCategory;
+    }
+    return false;
   });
 
   if (isLoading) {
@@ -443,89 +525,100 @@ const TemplateSection = ({ onSubmit }: TemplateSectionProps) => {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Header with Create Template Button */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Templates</h2>
-          <p className="text-muted-foreground mt-1">
-            Choose a template or create your own
-          </p>
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-foreground">Templates</h2>
+          <Button
+            onClick={() => router.push('/template-studio')}
+            variant="outline"
+            size="sm"
+            className="hidden sm:flex items-center space-x-2"
+          >
+            <IconPlus className="w-4 h-4" />
+            <span>Create Template</span>
+          </Button>
         </div>
-        <Button
-          onClick={() => router.push('/template-studio')}
-          className="gap-2"
-        >
-          <IconPlus className="w-4 h-4" />
-          Create Template
-        </Button>
+        <p className="text-sm text-muted-foreground">
+          Choose a template or create your own to get started quickly
+        </p>
       </div>
 
-      {/* Category Filters */}
-      <div className="relative">
-        <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:overflow-x-visible sm:pb-0 sm:mx-0 sm:px-0">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-max">
-            {categories.map((category) => (
-              <button
-                key={category.label}
-                onClick={() => handleCategoryChange(category.label)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-sm sm:text-base transition-all duration-200 whitespace-nowrap ${
-                  activeCategory === category.label
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-primary hover:text-primary/90 hover:bg-primary/10'
-                }`}
-                aria-label={`Filter by ${category.label}`}
+      <div className="flex flex-col space-y-6">
+        {/* Category Tabs */}
+        <div className="flex overflow-x-auto pb-2 -mb-2 scrollbar-none">
+          <div className="flex space-x-2">
+            {categories.map(({ label, icon }) => (
+              <Button
+                key={label}
+                variant={selectedCategory === label ? "default" : "ghost"}
+                size="sm"
+                className="px-4 py-2 h-9 whitespace-nowrap"
+                onClick={() => handleCategoryChange(label)}
               >
-                {category.icon}
-                <span>{category.label}</span>
-              </button>
+                <span className="mr-2">{icon}</span>
+                {label}
+              </Button>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Template Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredTemplates.map((template) => (
-          <TemplateCard 
-            key={template.id} 
-            template={template} 
-            onSubmit={onSubmit}
-            onEdit={template.is_custom && template.user_id === userId ? () => handleEditTemplate(template.id) : undefined}
-            onDelete={template.is_custom && template.user_id === userId ? () => handleDeleteTemplate(template.id) : undefined}
-          />
-        ))}
+        {/* Templates Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="h-[140px] bg-accent/20 rounded-xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTemplates.length > 0 ? (
+              filteredTemplates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onSubmit={onSubmit}
+                  onEdit={
+                    template.is_custom
+                      ? () => handleEditTemplate(template.id)
+                      : undefined
+                  }
+                  onDelete={
+                    template.is_custom
+                      ? () => handleDeleteTemplate(template.id)
+                      : undefined
+                  }
+                />
+              ))
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <IconPlus className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-2">No templates found</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {selectedCategory === 'Custom'
+                    ? "Create your first template to get started"
+                    : "No templates available in this category"}
+                </p>
+                {selectedCategory === 'Custom' && (
+                  <Button
+                    onClick={() => router.push('/template-studio')}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    <IconPlus className="w-4 h-4" />
+                    <span>Create Template</span>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Empty State */}
-      {filteredTemplates.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
-            {activeCategory === 'Custom' 
-              ? userId 
-                ? "You haven't created any custom templates yet."
-                : "Please log in to view custom templates."
-              : "No templates found in this category."}
-          </p>
-          {activeCategory === 'Custom' && !userId ? (
-            <Button
-              onClick={() => router.push('/login')}
-              variant="outline"
-              className="gap-2"
-            >
-              Log In
-            </Button>
-          ) : (
-            <Button
-              onClick={() => router.push('/template-studio')}
-              variant="outline"
-              className="gap-2"
-            >
-              <IconPlus className="w-4 h-4" />
-              Create New Template
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 };

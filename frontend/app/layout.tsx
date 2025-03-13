@@ -1,16 +1,22 @@
 import { Metadata } from 'next';
 import Script from 'next/script';
+import { RootLayoutClient } from '@/components/RootLayoutClient';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: {
-    template: '%s | Digest AI',
-    default: 'Digest AI - AI-Powered Web Research Assistant'
+  title: 'Digest AI',
+  description: 'AI-powered research and content generation',
+  manifest: '/manifest.json',
+  icons: {
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
   },
-  description: 'Digest AI helps you research, analyze, and summarize web content with the power of AI.',
-
 };
-
-import { RootLayoutClient } from '@/components/RootLayoutClient';
 
 export default function RootLayout({
   children,
@@ -18,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-QD0186HNYG" />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -31,9 +37,11 @@ export default function RootLayout({
         </Script>
       </head>
       <body>
-        <RootLayoutClient>
-          {children}
-        </RootLayoutClient>
+        <ThemeProvider defaultTheme="light">
+          <RootLayoutClient>
+            {children}
+          </RootLayoutClient>
+        </ThemeProvider>
       </body>
     </html>
   );
