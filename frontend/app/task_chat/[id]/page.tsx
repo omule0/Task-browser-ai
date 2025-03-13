@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { IconArrowDown, IconPhoto, IconLayoutColumns, IconDownload } from '@tabler/icons-react';
+import { IconPhoto, IconLayoutColumns, IconDownload } from '@tabler/icons-react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -52,7 +52,6 @@ export default function TaskChatPage() {
   const [gifContent, setGifContent] = useState<string | undefined>(undefined);
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
   const [shouldFetchGif, setShouldFetchGif] = useState(false);
-  const [showScrollButton, setShowScrollButton] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const MAX_CHARS = 2000;
   const supabase = createClient();
@@ -116,27 +115,20 @@ export default function TaskChatPage() {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Add scroll event listener
+  // Remove scroll event listener and showScrollButton state
   useEffect(() => {
-    const handleScroll = () => {
-      if (!resultsRef.current) return;
-      
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      const bottomThreshold = 200; // Show button when user is more than 200px from bottom
-      const isNearBottom = scrollHeight - scrollTop - clientHeight <= bottomThreshold;
-      setShowScrollButton(!isNearBottom);
+    const scrollToBottom = () => {
+      resultsRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'end',
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [resultsRef]);
-
-  const scrollToBottom = () => {
-    resultsRef.current?.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'end',
-    });
-  };
+    // Scroll to bottom when new content is added
+    if (progress.length > 0 || result) {
+      scrollToBottom();
+    }
+  }, [progress, result]);
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -732,21 +724,6 @@ export default function TaskChatPage() {
               </div>
             )}
           </div>
-
-          {/* Scroll to Bottom Button - Now positioned between results and input */}
-          {showScrollButton && (
-            <div className="flex justify-center mb-4">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full shadow-sm hover:shadow-sm transition-all duration-200 bg-background hover:bg-primary/10"
-                onClick={scrollToBottom}
-                aria-label="Scroll to bottom"
-              >
-                <IconArrowDown size={20} className="text-primary" />
-              </Button>
-            </div>
-          )}
 
           {/* Input Form */}
           <InputForm

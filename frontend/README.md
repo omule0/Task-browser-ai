@@ -1,8 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digest AI Dashboard Frontend
+
+This is the frontend application for the Digest AI Dashboard, built using Next.js and React. The application provides a user interface for managing browser automation tasks using Anchor Browser.
+
+## Project Structure
+
+```
+frontend/
+├── app/                      # Next.js app directory (App Router)
+│   ├── (auth)/               # Authentication-related pages
+│   ├── api/                  # API route handlers
+│   ├── error/                # Error handling components
+│   ├── feedback/             # Feedback-related pages
+│   ├── history/              # History pages
+│   ├── profile/              # User profile pages
+│   ├── task/                 # Task management pages
+│   ├── task_chat/            # Task chat interface
+│   ├── template/             # Template views
+│   ├── template-studio/      # Template editing interface
+│   ├── globals.css           # Global CSS styles
+│   ├── layout.tsx            # Root layout component
+│   └── page.tsx              # Home page component
+├── components/               # Reusable React components
+│   ├── agent-ui/             # Agent UI components
+│   ├── history/              # History-related components
+│   ├── ui/                   # UI library components
+│   └── ...                   # Various shared components
+├── hooks/                    # Custom React hooks
+├── lib/                      # Utility libraries
+├── public/                   # Static public assets
+├── supabase/                 # Supabase configuration
+├── utils/                    # Utility functions
+└── ...                       # Configuration files
+```
+
+## Technologies Used
+
+- **Next.js**: React framework for server-side rendering and client-side navigation
+- **TypeScript**: For type-safe code
+- **Tailwind CSS**: For styling
+- **Supabase**: For authentication and database
+- **Shadcn UI**: Component library with Radix UI
+- **React Query**: For data fetching and state management
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_API_URL=http://localhost:8080
+# Add any other required environment variables
+```
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -10,27 +73,25 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
+```
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used in this project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.io/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Shadcn UI Documentation](https://ui.shadcn.com)

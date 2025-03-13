@@ -24,6 +24,12 @@ import orjson  # Faster JSON serialization/deserialization
 import time
 import io
 from concurrent.futures import ThreadPoolExecutor
+from os import getenv
+from lmnr import Laminar, observe
+from pydantic import SecretStr
+
+# this line auto-instruments Browser Use and any browser you use (local or remote)
+# Laminar.initialize(project_api_key=os.getenv("LMNR_PROJECT_API_KEY"))
 
 load_dotenv()
 
@@ -171,7 +177,8 @@ def get_browser():
 
 class BrowserTask(BaseModel):
     task: str
-    model: str = "gpt-4o-mini"  # default model
+    # model: str = "gpt-4o-mini"  # default model
+    model: str = "deepseek-chat"
     sensitive_data: Optional[Dict[str, str]] = None
 
 
@@ -521,19 +528,48 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 
 
 extend_system_message = (
-    'Please provide comprehensive, detailed responses that thoroughly explain your reasoning and actions. '
-    'Include specific observations about webpage elements, your decision-making process, and the steps '
-    'you are taking to accomplish the task. When analyzing content, break down important information '
-    'into clear sections with relevant details. Ensure your summaries capture all key points and nuances '
-    'from the source material. Be thorough in your explanations while maintaining clarity and precision.'
+    """After completing the ultimate task, you must always return a detailed output that clearly explains the task results. This detailed output should include the following:
+
+Comprehensive Summary of Actions:
+
+Clearly list and describe every action performed during the task.
+Explain how each action contributed toward completing the task.
+Detailed Explanation of Task Results:
+
+Include specific details such as extracted data, relevant webpage information, and any computed results.
+Describe the final outcome and how it fulfills the user’s request.
+Note any issues encountered or adjustments made during the task.
+Adherence to User-Specified Format:
+
+If the user specifies an output format (e.g., a particular JSON structure, table, or text layout), ensure that your final detailed output strictly adheres to that format.
+Even while following the specific format, include all necessary detailed explanations as listed above.
+Final Clarification and Next Steps (if applicable):
+
+If further actions are required, indicate the remaining steps.
+If the task is fully complete, explicitly state that no additional actions are needed.
+By following these guidelines, your final response will serve as a clear, comprehensive report of the task’s execution and results."""
 )
 
 
 @app.post("/api/browse")
+@observe()
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
+
+    browser_local = Browser(
+        config=BrowserConfig(
+            headless=False,
+            cdp_url='http://localhost:9222',
+        )
+    )
+
     """Handle browser automation task with optimized performance."""
     try:
         user_id, tokens = await get_user_id_and_tokens(request)
+        # Initialize Laminar
+        Laminar.initialize(project_api_key=os.getenv("LMNR_PROJECT_API_KEY"))
+        # Update metadata with actual user_id
+        Laminar.set_metadata({'user_id': user_id, 'environment': 'production'})
+
         logging.info(f"Starting browse task for user {user_id}")
 
         # Initialize browser with error handling
@@ -547,17 +583,20 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
                 status_code=500,
                 detail=f"Browser initialization failed: {str(browser_error)}"
             )
+            
+        llm=ChatOpenAI(base_url='https://api.deepseek.com/v1', model=browser_task.model, api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")))    
 
         # Initialize agent with error handling
         try:
             agent = Agent(
                 task=browser_task.task,
-                browser=browser,
-                llm=ChatOpenAI(
-                    model=browser_task.model,
-                    temperature=0.7,
-                    max_completion_tokens=4000
-                ),
+                browser=browser_local,
+                llm=llm,
+                # llm=ChatOpenAI(
+                #     model=browser_task.model,
+                #     temperature=0.0,
+                # ),
+                use_vision=False,
                 sensitive_data=browser_task.sensitive_data or {},
                 message_context=extend_system_message
             )
@@ -576,6 +615,8 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
             return StreamingResponse(
                 stream_agent_progress(agent, browser_task.task,
                                       user_id, tokens, browser_task, live_view_url),
+                # stream_agent_progress(agent, browser_task.task,
+                #                       user_id, tokens, browser_task),
                 media_type="text/event-stream"
             )
         except Exception as stream_error:
@@ -590,7 +631,8 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         # Re-raise HTTP exceptions with their original status code
         raise http_error
     except Exception as e:
-        # Log the full error with traceback
+        # Log error in metadata before raising
+        Laminar.set_metadata({'error': str(e)})
         logging.error(
             f"Unexpected error in browse endpoint: {str(e)}", exc_info=True)
 
@@ -604,6 +646,8 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
             auth_tokens=tokens if 'tokens' in locals() else None
         )
 
+        # Clear metadata before raising exception
+        # Laminar.clear_metadata()
         raise HTTPException(
             status_code=500,
             detail=f"An unexpected error occurred: {str(e)}"

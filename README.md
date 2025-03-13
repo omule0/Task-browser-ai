@@ -28,6 +28,62 @@ docker-compose up -d
 
 4. The API will be available at `http://localhost:8080`
 
+## Project Structure
+
+The project is organized into two main components:
+
+### Backend (API)
+
+```
+api/
+├── app/                      # Main FastAPI application
+│   ├── config/               # Configuration settings
+│   ├── migrations/           # Database migrations
+│   ├── services/             # Service layer components
+│   ├── static/               # Static files
+│   ├── utils/                # Utility functions
+│   └── main.py               # Main FastAPI application entry point
+├── .dockerignore             # Docker ignore file
+├── .env                      # Environment variables (create this file)
+├── docker-compose.yml        # Docker Compose configuration
+├── Dockerfile                # Docker build instructions
+└── requirements.txt          # Python dependencies
+```
+
+### Frontend
+
+```
+frontend/
+├── app/                      # Next.js app directory (App Router)
+│   ├── (auth)/               # Authentication-related pages
+│   ├── api/                  # API route handlers
+│   ├── error/                # Error handling components
+│   ├── feedback/             # Feedback-related pages
+│   ├── history/              # History pages
+│   ├── profile/              # User profile pages
+│   ├── task/                 # Task management pages
+│   ├── task_chat/            # Task chat interface
+│   ├── template/             # Template views
+│   ├── template-studio/      # Template editing interface
+│   ├── globals.css           # Global CSS styles
+│   ├── layout.tsx            # Root layout component
+│   └── page.tsx              # Home page component
+├── components/               # Reusable React components
+│   ├── agent-ui/             # Agent UI components
+│   ├── history/              # History-related components
+│   ├── ui/                   # UI library components
+│   └── ...                   # Various shared components
+├── hooks/                    # Custom React hooks
+├── lib/                      # Utility libraries
+├── public/                   # Static public assets
+├── supabase/                 # Supabase configuration
+├── utils/                    # Utility functions
+├── .env.local                # Local environment variables
+├── package.json              # Node.js dependencies
+├── tailwind.config.ts        # Tailwind CSS configuration
+└── tsconfig.json             # TypeScript configuration
+```
+
 ## API Endpoints
 
 - `GET /` - Health check endpoint

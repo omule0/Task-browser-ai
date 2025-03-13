@@ -40,6 +40,11 @@ export const InputForm = ({
     e.preventDefault();
     if (loading || task.trim().length === 0) return;
     onSubmit(e, sensitiveData);
+    // Clear the input after submission using the onChange handler
+    const clearEvent = {
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLTextAreaElement>;
+    onChange(clearEvent);
   };
 
   // Calculate character count percentage for progress indicator
