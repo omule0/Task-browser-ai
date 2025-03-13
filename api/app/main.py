@@ -555,12 +555,12 @@ By following these guidelines, your final response will serve as a clear, compre
 @observe()
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
 
-    browser_local = Browser(
-        config=BrowserConfig(
-            headless=False,
-            cdp_url='http://localhost:9222',
-        )
-    )
+    # browser_local = Browser(
+    #     config=BrowserConfig(
+    #         headless=False,
+    #         cdp_url='http://localhost:9222',
+    #     )
+    # )
 
     """Handle browser automation task with optimized performance."""
     try:
@@ -590,7 +590,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         try:
             agent = Agent(
                 task=browser_task.task,
-                browser=browser_local,
+                browser=browser,
                 llm=llm,
                 # llm=ChatOpenAI(
                 #     model=browser_task.model,
