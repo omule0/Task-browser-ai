@@ -10,5 +10,11 @@ export default function HistoryLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="flex-1 pt-12">
+        {children}
+      </main>
+    </div>
+  );
 } 
