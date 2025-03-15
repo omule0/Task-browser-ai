@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import Portal from "@/components/ui/portal";
 
 // Define a union type for all possible categories including 'Custom'
 type ExtendedCategory = Category | 'Custom';
@@ -71,37 +72,42 @@ const ShareDialog = ({ isOpen, onClose, template }: ShareDialogProps) => {
     }
   };
 
+  // Only render if open to ensure proper portal behavior
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Share Template</DialogTitle>
-          <DialogDescription>
-            Share this template with others by copying the link below.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex items-center space-x-2">
-          <div className="grid flex-1 gap-2">
-            <div className="flex items-center bg-accent rounded-lg px-3 py-2">
-              <input
-                type="text"
-                value={shareUrl}
-                readOnly
-                className="flex-1 bg-transparent outline-none text-sm"
-              />
+    <Portal wrapperId="share-dialog-root">
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md z-[9999]">
+          <DialogHeader>
+            <DialogTitle>Share Template</DialogTitle>
+            <DialogDescription>
+              Share this template with others by copying the link below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2">
+            <div className="grid flex-1 gap-2">
+              <div className="flex items-center bg-accent rounded-lg px-3 py-2">
+                <input
+                  type="text"
+                  value={shareUrl}
+                  readOnly
+                  className="flex-1 bg-transparent outline-none text-sm"
+                />
+              </div>
             </div>
+            <Button size="sm" onClick={handleCopyLink}>
+              Copy
+            </Button>
           </div>
-          <Button size="sm" onClick={handleCopyLink}>
-            Copy
-          </Button>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Portal>
   );
 };
 
@@ -133,9 +139,9 @@ const TemplateModal = ({ template, onClose, onSubmit, onEdit, onDelete, isCustom
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-background rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-lg">
+    <Portal>
+      <div className="fixed inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+        <div className="bg-background rounded-2xl sm:rounded-3xl w-full max-w-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-lg animate-in fade-in zoom-in-95 duration-200">
           {/* Header - Fixed */}
           <div className="p-4 sm:p-6 md:p-8 border-b border-border">
             <div className="flex items-center justify-between">
@@ -374,13 +380,14 @@ const TemplateModal = ({ template, onClose, onSubmit, onEdit, onDelete, isCustom
           </div>
         </div>
       </div>
-
-      <ShareDialog
-        isOpen={isShareDialogOpen}
-        onClose={() => setIsShareDialogOpen(false)}
-        template={template}
-      />
-    </>
+      {isShareDialogOpen && (
+        <ShareDialog 
+          isOpen={isShareDialogOpen} 
+          onClose={() => setIsShareDialogOpen(false)}
+          template={template}
+        />
+      )}
+    </Portal>
   );
 };
 

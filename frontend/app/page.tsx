@@ -97,8 +97,9 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-4 mt-16 max-w-5xl">
-      {/* Status Message
+    <main className="min-h-[calc(100vh-6rem)] flex items-center justify-center w-full">
+      <div className="w-full max-w-3xl sm:max-w-4xl lg:max-w-5xl px-4 sm:px-6 py-6 sm:py-8 md:py-12 mx-auto">
+        {/* Status Message - kept as commented for reference
         <div className="mb-4 md:mb-8 p-3 md:p-4 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-2 text-muted-foreground">
             <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -108,25 +109,34 @@ export default function Home() {
           </div>
         </div> */}
 
-      {/* Main Content */}
-        <div className="space-y-8">
-          <Suggestions />
-          <InputForm
-            task={task}
-            loading={loading}
-            maxChars={MAX_CHARS}
-            onSubmit={handleSubmit}
-            onChange={(e) => setTask(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <TemplateSection 
-            onSubmit={(templateTask) => {
-              setTask(templateTask);
-              const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
-              handleSubmit(event);
-            }} 
-          />
+        {/* Main Content */}
+        <div className="space-y-6 sm:space-y-8 md:space-y-10 animate-fade-in">
+          <div className="transform transition-all duration-300 ease-in-out">
+            <Suggestions />
+          </div>
+          
+          <div className="transform transition-all duration-300 ease-in-out hover:shadow-md">
+            <InputForm
+              task={task}
+              loading={loading}
+              maxChars={MAX_CHARS}
+              onSubmit={handleSubmit}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+          
+          <div className="transform transition-all duration-300 ease-in-out">
+            <TemplateSection 
+              onSubmit={(templateTask) => {
+                setTask(templateTask);
+                const event = { preventDefault: () => {}, templateTask } as TemplateFormEvent;
+                handleSubmit(event);
+              }} 
+            />
+          </div>
         </div>
-    </div>
+      </div>
+    </main>
   );
 }
