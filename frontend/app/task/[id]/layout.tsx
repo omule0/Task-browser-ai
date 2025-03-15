@@ -12,7 +12,7 @@ export default function TaskDetailLayout({
 }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 pt-16">
+      <main className="flex-1 pt-12">
         {children}
       </main>
     </div>

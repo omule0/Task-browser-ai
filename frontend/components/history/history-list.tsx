@@ -1,8 +1,11 @@
 import { LoadingAnimation } from "@/components/agent-ui";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
-import { IconCheck, IconX, IconAlertTriangle, IconTrash, IconClock } from '@tabler/icons-react';
+import { IconCheck, IconX, IconAlertTriangle, IconTrash, IconClock, IconFilter, IconSearch } from '@tabler/icons-react';
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface HistoryItem {
   id: string;
@@ -21,6 +24,9 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ history, selectedId, onSelect, onDelete, loading }: HistoryListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
@@ -53,10 +59,48 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
     return <IconX size={18} className="text-muted-foreground" />;
   };
 
+  const getStatusLabel = (item: HistoryItem) => {
+    if (item.error) return "error";
+    if (item.result) return "completed";
+    return "pending";
+  };
+
+  const filteredHistory = history.filter(item => {
+    const matchesSearch = item.task.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || getStatusLabel(item) === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="space-y-2 sm:space-y-3">
-        {history.map((item) => (
+    <div className="space-y-4">
+      <div className="flex gap-4 items-center">
+        <div className="flex-1">
+          <div className="relative">
+            <IconSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search tasks..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px]">
+            <IconFilter size={18} className="mr-2" />
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="error">Error</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-3">
+        {filteredHistory.map((item) => (
           <div
             key={item.id}
             className={cn(
@@ -74,7 +118,9 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
               <div className="flex items-start gap-3 sm:gap-4 w-full">
                 <div className={cn(
                   "mt-1 p-1 rounded-full transition-colors",
-                  selectedId === item.id ? "bg-primary/10" : "bg-muted"
+                  selectedId === item.id ? "bg-primary/10" : "bg-muted",
+                  item.error && "bg-destructive/10",
+                  item.result && "bg-primary/10"
                 )}>
                   {getStatusIcon(item)}
                 </div>
@@ -88,6 +134,12 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
                       <>
                         <span>•</span>
                         <span className="text-destructive font-medium">Failed</span>
+                      </>
+                    )}
+                    {item.result && (
+                      <>
+                        <span>•</span>
+                        <span className="text-primary font-medium">Completed</span>
                       </>
                     )}
                   </div>
@@ -112,4 +164,4 @@ export function HistoryList({ history, selectedId, onSelect, onDelete, loading }
       </div>
     </div>
   );
-} 
+}

@@ -2,13 +2,12 @@ from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel,SecretStr
 from langchain_openai import ChatOpenAI
-from browser_use import Agent, Browser, BrowserConfig
+from browser_use import Agent, Browser, BrowserConfig, Controller
 import asyncio
 from dotenv import load_dotenv
 import os
-import json
 import logging
 import requests
 import uuid
@@ -16,17 +15,12 @@ from typing import Dict, Optional, List, Any, Set
 from app.services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
 from app.utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
 import base64
-import tempfile
-import shutil
 from pathlib import Path
-from functools import lru_cache
 import orjson  # Faster JSON serialization/deserialization
 import time
 import io
 from concurrent.futures import ThreadPoolExecutor
-from os import getenv
 from lmnr import Laminar, observe
-from pydantic import SecretStr
 
 # this line auto-instruments Browser Use and any browser you use (local or remote)
 # Laminar.initialize(project_api_key=os.getenv("LMNR_PROJECT_API_KEY"))
@@ -177,8 +171,7 @@ def get_browser():
 
 class BrowserTask(BaseModel):
     task: str
-    # model: str = "gpt-4o-mini"  # default model
-    model: str = "deepseek-chat"
+    model: str = "gpt-4o-mini"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
 
 
@@ -527,30 +520,6 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
             )
 
 
-extend_system_message = (
-    """After completing the ultimate task, you must always return a detailed output that clearly explains the task results. This detailed output should include the following:
-
-Comprehensive Summary of Actions:
-
-Clearly list and describe every action performed during the task.
-Explain how each action contributed toward completing the task.
-Detailed Explanation of Task Results:
-
-Include specific details such as extracted data, relevant webpage information, and any computed results.
-Describe the final outcome and how it fulfills the user’s request.
-Note any issues encountered or adjustments made during the task.
-Adherence to User-Specified Format:
-
-If the user specifies an output format (e.g., a particular JSON structure, table, or text layout), ensure that your final detailed output strictly adheres to that format.
-Even while following the specific format, include all necessary detailed explanations as listed above.
-Final Clarification and Next Steps (if applicable):
-
-If further actions are required, indicate the remaining steps.
-If the task is fully complete, explicitly state that no additional actions are needed.
-By following these guidelines, your final response will serve as a clear, comprehensive report of the task’s execution and results."""
-)
-
-
 @app.post("/api/browse")
 @observe()
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
@@ -583,22 +552,33 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         #         status_code=500,
         #         detail=f"Browser initialization failed: {str(browser_error)}"
         #     )
-            
-        llm=ChatOpenAI(base_url='https://api.deepseek.com/v1', model=browser_task.model, api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")))    
+
+        
+        planner_llm = ChatOpenAI(
+            base_url='https://api.deepseek.com/v1',
+            model="deepseek-reasoner",
+            api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")),
+        )
+        
+        initial_actions = [
+	{'open_tab': {'url': 'https://www.google.com'}},
+ 
+]
 
         # Initialize agent with error handling
         try:
             agent = Agent(
                 task=browser_task.task,
                 browser=browser_local,
-                llm=llm,
-                # llm=ChatOpenAI(
-                #     model=browser_task.model,
-                #     temperature=0.0,
-                # ),
-                use_vision=False,
+                llm=ChatOpenAI(
+                    model=browser_task.model,
+                    temperature=0.0
+                ),
                 sensitive_data=browser_task.sensitive_data or {},
-                message_context=extend_system_message
+                planner_llm=planner_llm, 
+                use_vision_for_planner=False, 
+                planner_interval=1,
+                initial_actions=initial_actions
             )
             logging.info("Agent initialized successfully")
         except Exception as agent_error:

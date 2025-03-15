@@ -132,3 +132,4 @@ dist
 api/agent_history.gif
 
 api/.env
+.qodo

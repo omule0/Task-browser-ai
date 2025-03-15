@@ -17,9 +17,3 @@ This directory contains SQL migration files for the Digest AI database.
 ## Latest Migration
 
 The latest migration, `add_live_view_url_column.sql`, adds support for storing live view URLs from Anchor Browser sessions. This allows users to view browser sessions in real-time.
-
-After applying this migration, restart the API service:
-
-```bash
-docker-compose restart web
-``` 
