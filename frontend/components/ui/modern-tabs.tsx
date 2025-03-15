@@ -127,7 +127,9 @@ const ModernTabs = React.forwardRef<HTMLDivElement, ModernTabsProps>(
             {tabs.map((tab, index) => (
               <div
                 key={tab.id}
-                ref={(el) => (tabRefs.current[index] = el)}
+                ref={el => {
+                  tabRefs.current[index] = el;
+                }}
                 role="tab"
                 aria-selected={index === activeIndex}
                 aria-controls={getTabContentId(tab.id)}
