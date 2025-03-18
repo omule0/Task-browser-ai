@@ -807,7 +807,7 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
     5. Saves all results to the database
 
     The document_type parameter controls what type of document is generated:
-    - "report": A detailed document with all findings (default)
+    - "report": A detailed document with all findings
     - "summary": A concise executive summary
     - "analysis": An analytical document with insights and trends
     """
