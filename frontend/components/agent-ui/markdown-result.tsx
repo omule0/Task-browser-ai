@@ -2,7 +2,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from "@/components/ui/button";
 import { IconCopy, IconCheck, IconFileDownload } from '@tabler/icons-react';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generatePDF } from '@/utils/pdfGenerator';
 import { motion } from 'framer-motion';
@@ -16,17 +16,6 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
   const [downloading, setDownloading] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  // Filter out "Generated Document" and document type headers
-  const filteredContent = useMemo(() => {
-    if (!content) return '';
-    
-    // Remove lines with "## Generated Document" or "# Report Document" or any document type
-    return content
-      .replace(/^## Generated Document\s*$/gm, '')
-      .replace(/^# .*?Document\s*$/gm, '')
-      .trim();
-  }, [content]);
 
   const handleCopy = async () => {
     try {
@@ -160,7 +149,7 @@ export const MarkdownResult = ({ content }: MarkdownResultProps) => {
             ),
           }}
         >
-          {filteredContent}
+          {content}
         </ReactMarkdown>
       </div>
       <motion.div 
