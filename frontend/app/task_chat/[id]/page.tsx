@@ -214,8 +214,8 @@ export default function TaskChatPage() {
             body: JSON.stringify({
               task: currentTask,
               sensitive_data: sensitiveData,
-              retry_count: retryCount, // Let server know if this is a retry
-              last_progress_count: lastProgressCount // Help server know where to resume from
+              retry_count: retryCount,
+              last_progress_count: lastProgressCount
             }),
           });
 
@@ -656,10 +656,10 @@ export default function TaskChatPage() {
     const showMobileTaskRecording = false; // Always false for mobile as we're downloading instead
     
     return (
-      <div className={`relative ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
+      <div className={`relative rounded-lg border border-border/40 shadow-sm bg-background p-6 ${showMobileTaskRecording ? 'overflow-hidden' : ''}`}>
         {/* Agent Interactions Panel */}
         <div className="visible">
-          <div className="space-y-6 mb-6" ref={resultsRef} id="mobile-results-container">
+          <div className="space-y-8 mb-8" ref={resultsRef} id="mobile-results-container">
             {submittedTask && <UserQuery task={submittedTask} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
@@ -676,14 +676,16 @@ export default function TaskChatPage() {
           </div>
 
           {/* Input Form */}
-          <InputForm
-            task={task}
-            loading={loading}
-            maxChars={MAX_CHARS}
-            onSubmit={handleSubmit}
-            onChange={(e) => setTask(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="sticky bottom-0 bg-background pt-4 pb-1">
+            <InputForm
+              task={task}
+              loading={loading}
+              maxChars={MAX_CHARS}
+              onSubmit={handleSubmit}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
         </div>
 
         {/* Task Recording panel removed for mobile - using download button instead */}
@@ -696,7 +698,7 @@ export default function TaskChatPage() {
     return (
       <ResizablePanelGroup
         direction="horizontal"
-        className="min-h-[200px]"
+        className="min-h-[calc(100vh-10rem)] rounded-lg border border-border/40 shadow-sm overflow-hidden"
         onLayout={(sizes) => {
           // This callback ensures the panel sizes are properly applied
           console.log("Layout updated:", sizes);
@@ -704,12 +706,12 @@ export default function TaskChatPage() {
       >
         {/* Left Panel - Agent Interactions */}
         <ResizablePanel 
-          defaultSize={isRightPanelCollapsed ? 100 : 70}
+          defaultSize={isRightPanelCollapsed ? 100 : 65}
           minSize={isRightPanelCollapsed ? 100 : 50}
-          maxSize={isRightPanelCollapsed ? 100 : 70}
-          className="p-6 bg-background rounded-lg shadow-sm"
+          maxSize={isRightPanelCollapsed ? 100 : 75}
+          className="p-8 bg-background"
         >
-          <div className="space-y-6 mb-6" ref={resultsRef} id="results-container">
+          <div className="space-y-8 mb-8" ref={resultsRef} id="results-container">
             {submittedTask && <UserQuery task={submittedTask} />}
 
             <AgentSteps progress={progress} isStreaming={isStreaming} />
@@ -726,54 +728,56 @@ export default function TaskChatPage() {
           </div>
 
           {/* Input Form */}
-          <InputForm
-            task={task}
-            loading={loading}
-            maxChars={MAX_CHARS}
-            onSubmit={handleSubmit}
-            onChange={(e) => setTask(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="sticky bottom-0 bg-background pt-4 pb-1">
+            <InputForm
+              task={task}
+              loading={loading}
+              maxChars={MAX_CHARS}
+              onSubmit={handleSubmit}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
         </ResizablePanel>
 
         {/* Always include the handle and right panel, but manage visibility with CSS */}
         <ResizableHandle 
           withHandle 
-          className={`border-x border-border bg-transparent hover:bg-primary/10 transition-colors ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'}`} 
+          className={`border-x-2 border-border/40 bg-muted/30 hover:bg-primary/5 transition-colors ${isRightPanelCollapsed ? 'opacity-0' : 'opacity-100'}`} 
         />
 
         {/* Right Panel - Task Recording - Always present in DOM but can be collapsed */}
         <ResizablePanel 
           id="rightPanel"
-          defaultSize={isRightPanelCollapsed ? 0 : 30}
-          minSize={isRightPanelCollapsed ? 0 : 5}
+          defaultSize={isRightPanelCollapsed ? 0 : 35}
+          minSize={isRightPanelCollapsed ? 0 : 25}
           maxSize={isRightPanelCollapsed ? 0 : 50}
-          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-6 bg-background rounded-lg shadow-sm'}`}
+          className={`transition-all duration-300 overflow-hidden ${isRightPanelCollapsed ? 'w-0 p-0 m-0 border-0' : 'p-8 bg-background'}`}
         >
-          <div className={`sticky top-8 transition-opacity duration-300 h-[calc(100vh-8rem)] ${isRightPanelCollapsed ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors"
-                aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
-              >
-                <IconLayoutColumns size={18} className="text-muted-foreground" />
-              </button>
-                <div className="bg-primary/10 rounded-full px-4 py-2 border border-primary/20">
-                <div className="flex items-center gap-2">
-                  <IconPhoto size={18} className="text-primary" />
-                  <span className="text-foreground font-medium">Task Recording</span>
+          <div className={`sticky top-8 transition-opacity duration-300 h-[calc(100vh-12rem)] ${isRightPanelCollapsed ? 'opacity-0 invisible' : 'opacity-100 visible'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
+                  className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors"
+                  aria-label={isRightPanelCollapsed ? "Show recording panel" : "Hide recording panel"}
+                >
+                  <IconLayoutColumns size={18} className="text-muted-foreground" />
+                </button>
+                <div className="bg-primary/10 rounded-full px-5 py-2.5 border border-primary/20">
+                  <div className="flex items-center gap-2.5">
+                    <IconPhoto size={18} className="text-primary" />
+                    <span className="text-foreground font-medium">Task Recording</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl overflow-hidden border border-border shadow-md h-[calc(100%-4rem)]">
+            <div className="rounded-xl overflow-hidden border border-border shadow-md h-[calc(100%-5rem)]">
               {isGifLoading ? (
                 <div className="flex items-center justify-center py-20 bg-background h-full">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm text-muted-foreground font-medium">Loading recording...</span>
                     {currentRunId && (
                       <span className="text-xs text-muted-foreground/70 mt-1">Run ID: {currentRunId}</span>
@@ -782,8 +786,8 @@ export default function TaskChatPage() {
                 </div>
               ) : gifError && shouldFetchGif ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-background h-full">
-                  <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
+                  <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
+                    <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center shadow-sm">
                       <IconPhoto size={24} className="text-amber-500" />
                     </div>
                     <h3 className="text-lg font-medium text-foreground">Recording not ready</h3>
@@ -809,16 +813,16 @@ export default function TaskChatPage() {
                 </div>
               ) : loading && isStreaming && !gifContent ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-background h-full">
-                  <div className="flex flex-col items-center gap-3 max-w-md text-center px-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <IconPhoto size={24} className="text-primary" />
+                  <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <IconPhoto size={28} className="text-primary" />
                     </div>
                     <h3 className="text-lg font-medium text-foreground">Recording in progress</h3>
                     <p className="text-sm text-muted-foreground">
                       The agent is working on your task. A visual recording will appear here once it&apos;s ready.
                     </p>
                     {progress.length > 0 && (
-                      <div className="w-48 h-1.5 bg-primary/10 rounded-full mt-4 overflow-hidden">
+                      <div className="w-56 h-2 bg-primary/10 rounded-full mt-4 overflow-hidden">
                         <div 
                           className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out" 
                           style={{ width: `${Math.min(progress.length * 5, 100)}%` }}
@@ -841,7 +845,7 @@ export default function TaskChatPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-4 mt-8 max-w-full">
+    <div className="container mx-auto px-4 py-6 mt-6 max-w-full">
       {/* Main Content - Responsive Layout */}
       {isMobile ? renderDualPanelLayout() : renderDesktopLayout()}
 
@@ -849,19 +853,18 @@ export default function TaskChatPage() {
       {(!isMobile && isRightPanelCollapsed && isRecordingRelevant) && (
         <button
           onClick={toggleRecordingPanel}
-          className="fixed top-12 right-8 w-10 h-10 rounded-full bg-background shadow-sm flex items-center justify-center hover:bg-primary/10 transition-colors border border-border z-50"
+          className="fixed top-16 right-8 w-10 h-10 rounded-full bg-background shadow-md flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50"
           aria-label="Show recording panel"
         >
           <IconPhoto size={20} className="text-primary" />
         </button>
       )}
 
-      {/* Remove the old fixed position scroll button */}
       {/* Floating Download Button for mobile */}
       {(isMobile && gifContent) && (
         <button
           onClick={handleMobileDownload}
-          className="fixed bottom-32 right-4 w-12 h-12 rounded-full bg-background shadow-sm flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50"
+          className="fixed bottom-28 right-6 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center hover:bg-primary/10 transition-all duration-300 border border-border z-50"
           aria-label="Download recording"
           disabled={!gifContent}
         >
@@ -872,7 +875,7 @@ export default function TaskChatPage() {
       {/* Loading indicator for mobile when GIF is processing */}
       {(isMobile && isRecordingRelevant && !gifContent) && (
         <div
-          className="fixed bottom-32 right-4 w-12 h-12 rounded-full bg-background shadow-sm flex items-center justify-center border border-border z-50"
+          className="fixed bottom-28 right-6 w-12 h-12 rounded-full bg-background shadow-lg flex items-center justify-center border border-border z-50"
           aria-label="Recording in progress"
         >
           <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />

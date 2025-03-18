@@ -59,56 +59,56 @@ export const lightColors = {
 // Dark mode palette
 export const darkColors = {
   // Base colors
-  background: '220 26% 9%', // Deep blue-gray
-  foreground: '60 5% 96%',  // Off-white
+  background: '220 30% 7%', // Deeper blue-gray background
+  foreground: '60 10% 98%',  // Brighter white text
 
   // Card and popover elements
-  card: '220 26% 9%',
-  cardForeground: '60 5% 96%',
-  popover: '220 26% 9%',
-  popoverForeground: '60 5% 96%',
+  card: '222 32% 10%',
+  cardForeground: '60 10% 98%',
+  popover: '222 32% 10%',
+  popoverForeground: '60 10% 98%',
 
   // Primary colors
-  primary: '217 76% 56%', // Bright blue
+  primary: '217 85% 60%', // More vibrant blue
   primaryForeground: '0 0% 100%',
 
   // Secondary colors
-  secondary: '217 19% 27%',
-  secondaryForeground: '60 5% 96%',
+  secondary: '217 25% 24%',
+  secondaryForeground: '60 10% 98%',
 
   // Muted colors for less emphasis
-  muted: '215 27% 17%',
-  mutedForeground: '217 10% 64%',
+  muted: '215 32% 15%',
+  mutedForeground: '217 15% 70%',
 
   // Accent colors for highlights
-  accent: '217 19% 27%',
-  accentForeground: '60 5% 96%',
+  accent: '217 25% 24%',
+  accentForeground: '60 10% 98%',
 
   // Destructive colors for warnings/errors
-  destructive: '0 72% 51%', // Darker red
-  destructiveForeground: '0 0% 98%',
+  destructive: '0 80% 55%', // Brighter red
+  destructiveForeground: '0 0% 100%',
 
   // UI element borders and input fields
-  border: '217 19% 27%',
-  input: '217 19% 27%',
-  ring: '224 76% 48%',
+  border: '217 24% 22%',
+  input: '217 24% 22%',
+  ring: '224 85% 55%',
 
   // Chart colors for data visualization
   chart1: '210 100% 65%', // Bright blue
-  chart2: '160 60% 45%',  // Teal
-  chart3: '30 90% 65%',   // Bright orange
-  chart4: '280 75% 65%',  // Vibrant purple
-  chart5: '340 80% 65%',  // Vibrant pink
+  chart2: '160 85% 50%',  // More vibrant teal
+  chart3: '30 95% 65%',   // Brighter orange
+  chart4: '280 85% 65%',  // Vibrant purple
+  chart5: '340 90% 65%',  // Vibrant pink
 
   // Sidebar specific colors
-  sidebarBackground: '222 47% 11%',
-  sidebarForeground: '217 10% 88%',
-  sidebarPrimary: '217 76% 56%',
+  sidebarBackground: '222 50% 9%',
+  sidebarForeground: '217 15% 90%',
+  sidebarPrimary: '217 85% 60%',
   sidebarPrimaryForeground: '0 0% 100%',
-  sidebarAccent: '223 14% 20%',
-  sidebarAccentForeground: '60 5% 96%',
-  sidebarBorder: '220 13% 23%',
-  sidebarRing: '217.2 91.2% 59.8%',
+  sidebarAccent: '223 18% 18%',
+  sidebarAccentForeground: '60 10% 98%',
+  sidebarBorder: '220 18% 20%',
+  sidebarRing: '217 90% 65%',
 };
 
 // Helper function to convert the color object to CSS variables

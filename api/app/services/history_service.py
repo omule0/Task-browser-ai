@@ -1,6 +1,6 @@
 from datetime import datetime
 import base64
-from app.config.supabase import supabase, HISTORY_TABLE, GIF_TABLE
+from app.config.supabase import supabase, HISTORY_TABLE, GIF_TABLE, DOCUMENT_TABLE
 from typing import Optional, List, Dict
 import json
 import logging
@@ -15,6 +15,7 @@ async def save_run_history(
     result: Optional[str] = None,
     error: Optional[str] = None,
     gif_content: Optional[str] = None,
+    document_content: Optional[str] = None,
     auth_tokens: Optional[AuthTokens] = None,
     run_id: Optional[str] = None,
     live_view_url: Optional[str] = None
@@ -75,6 +76,26 @@ async def save_run_history(
                 logging.info("Successfully saved GIF content")
         else:
             logging.warning("No GIF content provided to save")
+
+        # If there's a document, save it
+        if document_content:
+            logging.info(f"Document content length: {len(document_content)}")
+            document_data = {
+                'history_id': history_id,
+                'document_content': document_content,
+                'created_at': datetime.utcnow().isoformat()
+            }
+
+            logging.info(f"Saving document for history {history_id}")
+            document_response = supabase.table(
+                DOCUMENT_TABLE).insert(document_data).execute()
+
+            if not document_response.data:
+                logging.error("Failed to save document content")
+            else:
+                logging.info("Successfully saved document content")
+        else:
+            logging.warning("No document content provided to save")
 
         return history_id
 
@@ -187,6 +208,27 @@ async def get_run_details(
                 logging.error(f"Error fetching GIF content: {str(e)}")
                 history['gif_content'] = None
 
+            # Get the associated document if it exists
+            try:
+                logging.info(f"Fetching document for history ID: {history_id}")
+                document_response = supabase.table(DOCUMENT_TABLE)\
+                    .select('document_content')\
+                    .eq('history_id', history_id)\
+                    .single()\
+                    .execute()
+
+                if document_response.data:
+                    logging.info(
+                        f"Found document content of length: {len(document_response.data['document_content'])}")
+                    history['document_content'] = document_response.data['document_content']
+                else:
+                    logging.warning(
+                        f"No document content found for history ID: {history_id}")
+                    history['document_content'] = None
+            except Exception as e:
+                logging.error(f"Error fetching document content: {str(e)}")
+                history['document_content'] = None
+
             return history
 
         except Exception as e:
@@ -220,7 +262,7 @@ async def delete_run_history(
                 logging.error(f"Error setting session: {str(e)}")
                 raise
 
-        # The GIF will be automatically deleted due to the ON DELETE CASCADE
+        # The GIF and document will be automatically deleted due to the ON DELETE CASCADE
         response = supabase.table(HISTORY_TABLE)\
             .delete()\
             .eq('id', history_id)\
@@ -232,3 +274,78 @@ async def delete_run_history(
     except Exception as e:
         logging.error(f"Error deleting run history: {str(e)}")
         raise Exception(f"Failed to delete run history: {str(e)}")
+
+
+async def update_history_with_document(
+    user_id: str,
+    history_id: str,
+    document_content: str,
+    auth_tokens: Optional[AuthTokens] = None,
+    result: Optional[str] = None
+) -> bool:
+    """Update an existing history entry with document content."""
+    try:
+        # Set auth context if tokens are provided
+        if auth_tokens:
+            try:
+                supabase.auth.set_session(
+                    access_token=auth_tokens.access_token,
+                    refresh_token=auth_tokens.refresh_token
+                )
+            except Exception as e:
+                logging.error(f"Error setting session: {str(e)}")
+                raise
+
+        # Create update data with document content
+        update_data = {}
+
+        # Save document to document table
+        document_data = {
+            'history_id': history_id,
+            'document_content': document_content,
+            'created_at': datetime.utcnow().isoformat()
+        }
+
+        # First check if document exists
+        try:
+            existing_doc = supabase.table(DOCUMENT_TABLE)\
+                .select('id')\
+                .eq('history_id', history_id)\
+                .single()\
+                .execute()
+
+            if existing_doc.data:
+                # Update existing document
+                doc_response = supabase.table(DOCUMENT_TABLE)\
+                    .update({'document_content': document_content})\
+                    .eq('history_id', history_id)\
+                    .execute()
+            else:
+                # Create new document
+                doc_response = supabase.table(DOCUMENT_TABLE)\
+                    .insert(document_data)\
+                    .execute()
+        except Exception as doc_error:
+            # Document doesn't exist, create it
+            if 'no rows' in str(doc_error).lower():
+                doc_response = supabase.table(DOCUMENT_TABLE)\
+                    .insert(document_data)\
+                    .execute()
+            else:
+                raise doc_error
+
+        # If result is provided, update the history entry
+        if result:
+            history_response = supabase.table(HISTORY_TABLE)\
+                .update({'result': result})\
+                .eq('id', history_id)\
+                .eq('user_id', user_id)\
+                .execute()
+
+            if not history_response.data:
+                return False
+
+        return True
+    except Exception as e:
+        logging.error(f"Error updating history with document: {str(e)}")
+        return False

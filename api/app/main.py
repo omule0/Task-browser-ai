@@ -2,9 +2,9 @@ from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel,SecretStr
+from pydantic import BaseModel, SecretStr
 from langchain_openai import ChatOpenAI
-from browser_use import Agent, Browser, BrowserConfig, Controller
+from browser_use import Agent, Browser, BrowserConfig
 import asyncio
 from dotenv import load_dotenv
 import os
@@ -12,7 +12,7 @@ import logging
 import requests
 import uuid
 from typing import Dict, Optional, List, Any, Set
-from app.services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history
+from app.services.history_service import save_run_history, get_run_history, get_run_details, delete_run_history, update_history_with_document
 from app.utils.auth import get_user_id, get_user_id_and_tokens, AuthTokens
 import base64
 from pathlib import Path
@@ -21,6 +21,8 @@ import time
 import io
 from concurrent.futures import ThreadPoolExecutor
 from lmnr import Laminar, observe
+# Import OpenAI Agents SDK
+from agents import Agent as OpenAIAgent, Runner, handoff
 
 # this line auto-instruments Browser Use and any browser you use (local or remote)
 # Laminar.initialize(project_api_key=os.getenv("LMNR_PROJECT_API_KEY"))
@@ -65,6 +67,11 @@ TEMP_DIR = Path("/tmp/digest_ai_gifs")
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 os.chmod(TEMP_DIR, 0o777)
 
+# Create document directory
+DOCS_DIR = Path("/tmp/digest_ai_docs")
+DOCS_DIR.mkdir(parents=True, exist_ok=True)
+os.chmod(DOCS_DIR, 0o777)
+
 # Browser configuration settings
 browser_configuration = {
     "adblock_config": {"active": True},
@@ -99,6 +106,78 @@ def clean_cache():
                               key=lambda x: x[1]['timestamp'])
         for k, _ in sorted_items[:len(RESPONSE_CACHE) - MAX_CACHE_ITEMS]:
             del RESPONSE_CACHE[k]
+
+# Initialize document generation agents
+
+
+def create_document_agent():
+    """Create an OpenAI agent for document generation"""
+    return OpenAIAgent(
+        name="Document Generator",
+        instructions="""You're an agent that creates professional documents based on browser task results.
+        Extract key information from the provided browser results and create a well-formatted document.
+        Focus on organizing information clearly with proper sections and formatting.
+        Include relevant details, insights, and actionable items derived from the browser task."""
+    )
+
+
+def create_research_agent():
+    """Create an OpenAI agent specialized in research analysis"""
+    return OpenAIAgent(
+        name="Research Analyst",
+        handoff_description="Specialist agent for analyzing research data and findings",
+        instructions="""You analyze research data from browser tasks to identify trends, insights, and key findings.
+        Extract meaningful patterns and organize them into coherent analysis.
+        Focus on data validation, statistical significance, and relevant industry contexts."""
+    )
+
+
+def create_summary_agent():
+    """Create an OpenAI agent specialized in concise summaries"""
+    return OpenAIAgent(
+        name="Summary Creator",
+        handoff_description="Specialist agent for creating executive summaries",
+        instructions="""You create concise, executive-level summaries from browser task results.
+        Focus on distilling the most important information into brief, actionable insights.
+        Ensure summaries are clear, direct, and highlight the most important findings."""
+    )
+
+
+def create_document_selector_agent():
+    """Create an OpenAI agent that determines the most appropriate document type and delegates to specialist agents"""
+    return OpenAIAgent(
+        name="Document Selector",
+        instructions="""You analyze browser tasks and results to determine the most appropriate document type to generate.
+        
+        For each task, examine:
+        1. The nature and complexity of the task
+        2. The volume and type of data in the results
+        3. The likely intended use case based on the task description
+        
+        Then select the most appropriate document type:
+        - Choose a comprehensive "report" for detailed research tasks with multiple data points that require thorough documentation
+        - Choose "analysis" for tasks focused on trends, competitive research, or when insights and recommendations are needed
+        - Choose "summary" for straightforward tasks where concise, executive-level information is sufficient
+        
+        IMPORTANT: Start your response with "DOCUMENT TYPE: [type]" where [type] is one of: report, analysis, or summary.
+        For example: "DOCUMENT TYPE: report" 
+        
+        Then continue with the appropriate document content.
+        After determining the appropriate document type, hand off to the specialist agent.""",
+        handoff_description="Agent that determines the optimal document type and delegates to specialist agents"
+    )
+
+
+# Setup agent handoff configuration
+document_agent = create_document_agent()
+research_agent = create_research_agent()
+summary_agent = create_summary_agent()
+document_selector_agent = create_document_selector_agent()
+
+# Configure handoff capabilities
+document_selector_agent.handoff_config = handoff(
+    document_agent, research_agent, summary_agent
+)
 
 
 @app.get("/")
@@ -173,6 +252,8 @@ class BrowserTask(BaseModel):
     task: str
     model: str = "gpt-4o-mini"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
+    # Now optional, agent will determine if not provided
+    document_type: Optional[str] = None
 
 
 class HistoryResponse(BaseModel):
@@ -183,6 +264,7 @@ class HistoryResponse(BaseModel):
     created_at: str
     progress: List[Dict]
     live_view_url: Optional[str] = None
+    document_url: Optional[str] = None
 
 
 def safe_serialize(obj: Any) -> str:
@@ -229,15 +311,26 @@ async def get_history(request: Request, limit: int = 10, offset: int = 0):
 
 
 @app.get("/api/history/{history_id}")
-async def get_history_detail(request: Request, history_id: str):
-    """Get detailed run information including GIF with caching."""
-    cache_key = f"history_detail_{history_id}"
+async def get_history_detail(request: Request, history_id: str, format: str = "json"):
+    """Get detailed run information including GIF with caching.
+
+    Parameters:
+    - history_id: The ID of the history entry to retrieve
+    - format: Response format, either "json" (default) or "chunked" for large responses
+    """
+    cache_key = f"history_detail_{history_id}_{format}"
 
     # Check cache first
     if cache_key in RESPONSE_CACHE:
         cache_entry = RESPONSE_CACHE[cache_key]
         # If cache is still valid
         if time.time() - cache_entry['timestamp'] < CACHE_TTL:
+            # For chunked responses, we need to recreate the generator
+            if format == "chunked" and isinstance(cache_entry['data'], dict):
+                return StreamingResponse(
+                    stream_chunked_response(cache_entry['data']),
+                    media_type="application/json"
+                )
             return cache_entry['data']
 
     try:
@@ -248,16 +341,68 @@ async def get_history_detail(request: Request, history_id: str):
             raise HTTPException(
                 status_code=404, detail="History entry not found")
 
-        # Update cache
-        RESPONSE_CACHE[cache_key] = {
-            'data': result,
-            'timestamp': time.time()
-        }
+        # Check for large GIF content that might cause HTTP/2 stream issues
+        gif_content_size = len(result.get("gif_content", "")) if result.get(
+            "gif_content") else 0
 
-        return result
+        # If chunked format requested or GIF is very large, use streaming response
+        if format == "chunked" or gif_content_size > 1_000_000:  # > 1MB
+            # Update cache with the raw data
+            RESPONSE_CACHE[cache_key] = {
+                'data': result,
+                'timestamp': time.time()
+            }
+
+            # Return as streaming response
+            return StreamingResponse(
+                stream_chunked_response(result),
+                media_type="application/json"
+            )
+        else:
+            # Update cache with regular response
+            RESPONSE_CACHE[cache_key] = {
+                'data': result,
+                'timestamp': time.time()
+            }
+
+            return result
     except Exception as e:
-        logging.error(f"Error fetching history detail: {str(e)}")
+        logging.error(
+            f"Error fetching history detail: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def stream_chunked_response(data: dict):
+    """Stream a large JSON response in chunks to avoid HTTP/2 stream reset issues."""
+    # Helper function to break down large data into manageable chunks
+    try:
+        # First yield the metadata without large binary content
+        metadata = {k: v for k, v in data.items() if k not in [
+            "gif_content", "document_content"]}
+        yield orjson.dumps(metadata).decode('utf-8') + "\n"
+
+        # Stream GIF content in smaller chunks if present
+        if "gif_content" in data and data["gif_content"]:
+            gif_content = data["gif_content"]
+            # Stream in chunks of ~500KB
+            chunk_size = 500_000
+
+            for i in range(0, len(gif_content), chunk_size):
+                chunk = gif_content[i:i+chunk_size]
+                yield orjson.dumps({"gif_content_chunk": chunk, "chunk_index": i // chunk_size}).decode('utf-8') + "\n"
+                await asyncio.sleep(0.01)  # Small delay between chunks
+
+            # Signal end of GIF content
+            yield orjson.dumps({"gif_content_complete": True}).decode('utf-8') + "\n"
+
+        # Stream document content separately if present
+        if "document_content" in data and data["document_content"]:
+            yield orjson.dumps({"document_content": data["document_content"]}).decode('utf-8') + "\n"
+
+    except Exception as e:
+        logging.error(
+            f"Error streaming chunked response: {str(e)}", exc_info=True)
+        yield orjson.dumps({"error": str(e)}).decode('utf-8') + "\n"
 
 
 @app.delete("/api/history/{history_id}")
@@ -317,12 +462,101 @@ async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
             logging.warning(f"Error cleaning up GIF file: {str(e)}")
 
 
+async def generate_document_from_results(browser_results, task, run_id):
+    """Generate document from browser results using OpenAI Agents."""
+    document_path = DOCS_DIR / f"document_{run_id}.md"
+
+    try:
+        # Format browser results for the agent
+        formatted_results = f"""
+        Task: {task}
+        
+        Browser Results:
+        {browser_results}
+        """
+
+        # Define a synchronous function to run the agent
+        def run_agent_sync(agent, message):
+            # Create a new event loop in this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return Runner.run_sync(agent, message)
+            finally:
+                # Clean up to prevent memory leaks
+                loop.close()
+
+        loop = asyncio.get_event_loop()
+
+        # Use the selector agent to determine document type
+        selector_message = f"""
+        {formatted_results}
+        
+        Based on this task and results, determine the most appropriate document type to generate.
+        Consider the nature of the task, volume of data, and likely intended use case.
+        """
+
+        # Run the selector agent to determine document type and generate content
+        result = await loop.run_in_executor(
+            thread_pool,
+            run_agent_sync,
+            document_selector_agent,
+            selector_message
+        )
+
+        # Extract the document type from the output
+        document_content = result.final_output
+
+        # Parse the document type from the output
+        if document_content.startswith("DOCUMENT TYPE:"):
+            doc_type_line = document_content.split("\n")[0]
+            if "summary" in doc_type_line.lower():
+                selected_doc_type = "summary"
+            elif "analysis" in doc_type_line.lower():
+                selected_doc_type = "analysis"
+            else:
+                selected_doc_type = "report"
+
+            # Remove the document type line from the content
+            document_content = "\n".join(
+                document_content.split("\n")[1:]).strip()
+        else:
+            # Default to report if format not followed
+            selected_doc_type = "report"
+            logging.warning(
+                "Document type not specified in output, defaulting to report")
+
+        # Add document type header and format the content
+        formatted_document = f"# {selected_doc_type.title()} Document\n\n"
+
+        # Add task information
+        formatted_document += f"**Task:** {task}\n\n"
+
+        # Add the main document content
+        formatted_document += document_content
+
+        # Write document to file with formatting
+        with open(document_path, 'w') as doc_file:
+            doc_file.write(formatted_document)
+
+        # Return base64 encoded document content with formatting
+        return base64.b64encode(formatted_document.encode('utf-8')).decode('utf-8')
+
+    except Exception as e:
+        logging.error(f"Error generating document: {str(e)}")
+        # Add stack trace for debugging
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+
 async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_tokens: AuthTokens, browser_task: BrowserTask, live_view_url: Optional[str] = None):
     """Stream the agent's progress as JSON events with optimized performance."""
     progress_events = []
     final_result = None
     error_message = None
     gif_content = None
+    document_content = None
     history_saved = False
     run_id = str(uuid.uuid4())
 
@@ -457,6 +691,44 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         final_result = history.final_result()
         is_done = history.is_done()
 
+        # Always generate document if there's a valid result
+        if final_result and is_done:
+            doc_event = {
+                "type": "status",
+                "message": "Generating document from browser results..."
+            }
+            progress_events.append(doc_event)
+            yield serialize_event(doc_event)
+
+            # Generate document asynchronously
+            document_task = asyncio.create_task(
+                generate_document_from_results(
+                    final_result,
+                    task,
+                    run_id
+                )
+            )
+
+            # Wait for document generation with a timeout
+            try:
+                document_content = await asyncio.wait_for(document_task, timeout=30.0)
+                if document_content:
+                    # Decode the base64 content
+                    decoded_content = base64.b64decode(
+                        document_content).decode('utf-8')
+                    doc_event = {
+                        "type": "document",
+                        "message": "Document generated successfully"
+                    }
+                    progress_events.append(doc_event)
+                    yield serialize_event(doc_event)
+
+                    # Enhance the final result with the document
+                    if final_result:
+                        final_result = f"{final_result}\n\n## Generated Document\n\n{decoded_content}"
+            except asyncio.TimeoutError:
+                logging.warning("Document generation timed out")
+
         # Wait for GIF with timeout to avoid blocking
         try:
             gif_content = await asyncio.wait_for(gif_task, timeout=10.0)
@@ -490,6 +762,7 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                     result=final_result,
                     error=error_message,
                     gif_content=gif_content,
+                    document_content=document_content,
                     auth_tokens=auth_tokens,
                     run_id=run_id,
                     live_view_url=live_view_url
@@ -523,11 +796,28 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 @app.post("/api/browse")
 @observe()
 async def browse(request: Request, browser_task: BrowserTask, background_tasks: BackgroundTasks):
+    """
+    Handle browser automation task with optimized performance and automatic document generation.
+
+    This endpoint:
+    1. Runs the browser automation task
+    2. Streams progress events in real-time
+    3. Automatically generates a document based on the results
+    4. Creates a GIF recording of the browser session
+    5. Saves all results to the database
+
+    The document_type parameter controls what type of document is generated:
+    - "report": A detailed document with all findings (default)
+    - "summary": A concise executive summary
+    - "analysis": An analytical document with insights and trends
+    """
 
     browser_local = Browser(
         config=BrowserConfig(
-            headless=False,
-            cdp_url='http://localhost:9222',
+            # Specify the path to your Chrome executable
+            chrome_instance_path='/Applications/Chromium.app/Contents/MacOS/Chromium',  # macOS path
+            # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+            # For Linux, typically: '/usr/bin/google-chrome'
         )
     )
 
@@ -553,17 +843,11 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         #         detail=f"Browser initialization failed: {str(browser_error)}"
         #     )
 
-        
         planner_llm = ChatOpenAI(
             base_url='https://api.deepseek.com/v1',
             model="deepseek-reasoner",
             api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")),
         )
-        
-        initial_actions = [
-	{'open_tab': {'url': 'https://www.google.com'}},
- 
-]
 
         # Initialize agent with error handling
         try:
@@ -575,10 +859,6 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
                     temperature=0.0
                 ),
                 sensitive_data=browser_task.sensitive_data or {},
-                planner_llm=planner_llm, 
-                use_vision_for_planner=False, 
-                planner_interval=1,
-                initial_actions=initial_actions
             )
             logging.info("Agent initialized successfully")
         except Exception as agent_error:
@@ -632,3 +912,122 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
             status_code=500,
             detail=f"An unexpected error occurred: {str(e)}"
         )
+
+
+@app.post("/api/generate-document")
+async def generate_document(request: Request, background_tasks: BackgroundTasks):
+    """Generate document from an existing browser task result."""
+    try:
+        data = await request.json()
+        history_id = data.get("history_id")
+
+        if not history_id:
+            raise HTTPException(status_code=400, detail="Missing history_id")
+
+        # Get user credentials
+        user_id, tokens = await get_user_id_and_tokens(request)
+
+        # Get history details
+        history = await get_run_details(user_id, history_id, auth_tokens=tokens)
+        if not history:
+            raise HTTPException(status_code=404, detail="History not found")
+
+        # Check if result exists
+        if not history.get("result"):
+            raise HTTPException(
+                status_code=400, detail="No result found in history")
+
+        # Generate document in background
+        run_id = str(uuid.uuid4())
+        background_tasks.add_task(
+            generate_and_save_document,
+            user_id=user_id,
+            history_id=history_id,
+            result=history["result"],
+            task=history["task"],
+            run_id=run_id,
+            auth_tokens=tokens
+        )
+
+        return {"status": "success", "message": "Document generation started", "run_id": run_id}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error generating document: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error generating document: {str(e)}")
+
+
+async def generate_and_save_document(user_id, history_id, result, task, run_id, auth_tokens):
+    """Generate document from result and save it to history."""
+    try:
+        # Create an event loop for this thread if there isn't one
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No event loop exists in this thread, so create one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        # Generate document - use loop.run_until_complete for async calls if we created a new loop
+        if asyncio.get_event_loop_policy().get_event_loop() == loop:
+            # We're in the original event loop
+            document_content = await generate_document_from_results(
+                result, task, run_id
+            )
+        else:
+            # We're in a new loop we created
+            document_content = loop.run_until_complete(
+                generate_document_from_results(
+                    result, task, run_id)
+            )
+
+        if not document_content:
+            logging.error("Failed to generate document content")
+            return
+
+        # Decode document for updating history result
+        decoded_content = base64.b64decode(document_content).decode('utf-8')
+
+        # Fetch existing result to append document
+        history_details = await get_run_details(user_id, history_id, auth_tokens=auth_tokens)
+        existing_result = history_details.get("result", "")
+
+        # Create combined result with original result and document
+        if existing_result:
+            combined_result = f"{existing_result}\n\n## Generated Document\n\n{decoded_content}"
+        else:
+            combined_result = decoded_content
+
+        # Update both the result and document content
+        # Update history with document - same logic for event loop
+        if asyncio.get_event_loop_policy().get_event_loop() == loop:
+            success = await update_history_with_document(
+                user_id=user_id,
+                history_id=history_id,
+                document_content=document_content,
+                result=combined_result,  # Update result to include document
+                auth_tokens=auth_tokens
+            )
+        else:
+            success = loop.run_until_complete(
+                update_history_with_document(
+                    user_id=user_id,
+                    history_id=history_id,
+                    document_content=document_content,
+                    result=combined_result,  # Update result to include document
+                    auth_tokens=auth_tokens
+                )
+            )
+
+        if success:
+            logging.info(
+                f"Document generated and saved successfully for history {history_id}")
+        else:
+            logging.error(f"Failed to save document for history {history_id}")
+    except Exception as e:
+        logging.error(f"Error in generate_and_save_document: {str(e)}")
+        # If we have to debug, include stack trace
+        import traceback
+        logging.error(traceback.format_exc())

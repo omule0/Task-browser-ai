@@ -53,8 +53,8 @@ export const TaskRecording = ({ gifContent, isAgentRunning }: TaskRecordingProps
   
   return (
     <div className="relative w-full h-full">
-      <div className="relative w-full h-full flex items-center justify-center">
-        <div className="w-full h-full relative rounded-lg sm:rounded-xl overflow-hidden border border-border">
+      <div className="relative w-full h-full ">
+        <div className="">
           <Image 
             src={`data:image/gif;base64,${gifContent}`}
             alt="Task Recording"
