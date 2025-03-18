@@ -812,14 +812,14 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
     - "analysis": An analytical document with insights and trends
     """
 
-    browser_local = Browser(
-        config=BrowserConfig(
-            # Specify the path to your Chrome executable
-            chrome_instance_path='/Applications/Chromium.app/Contents/MacOS/Chromium',  # macOS path
-            # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-            # For Linux, typically: '/usr/bin/google-chrome'
-        )
-    )
+    # browser_local = Browser(
+    #     config=BrowserConfig(
+    #         # Specify the path to your Chrome executable
+    #         chrome_instance_path='/Applications/Chromium.app/Contents/MacOS/Chromium',  # macOS path
+    #         # For Windows, typically: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    #         # For Linux, typically: '/usr/bin/google-chrome'
+    #     )
+    # )
 
     """Handle browser automation task with optimized performance."""
     try:
@@ -832,28 +832,28 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
         logging.info(f"Starting browse task for user {user_id}")
 
         # Initialize browser with error handling
-        # try:
-        #     browser, live_view_url = get_browser()
-        #     logging.info("Browser initialized successfully")
-        # except Exception as browser_error:
-        #     logging.error(
-        #         f"Failed to initialize browser: {str(browser_error)}")
-        #     raise HTTPException(
-        #         status_code=500,
-        #         detail=f"Browser initialization failed: {str(browser_error)}"
-        #     )
+        try:
+            browser, live_view_url = get_browser()
+            logging.info("Browser initialized successfully")
+        except Exception as browser_error:
+            logging.error(
+                f"Failed to initialize browser: {str(browser_error)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Browser initialization failed: {str(browser_error)}"
+            )
 
-        planner_llm = ChatOpenAI(
-            base_url='https://api.deepseek.com/v1',
-            model="deepseek-reasoner",
-            api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")),
-        )
+        # planner_llm = ChatOpenAI(
+        #     base_url='https://api.deepseek.com/v1',
+        #     model="deepseek-reasoner",
+        #     api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")),
+        # )
 
         # Initialize agent with error handling
         try:
             agent = Agent(
                 task=browser_task.task,
-                browser=browser_local,
+                browser=browser,
                 llm=ChatOpenAI(
                     model=browser_task.model,
                     temperature=0.0
@@ -873,10 +873,10 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
 
         try:
             return StreamingResponse(
-                # stream_agent_progress(agent, browser_task.task,
-                #                       user_id, tokens, browser_task, live_view_url),
                 stream_agent_progress(agent, browser_task.task,
-                                      user_id, tokens, browser_task),
+                                      user_id, tokens, browser_task, live_view_url),
+                # stream_agent_progress(agent, browser_task.task,
+                #                       user_id, tokens, browser_task),
                 media_type="text/event-stream"
             )
         except Exception as stream_error:
