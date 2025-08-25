@@ -153,11 +153,18 @@ def create_document_selector_agent():
         1. The nature and complexity of the task
         2. The volume and type of data in the results
         3. The likely intended use case based on the task description
+        4. Whether the results are complete or partial
         
         Then select the most appropriate document type:
         - Choose a comprehensive "report" for detailed research tasks with multiple data points that require thorough documentation
         - Choose "analysis" for tasks focused on trends, competitive research, or when insights and recommendations are needed
         - Choose "summary" for straightforward tasks where concise, executive-level information is sufficient
+        
+        If the results are partial (the task didn't complete fully):
+        - Clearly indicate this in your document
+        - Focus on what was successfully gathered
+        - Be transparent about limitations of the information
+        - Consider using "summary" format for very limited results
         
         IMPORTANT: Start your response with "DOCUMENT TYPE: [type]" where [type] is one of: report, analysis, or summary.
         For example: "DOCUMENT TYPE: report" 
@@ -250,7 +257,7 @@ def get_browser():
 
 class BrowserTask(BaseModel):
     task: str
-    model: str = "gpt-4o-mini"  # default model
+    model: str = "gpt-4o"  # default model
     sensitive_data: Optional[Dict[str, str]] = None
     # Now optional, agent will determine if not provided
     document_type: Optional[str] = None
@@ -462,8 +469,15 @@ async def create_gif_from_history(agent: Agent, run_id: str) -> Optional[str]:
             logging.warning(f"Error cleaning up GIF file: {str(e)}")
 
 
-async def generate_document_from_results(browser_results, task, run_id):
-    """Generate document from browser results using OpenAI Agents."""
+async def generate_document_from_results(browser_results, task, run_id, is_done=True):
+    """Generate document from browser results using OpenAI Agents.
+
+    Parameters:
+    - browser_results: Results from the browser task
+    - task: The original task description
+    - run_id: Unique identifier for this run
+    - is_done: Whether the task completed successfully or timed out
+    """
     document_path = DOCS_DIR / f"document_{run_id}.md"
 
     try:
@@ -473,6 +487,8 @@ async def generate_document_from_results(browser_results, task, run_id):
         
         Browser Results:
         {browser_results}
+        
+        {"Note: The browser task did not complete within the maximum allowed steps. These are partial results." if not is_done else ""}
         """
 
         # Define a synchronous function to run the agent
@@ -494,6 +510,7 @@ async def generate_document_from_results(browser_results, task, run_id):
         
         Based on this task and results, determine the most appropriate document type to generate.
         Consider the nature of the task, volume of data, and likely intended use case.
+        {'' if is_done else 'IMPORTANT: These results are PARTIAL as the task did not complete within the maximum steps.'}
         """
 
         # Run the selector agent to determine document type and generate content
@@ -691,8 +708,8 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
         final_result = history.final_result()
         is_done = history.is_done()
 
-        # Always generate document if there's a valid result
-        if final_result and is_done:
+        # Always generate document if there's a valid result, even if task didn't complete
+        if final_result:
             doc_event = {
                 "type": "status",
                 "message": "Generating document from browser results..."
@@ -705,7 +722,8 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
                 generate_document_from_results(
                     final_result,
                     task,
-                    run_id
+                    run_id,
+                    is_done
                 )
             )
 
@@ -725,6 +743,11 @@ async def stream_agent_progress(agent: Agent, task: str, user_id: str, auth_toke
 
                     # Enhance the final result with the document
                     if final_result:
+                        # Add a note if task didn't complete fully
+                        if not is_done:
+                            completion_note = "\n\n> **Note:** This document was generated from partial results as the task didn't complete within the maximum allowed steps.\n\n"
+                            decoded_content = completion_note + decoded_content
+
                         final_result = f"{final_result}\n\n## Generated Document\n\n{decoded_content}"
             except asyncio.TimeoutError:
                 logging.warning("Document generation timed out")
@@ -855,10 +878,12 @@ async def browse(request: Request, browser_task: BrowserTask, background_tasks: 
                 task=browser_task.task,
                 browser=browser,
                 llm=ChatOpenAI(
-                    model=browser_task.model,
-                    temperature=0.0
-                ),
+                base_url='https://api.deepseek.com/v1',
+                model="deepseek-chat",
+                api_key=SecretStr(os.getenv("DEEPSEEK_API_KEY")),
+            ),
                 sensitive_data=browser_task.sensitive_data or {},
+                use_vision=False
             )
             logging.info("Agent initialized successfully")
         except Exception as agent_error:
