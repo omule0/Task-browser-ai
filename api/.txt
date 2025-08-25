@@ -4,10 +4,10 @@ docker compose down
 
 docker compose up
 
-docker push devdigest/api:api 
+docker push username}/{repo}:{tag} 
 
-docker build -t devdigest/api:api .
+docker build -t {username}/{repo}:{tag} .
 
-docker login -u devdigest
+docker login -u {username}
 
 docker run -d -p 9222:9222 --rm --name headless-shell chromedp/headless-shell
