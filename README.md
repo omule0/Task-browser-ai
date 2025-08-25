@@ -1,6 +1,6 @@
-# Digest AI API
+# Task-Browser-ai
 
-This repository contains a Docker Compose setup for the Digest AI API, a FastAPI application that provides browser automation capabilities using Anchor Browser.
+This repository contains a Docker Compose setup for the Task-Browser-ai, a FastAPI application that provides browser automation capabilities using Anchor Browser.
 
 ## Prerequisites
 
